@@ -1,12 +1,12 @@
+import vue from "@vitejs/plugin-vue";
 import { defineConfig } from "vite";
 import { viteStaticCopy } from "vite-plugin-static-copy";
-import vue from "@vitejs/plugin-vue";
 
 const cesiumSource = "node_modules/cesium/Build/Cesium";
 const cesiumBaseUrl = "cesium";
 
 export default defineConfig({
-  base: "/project/trogenmoser", // IMPORTANT: Replace with your student ID
+  base: "/project/trogenmoser/", // IMPORTANT: Replace with your student ID
   plugins: [
     vue(),
     viteStaticCopy({
@@ -40,4 +40,3 @@ export default defineConfig({
     chunkSizeWarningLimit: 5000,
   },
 });
-
