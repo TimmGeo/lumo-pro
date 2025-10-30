@@ -1,13 +1,15 @@
-import vue from "@vitejs/plugin-vue";
-import { defineConfig } from "vite";
-import { viteStaticCopy } from "vite-plugin-static-copy";
+import vue from '@vitejs/plugin-vue';
+import { defineConfig } from 'vite';
+import { viteStaticCopy } from 'vite-plugin-static-copy';
+import eslint from 'vite-plugin-eslint';
 
-const cesiumSource = "node_modules/cesium/Build/Cesium";
-const cesiumBaseUrl = "cesium";
+const cesiumSource = 'node_modules/cesium/Build/Cesium';
+const cesiumBaseUrl = 'cesium';
 
 export default defineConfig({
-  base: "/project/trogenmoser/", // IMPORTANT: Replace with your student ID
+  base: '/project/trogenmoser/', // IMPORTANT: Replace with your student ID
   plugins: [
+    eslint(), // show ESLint issues in terminal + browser overlay
     vue(),
     viteStaticCopy({
       targets: [
@@ -33,7 +35,7 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          cesium: ["cesium"],
+          cesium: ['cesium'],
         },
       },
     },
