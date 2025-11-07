@@ -5,10 +5,10 @@
 </template>
 
 <script setup>
-import { Viewer } from 'cesium';
-import 'cesium/Build/Cesium/Widgets/widgets.css';
+import { Viewer } from "cesium";
+import "cesium/Build/Cesium/Widgets/widgets.css";
 
-import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { ref, onMounted, onBeforeUnmount } from "vue";
 
 const _cesium = {
   viewer: null,
@@ -19,7 +19,7 @@ const viewerWidth = ref(0);
 const viewerHeight = ref(0);
 
 function createViewer() {
-  _cesium.viewer = new Viewer('cesium', {
+  _cesium.viewer = new Viewer("cesium", {
     // add cesium options here
   });
   if (window) {
@@ -36,7 +36,7 @@ function observeSize() {
       onResize();
     });
   });
-  viewerObserver.value.observe(document.querySelector('.cesium-scene'));
+  viewerObserver.value.observe(document.querySelector(".cesium-scene"));
 }
 
 function onResize() {
