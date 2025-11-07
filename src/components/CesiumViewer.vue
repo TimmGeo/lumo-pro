@@ -1,83 +1,106 @@
 <template>
-  <div class="cesium-scene">
+  <div class="scene">
     <div id="cesium"></div>
   </div>
 </template>
 
 <script setup>
-import { Viewer } from "cesium";
+import { onMounted, onBeforeUnmount } from "vue";
 import "cesium/Build/Cesium/Widgets/widgets.css";
+import {
+  Viewer,
+  Color,
+  UrlTemplateImageryProvider,
+  ImageryLayer,
+  Cartesian3,
+  WebMapTileServiceImageryProvider,
+  WebMercatorTilingScheme,
+  Rectangle,
+} from "cesium";
 
-import { ref, onMounted, onBeforeUnmount } from "vue";
+/* keep App.vue happy */
+const props = defineProps({
+  mode: { type: String, default: "combined" },
+  heightScale: { type: Number, default: 1.5 },
+});
+const emit = defineEmits(["ready"]);
+function onHover() {}
+async function drawRoute() {}
+emit("ready", { onHover, drawRoute });
 
-const _cesium = {
-  viewer: null,
-};
+let viewer;
 
-const viewerObserver = ref(null);
-const viewerWidth = ref(0);
-const viewerHeight = ref(0);
-
-function createViewer() {
-  _cesium.viewer = new Viewer("cesium", {
-    // add cesium options here
-  });
-  if (window) {
-    window.viewer = _cesium.viewer;
-  }
-}
-
-function observeSize() {
-  viewerObserver.value = new ResizeObserver((entries) => {
-    entries.forEach((entry) => {
-      const { width, height } = entry.contentRect;
-      viewerWidth.value = width;
-      viewerHeight.value = height;
-      onResize();
-    });
-  });
-  viewerObserver.value.observe(document.querySelector(".cesium-scene"));
-}
-
-function onResize() {
-  if (_cesium.viewer) {
-    _cesium.viewer.resize();
-  }
-}
-
-async function loadScene() {
-  console.log(`START: loadScene`);
+onMounted(async () => {
   try {
-    await import(/* @vite-ignore */ `../cesium.js`);
-  } catch (error) {
-    console.log(`ERROR: loadScene`, error);
-  } finally {
-    console.log(`END: loadScene`);
-  }
-}
+    viewer = new Viewer("cesium", {
+      baseLayerPicker: false,
+      animation: false,
+      timeline: false,
+      geocoder: false,
+      sceneModePicker: false,
+      navigationHelpButton: false,
+      fullscreenButton: false,
+    });
 
-onMounted(() => {
-  if (_cesium.viewer === null) {
-    createViewer();
-    observeSize();
-    loadScene();
+    // Night look
+    viewer.scene.skyBox.show = false;
+    viewer.scene.skyAtmosphere.show = false; // remove blue halo
+    viewer.scene.backgroundColor = Color.fromCssColorString("#0b0b0c");
+    viewer.scene.globe.show = true;
+    viewer.scene.globe.baseColor = Color.fromCssColorString("#161718");
+
+    // Token-free dark basemap (CARTO Dark Matter)
+    const cartoDark = new UrlTemplateImageryProvider({
+      url: "https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+      credit: "© OpenStreetMap contributors © CARTO",
+      minimumLevel: 0,
+      maximumLevel: 19,
+    });
+    viewer.imageryLayers.removeAll();
+    viewer.imageryLayers.add(new ImageryLayer(cartoDark));
+
+    // Optional: subtle Swiss WMTS overlay (low alpha)
+    const switzerland = Rectangle.fromDegrees(
+      5.140224,
+      45.398101,
+      11.47757,
+      48.230651
+    );
+    const wmts = new WebMapTileServiceImageryProvider({
+      url: "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe/default/current/3857/{TileMatrix}/{TileCol}/{TileRow}.jpeg",
+      tilingScheme: new WebMercatorTilingScheme(),
+      rectangle: switzerland,
+      format: "image/jpeg",
+    });
+    const chLayer = viewer.imageryLayers.addImageryProvider(wmts);
+    chLayer.alpha = 0.22; // faint texture
+    chLayer.brightness = 0.45;
+
+    // Fly to Zürich
+    await viewer.camera.flyTo({
+      destination: Cartesian3.fromDegrees(8.54, 47.37, 3000),
+      orientation: { pitch: -0.5 },
+      duration: 2.0,
+    });
+
+    window.viewer = viewer;
+  } catch (e) {
+    console.error("Cesium init failed:", e);
   }
 });
 
 onBeforeUnmount(() => {
-  if (viewerObserver.value) {
-    viewerObserver.value.disconnect();
-  }
+  try {
+    viewer?.destroy();
+  } catch {}
 });
 </script>
 
 <style scoped>
-.cesium-scene,
+.scene,
 #cesium {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
 }
 </style>

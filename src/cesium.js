@@ -4,18 +4,19 @@ import {
   Rectangle,
 } from "cesium";
 
-// from https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml
+// WMTS basemap (templated URL form)
+const switzerland = Rectangle.fromDegrees(
+  5.140224,
+  45.398101,
+  11.47757,
+  48.230651
+);
 const kulturtypWMTS = new WebMapTileServiceImageryProvider({
   url: "https://wmts.geo.admin.ch/1.0.0/ch.blw.bodeneignung-kulturtyp/default/current/3857/{TileMatrix}/{TileCol}/{TileRow}.png",
-  layer: "Bodeneignung: Kulturtyp",
-  style: "ch.blw.bodeneignung-kulturtyp",
-  format: "image/png",
-  tileMatrixSetID: "3857_18",
-  rectangle: Rectangle.fromDegrees(5.140242, 45.398181, 11.47757, 48.230651),
   tilingScheme: new WebMercatorTilingScheme(),
+  rectangle: switzerland,
+  format: "image/png",
 });
 
-const kulturtypImageryProvider =
-  viewer.scene.imageryLayers.addImageryProvider(kulturtypWMTS);
-
-viewer.zoomTo(kulturtypImageryProvider);
+const layer = viewer.scene.imageryLayers.addImageryProvider(kulturtypWMTS);
+viewer.zoomTo(layer);

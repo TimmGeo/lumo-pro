@@ -1,0 +1,15 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "id": "HB", "name": "Zürich HB" },
+      "geometry": { "type": "Point", "coordinates": [8.5402, 47.3782] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "BEL", "name": "Bellevue" },
+      "geometry": { "type": "Point", "coordinates": [8.5456, 47.3671] }
+    }
+  ]
+}
