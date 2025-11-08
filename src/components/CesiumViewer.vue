@@ -11,27 +11,20 @@ import {
   Viewer,
   Color,
   UrlTemplateImageryProvider,
-  ImageryLayer,
+  GeoJsonDataSource,
   Cartesian3,
-  WebMapTileServiceImageryProvider,
-  WebMercatorTilingScheme,
-  Rectangle,
+  NearFarScalar,
 } from "cesium";
 
-/* keep App.vue happy */
-const props = defineProps({
-  mode: { type: String, default: "combined" },
-  heightScale: { type: Number, default: 1.5 },
-});
-const emit = defineEmits(["ready"]);
-function onHover() {}
-async function drawRoute() {}
-emit("ready", { onHover, drawRoute });
+/* Small helper to work with Vite's base path ("/" locally, "/project/trogenmoser/" in deploy) */
+const BASE = import.meta.env.BASE_URL || "/";
+const hubsUrl = `${BASE}data/routing_hubs.geojson`.replace(/\/{2,}/g, "/");
 
 let viewer;
 
 onMounted(async () => {
   try {
+    // Viewer (minimal UI)
     viewer = new Viewer("cesium", {
       baseLayerPicker: false,
       animation: false,
@@ -44,48 +37,64 @@ onMounted(async () => {
 
     // Night look
     viewer.scene.skyBox.show = false;
-    viewer.scene.skyAtmosphere.show = false; // remove blue halo
+    viewer.scene.skyAtmosphere.show = false;
     viewer.scene.backgroundColor = Color.fromCssColorString("#0b0b0c");
     viewer.scene.globe.show = true;
     viewer.scene.globe.baseColor = Color.fromCssColorString("#161718");
 
-    // Token-free dark basemap (CARTO Dark Matter)
-    const cartoDark = new UrlTemplateImageryProvider({
+    // Token-free dark basemap (softened)
+    const dark = new UrlTemplateImageryProvider({
       url: "https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
       credit: "© OpenStreetMap contributors © CARTO",
       minimumLevel: 0,
       maximumLevel: 19,
     });
-    viewer.imageryLayers.removeAll();
-    viewer.imageryLayers.add(new ImageryLayer(cartoDark));
+    const baseLayer = viewer.imageryLayers.addImageryProvider(dark);
+    baseLayer.brightness = 0.35;
+    baseLayer.contrast = 0.85;
+    baseLayer.saturation = 0.2;
+    baseLayer.gamma = 0.95;
 
-    // Optional: subtle Swiss WMTS overlay (low alpha)
-    const switzerland = Rectangle.fromDegrees(
-      5.140224,
-      45.398101,
-      11.47757,
-      48.230651
-    );
-    const wmts = new WebMapTileServiceImageryProvider({
-      url: "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe/default/current/3857/{TileMatrix}/{TileCol}/{TileRow}.jpeg",
-      tilingScheme: new WebMercatorTilingScheme(),
-      rectangle: switzerland,
-      format: "image/jpeg",
-    });
-    const chLayer = viewer.imageryLayers.addImageryProvider(wmts);
-    chLayer.alpha = 0.22; // faint texture
-    chLayer.brightness = 0.45;
-
-    // Fly to Zürich
-    await viewer.camera.flyTo({
-      destination: Cartesian3.fromDegrees(8.54, 47.37, 3000),
-      orientation: { pitch: -0.5 },
-      duration: 2.0,
+    // --- Load your routing hubs (WGS84 GeoJSON) ---
+    const hubsDS = await GeoJsonDataSource.load(hubsUrl, {
+      clampToGround: true,
     });
 
+    // Style: mint dots + subtle labels
+    hubsDS.entities.values.forEach((e) => {
+      const name = e.properties?.CHSTNAME?.getValue?.() ?? "";
+
+      // point symbol
+      e.point = {
+        pixelSize: 10,
+        color: Color.fromCssColorString("#70f0c3"),
+        outlineColor: Color.fromCssColorString("#0b0b0c"),
+        outlineWidth: 2,
+        disableDepthTestDistance: Number.POSITIVE_INFINITY,
+      };
+
+      // label (small, fades with distance)
+      e.label = {
+        text: name,
+        font: "12px Inter, system-ui, sans-serif",
+        fillColor: Color.fromCssColorString("#e9f7f2"),
+        outlineColor: Color.fromCssColorString("#0b0b0c"),
+        outlineWidth: 2,
+        style: 0, // FILL
+        pixelOffset: new Cartesian3(0, -14, 0),
+        disableDepthTestDistance: Number.POSITIVE_INFINITY,
+        translucencyByDistance: new NearFarScalar(1_000, 0.0, 15_000, 1.0), // fade out when far
+      };
+    });
+
+    viewer.dataSources.add(hubsDS);
+    await viewer.zoomTo(hubsDS);
+
+    // Handy for console
     window.viewer = viewer;
+    console.log("Loaded hubs:", hubsDS.entities.values.length, hubsUrl);
   } catch (e) {
-    console.error("Cesium init failed:", e);
+    console.error("Cesium init / hubs load failed:", e);
   }
 });
 
