@@ -22,8 +22,8 @@ const ramp = ["#0d0f10", "#1d2326", "#274048", "#2e7567", "#70f0c3"];
 <style scoped>
 .legend {
   position: absolute;
-  right: 16px;
-  bottom: 16px;
+  left: 16px;
+  bottom: 50px;
   background: #151517;
   border: 1px solid #2a2f34;
   border-radius: 14px;
@@ -39,7 +39,7 @@ const ramp = ["#0d0f10", "#1d2326", "#274048", "#2e7567", "#70f0c3"];
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 4px;
-  height: 12px;
+  height: 32px;
   margin-bottom: 6px;
 }
 .ramp span {

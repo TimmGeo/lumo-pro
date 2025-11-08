@@ -32,7 +32,7 @@ onMounted(async () => {
       geocoder: false,
       sceneModePicker: false,
       navigationHelpButton: false,
-      fullscreenButton: false,
+      fullscreenButton: true,
     });
 
     // Night look
@@ -66,17 +66,17 @@ onMounted(async () => {
 
       // point symbol
       e.point = {
-        pixelSize: 10,
+        pixelSize: 5,
         color: Color.fromCssColorString("#70f0c3"),
         outlineColor: Color.fromCssColorString("#0b0b0c"),
-        outlineWidth: 2,
+        outlineWidth: 0,
         disableDepthTestDistance: Number.POSITIVE_INFINITY,
       };
 
       // label (small, fades with distance)
       e.label = {
         text: name,
-        font: "12px Inter, system-ui, sans-serif",
+        font: "12px Avenir, system-ui, sans-serif",
         fillColor: Color.fromCssColorString("#e9f7f2"),
         outlineColor: Color.fromCssColorString("#0b0b0c"),
         outlineWidth: 2,

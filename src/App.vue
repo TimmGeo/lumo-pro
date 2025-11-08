@@ -12,7 +12,7 @@
 
     <!-- Sidebar controls -->
     <aside class="sidebar">
-      <h3>Lumo</h3>
+      <h2>Lumo Pro</h2>
 
       <div class="group">
         <div class="title">Layers</div>
@@ -152,27 +152,13 @@ body,
   overflow: hidden;
 }
 
-/* -------- HEADER -------- */
-.topbar {
-  position: absolute;
-  top: 16px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 8px 16px;
-  background: #141416;
-  border-radius: 999px;
-  font-weight: 600;
-  letter-spacing: 0.4px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
-  z-index: 10;
-}
-
 /* -------- SIDEBAR -------- */
 .sidebar {
   position: absolute;
-  top: 72px;
-  left: 16px;
-  width: 260px;
+  top: 0px;
+  left: 0px;
+  bottom: 0px;
+  width: 300px;
   padding: 16px;
   background: #151517;
   border-radius: 20px;
