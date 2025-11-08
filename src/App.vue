@@ -7,28 +7,62 @@
       @ready="onViewerReady"
     />
 
+    <!-- Floating Routing Dock (top-right, dark & compact) -->
+    <div class="routingdock routingdock--compact">
+      <div class="rd-card">
+        <div class="rd-rail">
+          <span class="dot"></span>
+          <span class="line"></span>
+          <span class="dot"></span>
+        </div>
+
+        <div class="rd-fields">
+          <div class="rd-field">
+            <label class="rd-label">From</label>
+            <select v-model="startHub" class="rd-input">
+              <option disabled value="">Start hub…</option>
+              <option v-for="h in hubs" :key="h.id" :value="h.id">
+                {{ h.name }}
+              </option>
+            </select>
+          </div>
+
+          <div class="rd-divider"></div>
+
+          <div class="rd-field">
+            <label class="rd-label">To</label>
+            <select v-model="endHub" class="rd-input">
+              <option disabled value="">Destination hub…</option>
+              <option v-for="h in hubs" :key="h.id" :value="h.id">
+                {{ h.name }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <button class="rd-swap" @click="swapHubs()" aria-label="Swap">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path
+              d="M7 4v12M7 4l-3 3M7 4l3 3M17 20V8M17 20l-3-3M17 20l3-3"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
+      </div>
+    </div>
+
     <!-- Sidebar controls -->
     <aside class="sidebar">
       <h2>Lumo <span class="muted">Pro</span></h2>
-
-      <!-- Routing -->
-      <div class="group">
-        <div class="title">Routing</div>
-        <div class="hint">Routing Hubs</div>
-        <select v-model="startHub">
-          <option disabled value="">Start hub…</option>
-          <option v-for="h in hubs" :key="h.id" :value="h.id">
-            {{ h.name }}
-          </option>
-        </select>
-        <select v-model="endHub">
-          <option disabled value="">Destination hub…</option>
-          <option v-for="h in hubs" :key="h.id" :value="h.id">
-            {{ h.name }}
-          </option>
-        </select>
-        <button @click="route()">Find bright route</button>
-      </div>
 
       <!-- Layers -->
       <div class="group">
@@ -332,5 +366,133 @@ body,
 /* -------- LEGEND -------- */
 .legend {
   z-index: 9;
+}
+
+/* -------- ROUTING DOCK: dark, discrete, top-right -------- */
+.routingdock {
+  position: fixed;
+  right: 16px;
+  top: 16px; /* moved to the TOP-RIGHT */
+  z-index: 20;
+}
+
+/* compact: matches sidebar look */
+.routingdock--compact .rd-card {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  padding: 10px 46px 10px 12px; /* tighter padding */
+  width: clamp(240px, 26vw, 320px); /* smaller & discrete */
+  border-radius: 14px;
+  background: #151517; /* same base as sidebar */
+  color: #eaeaea;
+  border: 1px solid #202124; /* like sidebar border */
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+}
+
+/* left rail (subtle, dark theme) */
+.rd-rail {
+  display: grid;
+  grid-template-rows: 12px 1fr 12px;
+  align-items: center;
+  justify-items: center;
+  width: 16px;
+  margin-right: 2px;
+}
+.rd-rail .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1.4px solid #7b7f86;
+  background: #0b0b0c;
+}
+.rd-rail .line {
+  width: 2px;
+  height: 100%;
+  background: #2a2f34;
+  border-radius: 2px;
+}
+
+/* fields column */
+.rd-fields {
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-rows: 1fr auto 1fr;
+  gap: 6px;
+  min-width: 160px;
+}
+.rd-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.rd-label {
+  font-size: 11px;
+  color: #9aa0a6;
+  letter-spacing: 0.04em;
+}
+
+/* compact select, dark */
+.rd-input {
+  appearance: none;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #232428;
+  padding: 6px 26px 6px 0;
+  font-size: 13.5px;
+  color: #eaeaea;
+  outline: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #7b7f86 50%),
+    linear-gradient(135deg, #7b7f86 50%, transparent 50%);
+  background-position:
+    calc(100% - 12px) calc(50% - 3px),
+    calc(100% - 6px) calc(50% + 3px);
+  background-size:
+    5px 5px,
+    5px 5px;
+  background-repeat: no-repeat;
+}
+.rd-input:focus {
+  border-bottom-color: #2f343a;
+}
+
+.rd-divider {
+  height: 1px;
+  background: #232428;
+}
+
+/* swap button: small circle that matches dark UI */
+.rd-swap {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid #232428;
+  background: #1b1d21;
+  color: #d6d6d9;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.rd-swap:hover {
+  background: #202329;
+  border-color: #2a2f34;
+}
+.rd-swap:focus {
+  outline: 2px solid #2f343a;
+  outline-offset: 2px;
+}
+
+/* very small screens: stretch slightly but keep discrete look */
+@media (max-width: 520px) {
+  .routingdock--compact .rd-card {
+    width: 92vw;
+  }
 }
 </style>
