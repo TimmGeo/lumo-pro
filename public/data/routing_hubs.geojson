@@ -9,11 +9,11 @@
     {
       "type": "Feature",
       "properties": {
-        "NHSTID": "8591200",
-        "DIVA_NR": 1239,
+        "NHSTID": "8591182",
+        "DIVA_NR": 1143,
         "Y_KOORD": null,
         "X_KOORD": null,
-        "CHSTNAME": "Zürich, Holzerhurd",
+        "CHSTNAME": "Zürich, Hegianwandweg",
         "CNAME": "Zürich",
         "VTYP": "Bus,Trolleybus",
         "HSTTYP": "&nbsp;",
@@ -22,57 +22,80 @@
         "ZONEN": "110",
         "SYMB_CODE": 2,
         "SYMB_TEXT": "Bus",
-        "LINIEN": "32,N2"
+        "LINIEN": "32,89,N2"
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [8.496615069673446, 47.423802237027218]
+        "coordinates": [8.510002520143331, 47.356647847123703]
       }
     },
     {
       "type": "Feature",
       "properties": {
-        "NHSTID": "8591270",
-        "DIVA_NR": 1615,
+        "NHSTID": "8591325",
+        "DIVA_NR": 2107,
         "Y_KOORD": null,
         "X_KOORD": null,
-        "CHSTNAME": "Zürich, Marbachweg",
+        "CHSTNAME": "Zürich, Roswiesen",
         "CNAME": "Zürich",
-        "VTYP": "Bus",
+        "VTYP": "Bus,Tram",
         "HSTTYP": "&nbsp;",
-        "HAFAS_PRIO": 0.0,
+        "HAFAS_PRIO": 2.0,
         "LINKTEXT": null,
         "ZONEN": "110",
-        "SYMB_CODE": 2,
-        "SYMB_TEXT": "Bus",
-        "LINIEN": "70,N15"
+        "SYMB_CODE": 3,
+        "SYMB_TEXT": "Bus Tram",
+        "LINIEN": "15,N7"
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [8.515375331591622, 47.330349919602433]
+        "coordinates": [8.57697967133028, 47.402952874034462]
       }
     },
     {
       "type": "Feature",
       "properties": {
-        "NHSTID": "8591228",
-        "DIVA_NR": 1389,
+        "NHSTID": "8591304",
+        "DIVA_NR": 2005,
         "Y_KOORD": null,
         "X_KOORD": null,
-        "CHSTNAME": "Zürich, Kienastenwies",
+        "CHSTNAME": "Zürich, Renggerstrasse",
         "CNAME": "Zürich",
-        "VTYP": "Bus,Trolleybus",
+        "VTYP": "Bus,Tram",
         "HSTTYP": "&nbsp;",
-        "HAFAS_PRIO": 0.0,
+        "HAFAS_PRIO": 2.0,
         "LINKTEXT": null,
         "ZONEN": "110",
-        "SYMB_CODE": 2,
-        "SYMB_TEXT": "Bus",
-        "LINIEN": "31,N71"
+        "SYMB_CODE": 3,
+        "SYMB_TEXT": "Bus Tram",
+        "LINIEN": "184,185,7,70"
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [8.600924128658667, 47.355138772633616]
+        "coordinates": [8.532957671895158, 47.344468975811822]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "NHSTID": "8591119",
+        "DIVA_NR": 788,
+        "Y_KOORD": null,
+        "X_KOORD": null,
+        "CHSTNAME": "Zürich, Englischviertelstrasse",
+        "CNAME": "Zürich",
+        "VTYP": "Tram",
+        "HSTTYP": "&nbsp;",
+        "HAFAS_PRIO": 2.0,
+        "LINKTEXT": null,
+        "ZONEN": "110",
+        "SYMB_CODE": 5,
+        "SYMB_TEXT": "Tram",
+        "LINIEN": "15"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [8.558173371381702, 47.366733242639718]
       }
     },
     {
@@ -101,57 +124,34 @@
     {
       "type": "Feature",
       "properties": {
-        "NHSTID": "8591167",
-        "DIVA_NR": 1041,
+        "NHSTID": "8591310",
+        "DIVA_NR": 2033,
         "Y_KOORD": null,
         "X_KOORD": null,
-        "CHSTNAME": "Zürich, Grünaustrasse",
+        "CHSTNAME": "Zürich, Rautihalde",
         "CNAME": "Zürich",
-        "VTYP": "Bus,Tram",
+        "VTYP": "Bus",
         "HSTTYP": "&nbsp;",
-        "HAFAS_PRIO": 2.0,
+        "HAFAS_PRIO": 0.0,
         "LINKTEXT": null,
         "ZONEN": "110",
-        "SYMB_CODE": 3,
-        "SYMB_TEXT": "Bus Tram",
-        "LINIEN": "17,78,N17"
+        "SYMB_CODE": 2,
+        "SYMB_TEXT": "Bus",
+        "LINIEN": "35,67,78,N1"
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [8.48921233189132, 47.39522977053614]
+        "coordinates": [8.474107112067909, 47.38617322099644]
       }
     },
     {
       "type": "Feature",
       "properties": {
-        "NHSTID": "8591448",
-        "DIVA_NR": 3028,
+        "NHSTID": "8591169",
+        "DIVA_NR": 1076,
         "Y_KOORD": null,
         "X_KOORD": null,
-        "CHSTNAME": "Zürich, Zypressenstrasse",
-        "CNAME": "Zürich",
-        "VTYP": "Bus,Tram",
-        "HSTTYP": "&nbsp;",
-        "HAFAS_PRIO": 2.0,
-        "LINKTEXT": null,
-        "ZONEN": "110",
-        "SYMB_CODE": 3,
-        "SYMB_TEXT": "Bus Tram",
-        "LINIEN": "2,3,N3"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [8.513768924124077, 47.376689952197431]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "NHSTID": "8591385",
-        "DIVA_NR": 2596,
-        "Y_KOORD": null,
-        "X_KOORD": null,
-        "CHSTNAME": "Zürich, Strassenverkehrsamt",
+        "CHSTNAME": "Zürich, Güterbahnhof",
         "CNAME": "Zürich",
         "VTYP": "Bus,Tram,Trolleybus",
         "HSTTYP": "&nbsp;",
@@ -160,44 +160,21 @@
         "ZONEN": "110",
         "SYMB_CODE": 3,
         "SYMB_TEXT": "Bus Tram",
-        "LINIEN": "11,32,89,N2"
+        "LINIEN": "31,8,N1"
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [8.511308929344874, 47.353154596058893]
+        "coordinates": [8.519973589927185, 47.380311033539357]
       }
     },
     {
       "type": "Feature",
       "properties": {
-        "NHSTID": "8591085",
-        "DIVA_NR": 497,
+        "NHSTID": "8591074",
+        "DIVA_NR": 467,
         "Y_KOORD": null,
         "X_KOORD": null,
-        "CHSTNAME": "Zürich, Birch-/Glatttalstrasse",
-        "CNAME": "Zürich",
-        "VTYP": "Bus",
-        "HSTTYP": "&nbsp;",
-        "HAFAS_PRIO": 0.0,
-        "LINKTEXT": null,
-        "ZONEN": "110",
-        "SYMB_CODE": 2,
-        "SYMB_TEXT": "Bus",
-        "LINIEN": "742,75,N5"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [8.546140929056341, 47.427404187418546]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "NHSTID": "8591305",
-        "DIVA_NR": 2008,
-        "Y_KOORD": null,
-        "X_KOORD": null,
-        "CHSTNAME": "Zürich, Probstei",
+        "CHSTNAME": "Zürich, Bernoulli-Häuser",
         "CNAME": "Zürich",
         "VTYP": "Bus,Tram",
         "HSTTYP": "&nbsp;",
@@ -206,21 +183,21 @@
         "ZONEN": "110",
         "SYMB_CODE": 3,
         "SYMB_TEXT": "Bus Tram",
-        "LINIEN": "15,N7"
+        "LINIEN": "17,8,N17"
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [8.586592615287621, 47.400222210628144]
+        "coordinates": [8.50870884931639, 47.393764589040664]
       }
     },
     {
       "type": "Feature",
       "properties": {
-        "NHSTID": "8573711",
-        "DIVA_NR": 3156,
+        "NHSTID": "8591242",
+        "DIVA_NR": 1502,
         "Y_KOORD": null,
         "X_KOORD": null,
-        "CHSTNAME": "Zürich, Sädlenweg",
+        "CHSTNAME": "Zürich, Langensteinenstrasse",
         "CNAME": "Zürich",
         "VTYP": "Bus",
         "HSTTYP": "&nbsp;",
@@ -229,67 +206,67 @@
         "ZONEN": "110",
         "SYMB_CODE": 2,
         "SYMB_TEXT": "Bus",
-        "LINIEN": "215,220,235,236,245,N9"
+        "LINIEN": "39"
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [8.487466084917756, 47.367756790008585]
+        "coordinates": [8.549746891774856, 47.392495751543109]
       }
     },
     {
       "type": "Feature",
       "properties": {
-        "NHSTID": "8591237",
-        "DIVA_NR": 1468,
+        "NHSTID": "8591109",
+        "DIVA_NR": 3717,
         "Y_KOORD": null,
         "X_KOORD": null,
-        "CHSTNAME": "Zürich, Kronenstrasse",
+        "CHSTNAME": "Zürich, Chinagarten",
         "CNAME": "Zürich",
-        "VTYP": "Tram",
+        "VTYP": "Bus",
         "HSTTYP": "&nbsp;",
-        "HAFAS_PRIO": 2.0,
+        "HAFAS_PRIO": 0.0,
         "LINKTEXT": null,
         "ZONEN": "110",
-        "SYMB_CODE": 5,
-        "SYMB_TEXT": "Tram",
-        "LINIEN": "13,14,17,4"
+        "SYMB_CODE": 2,
+        "SYMB_TEXT": "Bus",
+        "LINIEN": "912,916"
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [8.539310290671448, 47.388080098874774]
+        "coordinates": [8.552952976075511, 47.35451427630921]
       }
     },
     {
       "type": "Feature",
       "properties": {
-        "NHSTID": "8591183",
-        "DIVA_NR": 1157,
+        "NHSTID": "8591319",
+        "DIVA_NR": 2069,
         "Y_KOORD": null,
         "X_KOORD": null,
-        "CHSTNAME": "Zürich, Helmhaus",
+        "CHSTNAME": "Zürich, Riedgraben",
         "CNAME": "Zürich",
-        "VTYP": "Bus,Tram",
+        "VTYP": "Bus",
         "HSTTYP": "&nbsp;",
-        "HAFAS_PRIO": 2.0,
+        "HAFAS_PRIO": 0.0,
         "LINKTEXT": null,
         "ZONEN": "110",
-        "SYMB_CODE": 3,
-        "SYMB_TEXT": "Bus Tram",
-        "LINIEN": "10,15,6,N91"
+        "SYMB_CODE": 2,
+        "SYMB_TEXT": "Bus",
+        "LINIEN": "61,62,N12"
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [8.543294615697283, 47.370069795837928]
+        "coordinates": [8.558821389532197, 47.410803107350098]
       }
     },
     {
       "type": "Feature",
       "properties": {
-        "NHSTID": "8591340",
-        "DIVA_NR": 2251,
+        "NHSTID": "8591115",
+        "DIVA_NR": 713,
         "Y_KOORD": null,
         "X_KOORD": null,
-        "CHSTNAME": "Zürich, Schlyfi",
+        "CHSTNAME": "Zürich, Drusbergstrasse",
         "CNAME": "Zürich",
         "VTYP": "Bus,Trolleybus",
         "HSTTYP": "&nbsp;",
@@ -302,17 +279,17 @@
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [8.574145263124949, 47.36259242645999]
+        "coordinates": [8.578836693532871, 47.360342366959777]
       }
     },
     {
       "type": "Feature",
       "properties": {
-        "NHSTID": "8591235",
-        "DIVA_NR": 1445,
+        "NHSTID": "8591208",
+        "DIVA_NR": 3123,
         "Y_KOORD": null,
         "X_KOORD": null,
-        "CHSTNAME": "Zürich, Krematorium Nordheim",
+        "CHSTNAME": "Zürich, Im Gut",
         "CNAME": "Zürich",
         "VTYP": "Bus",
         "HSTTYP": "&nbsp;",
@@ -321,11 +298,80 @@
         "ZONEN": "110",
         "SYMB_CODE": 2,
         "SYMB_TEXT": "Bus",
-        "LINIEN": "40"
+        "LINIEN": "67,89,N12"
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [8.528233118243305, 47.405365658565579]
+        "coordinates": [8.503365169537895, 47.373611047728723]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "NHSTID": "8591316",
+        "DIVA_NR": 2054,
+        "Y_KOORD": null,
+        "X_KOORD": null,
+        "CHSTNAME": "Zürich, Rennweg",
+        "CNAME": "Zürich",
+        "VTYP": "Bus,Tram",
+        "HSTTYP": "&nbsp;",
+        "HAFAS_PRIO": 2.0,
+        "LINKTEXT": null,
+        "ZONEN": "110",
+        "SYMB_CODE": 3,
+        "SYMB_TEXT": "Bus Tram",
+        "LINIEN": "7,N11,N16"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [8.53827276237968, 47.373104104821564]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "NHSTID": "8591358",
+        "DIVA_NR": 2364,
+        "Y_KOORD": null,
+        "X_KOORD": null,
+        "CHSTNAME": "Zürich, Segantinistrasse",
+        "CNAME": "Zürich",
+        "VTYP": "Bus,Trolleybus",
+        "HSTTYP": "&nbsp;",
+        "HAFAS_PRIO": 0.0,
+        "LINKTEXT": null,
+        "ZONEN": "110",
+        "SYMB_CODE": 2,
+        "SYMB_TEXT": "Bus",
+        "LINIEN": "46,N4"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [8.489970023529883, 47.407447069444672]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "NHSTID": "8591118",
+        "DIVA_NR": 767,
+        "Y_KOORD": null,
+        "X_KOORD": null,
+        "CHSTNAME": "Zürich, Einfangstrasse",
+        "CNAME": "Zürich",
+        "VTYP": "Bus,Trolleybus",
+        "HSTTYP": "&nbsp;",
+        "HAFAS_PRIO": 0.0,
+        "LINKTEXT": null,
+        "ZONEN": "110",
+        "SYMB_CODE": 2,
+        "SYMB_TEXT": "Bus",
+        "LINIEN": "32,61,62,N2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [8.512926389807587, 47.415700277202546]
       }
     }
   ]
