@@ -18,9 +18,8 @@
 
         <div class="rd-fields">
           <div class="rd-field">
-            <label class="rd-label">From</label>
             <select v-model="startHub" class="rd-input">
-              <option disabled value="">Start hub…</option>
+              <option disabled value="">From</option>
               <option v-for="h in hubs" :key="h.id" :value="h.id">
                 {{ h.name }}
               </option>
@@ -30,9 +29,8 @@
           <div class="rd-divider"></div>
 
           <div class="rd-field">
-            <label class="rd-label">To</label>
             <select v-model="endHub" class="rd-input">
-              <option disabled value="">Destination hub…</option>
+              <option disabled value="">To</option>
               <option v-for="h in hubs" :key="h.id" :value="h.id">
                 {{ h.name }}
               </option>
