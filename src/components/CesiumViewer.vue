@@ -112,9 +112,9 @@ onMounted(async () => {
     hexDS = await GeoJsonDataSource.load(hexUrl, { clampToGround: true });
 
     // Fade parameters
-    const centerOpacity = 0.55; // alpha at center
-    const rimOpacity = 0.15; // alpha at rim
-    const falloffPow = 1.6; // softness; higher = softer
+    const centerOpacity = 0.65; // alpha at center
+    const rimOpacity = 0.65; // alpha at rim
+    const falloffPow = 1.4; // softness; higher = softer
     const bgTint = Color.fromCssColorString("#161718"); // basemap tint to blend toward
 
     // 1) First pass: compute approximate centroids, center, and max distance
