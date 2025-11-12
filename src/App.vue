@@ -1,7 +1,7 @@
 <template>
   <div class="app">
     <!-- Main map viewer -->
-    <CesiumViewer
+    <MapboxViewer
       :mode="mode"
       :heightScale="heightScale"
       @ready="onViewerReady"
@@ -131,7 +131,7 @@
 
 <script setup>
 import { ref } from "vue";
-import CesiumViewer from "./components/CesiumViewer.vue";
+import MapboxViewer from "./components/MapboxViewer.vue";
 import Legend from "./components/Legend.vue";
 
 // UI state
@@ -151,16 +151,18 @@ const popup = ref({ show: false, x: 0, y: 0, lights: 0, pois: 0, hub: "—" });
 
 let api = null;
 
-// When Cesium viewer is ready
+// When Mapbox viewer is ready (will be implemented in MapboxViewer)
 function onViewerReady(exposed) {
   api = exposed;
-  api.onHover((info) => {
-    if (!info) {
-      popup.value.show = false;
-      return;
-    }
-    popup.value = { show: true, ...info };
-  });
+  if (api && api.onHover) {
+    api.onHover((info) => {
+      if (!info) {
+        popup.value.show = false;
+        return;
+      }
+      popup.value = { show: true, ...info };
+    });
+  }
 }
 
 // Trigger routing between hubs
@@ -172,7 +174,17 @@ async function route() {
     startHub.value === endHub.value
   )
     return;
-  await api.drawRoute(startHub.value, endHub.value);
+
+  if (api.drawRoute) {
+    await api.drawRoute(startHub.value, endHub.value);
+  }
+}
+
+// Swap hubs function
+function swapHubs() {
+  const a = startHub.value;
+  startHub.value = endHub.value;
+  endHub.value = a;
 }
 </script>
 
@@ -452,6 +464,7 @@ body,
     5px 5px;
   background-repeat: no-repeat;
 }
+
 .rd-input:focus {
   border-bottom-color: #2f343a;
 }
@@ -478,10 +491,12 @@ body,
   place-items: center;
   cursor: pointer;
 }
+
 .rd-swap:hover {
   background: #202329;
   border-color: #2a2f34;
 }
+
 .rd-swap:focus {
   outline: 2px solid #2f343a;
   outline-offset: 2px;

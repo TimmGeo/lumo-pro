@@ -66,7 +66,7 @@ onMounted(async () => {
       maximumLevel: 19,
     });
     const baseLayer = viewer.imageryLayers.addImageryProvider(dark);
-    baseLayer.brightness = 0.35;
+    baseLayer.brightness = 0.65;
     baseLayer.contrast = 0.85;
     baseLayer.saturation = 0.2;
     baseLayer.gamma = 0.95;
@@ -80,9 +80,9 @@ onMounted(async () => {
       // remove default icon
       e.billboard = undefined;
 
-      // point (slightly larger)
+      // point
       e.point = {
-        pixelSize: 8,
+        pixelSize: 12,
         color: Color.fromCssColorString("#70f0c3"),
         outlineColor: Color.fromCssColorString("#0b0b0c"),
         outlineWidth: 0,
