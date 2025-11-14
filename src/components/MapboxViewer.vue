@@ -2,20 +2,26 @@
   <div ref="sceneEl" class="scene">
     <div ref="mapEl" class="map"></div>
 
-    <!-- Zoom controls -->
-    <div class="zoom-controls">
-      <button class="zoom-btn" @click="zoomIn" aria-label="Zoom in">
-        <span class="zoom-icon">+</span>
-      </button>
-      <button class="zoom-btn" @click="zoomOut" aria-label="Zoom out">
-        <span class="zoom-icon">−</span>
+    <!-- Zoom/Fullscreen controls -->
+    <div class="map-toolbar">
+      <button class="map-tool" @click="zoomIn" aria-label="Zoom in">+</button>
+      <button class="map-tool" @click="zoomOut" aria-label="Zoom out">−</button>
+      <button
+        class="map-tool compass"
+        @click="resetNorth"
+        aria-label="Reset north"
+      >
+        <span class="compass-ring">
+          <span class="compass-arrow"></span>
+          <span class="compass-label">N</span>
+        </span>
       </button>
       <button
-        class="zoom-btn"
+        class="map-tool"
         @click="toggleFullscreen"
         aria-label="Toggle fullscreen"
       >
-        <span class="zoom-icon">{{ isFullscreen ? "✕" : "⛶" }}</span>
+        {{ isFullscreen ? "✕" : "⛶" }}
       </button>
     </div>
   </div>
@@ -62,6 +68,12 @@ function zoomIn() {
 function zoomOut() {
   if (map) {
     map.zoomOut({ duration: 300 });
+  }
+}
+
+function resetNorth() {
+  if (map) {
+    map.easeTo({ bearing: 0, pitch: 0, duration: 400 });
   }
 }
 
@@ -304,46 +316,82 @@ onBeforeUnmount(() => {
   height: 100%;
 }
 
-/* Zoom controls - positioned on the right side */
-.zoom-controls {
+/* Floating toolbar */
+.map-toolbar {
   position: absolute;
-  right: 16px;
-  bottom: 16px;
-  z-index: 10;
+  right: 20px;
+  top: 120px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  background: rgba(14, 14, 16, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(8px);
+  z-index: 15;
 }
 
-.zoom-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  background: #151517;
-  border: 1px solid #202124;
-  color: #eaeaea;
+/* Buttons */
+.map-tool {
+  width: 42px;
+  height: 42px;
+  border: none;
+  background: transparent;
+  color: #f2f2f2;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition:
+    background 0.2s,
+    color 0.2s;
 }
 
-.zoom-btn:hover {
-  background: #1c1e21;
-  border-color: #2a2f34;
+.map-tool + .map-tool {
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.zoom-btn:active {
-  background: #0f1011;
-  transform: scale(0.95);
+.map-tool:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
 }
 
-.zoom-icon {
-  font-size: 24px;
-  font-weight: 300;
-  line-height: 1;
-  user-select: none;
+.map-tool:active {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.map-tool.compass {
+  padding: 8px;
+}
+
+.compass-ring {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  display: grid;
+  place-items: center;
+  position: relative;
+}
+
+.compass-arrow {
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 10px solid #f5f5f5;
+  position: absolute;
+  top: 4px;
+}
+
+.compass-label {
+  font-size: 10px;
+  letter-spacing: 1px;
+  margin-top: 10px;
+  color: rgba(255, 255, 255, 0.8);
 }
 </style>
