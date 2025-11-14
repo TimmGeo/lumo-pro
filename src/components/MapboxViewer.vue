@@ -53,10 +53,7 @@ let hexData = null;
 // Paths that work both locally and in deploy
 const BASE = import.meta.env.BASE_URL || "/";
 const hubsUrl = `${BASE}data/routing_hubs.geojson`.replace(/\/{2,}/g, "/");
-const hexUrl = `${BASE}data/hex_kreis_light_300m.geojson`.replace(
-  /\/{2,}/g,
-  "/"
-);
+const hexUrl = `${BASE}data/hex_light_100m.geojson`.replace(/\/{2,}/g, "/");
 
 // Zoom functions
 function zoomIn() {
