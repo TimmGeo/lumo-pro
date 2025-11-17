@@ -149,6 +149,13 @@
         <span>Nearest hub</span><b>{{ popup.hub }}</b>
       </div>
     </div>
+
+    <!-- Walkthrough overlay shown on initial load -->
+    <Walkthrough
+      v-if="showWalkthrough"
+      @close="showWalkthrough = false"
+      @takeTour="startTour"
+    />
   </div>
 </template>
 
@@ -156,6 +163,7 @@
 import { ref } from "vue";
 import MapboxViewer from "./components/MapboxViewer.vue";
 import Legend from "./components/Legend.vue";
+import Walkthrough from "./components/Walkthrough.vue";
 
 // UI state
 const mode = ref("combined");
@@ -176,6 +184,7 @@ let api = null;
 
 // sidebar collapse state
 const sidebarCollapsed = ref(false);
+const showWalkthrough = ref(true);
 
 // When Mapbox viewer is ready (will be implemented in MapboxViewer)
 function onViewerReady(exposed) {
@@ -211,6 +220,12 @@ function swapHubs() {
   const a = startHub.value;
   startHub.value = endHub.value;
   endHub.value = a;
+}
+
+function startTour() {
+  // For now, simply close the walkthrough and you could implement
+  // step-by-step tour logic here.
+  showWalkthrough.value = false;
 }
 </script>
 
