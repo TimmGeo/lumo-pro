@@ -59,11 +59,41 @@
     </div>
 
     <!-- Sidebar controls -->
-    <aside class="sidebar">
-      <h2>Lumo <span class="muted">Pro</span></h2>
+    <aside :class="['sidebar', { 'sidebar--collapsed': sidebarCollapsed }]">
+      <div class="sidebar-header">
+        <h2 class="nowrap">Lumo <span class="muted">Pro</span></h2>
+
+        <!-- square collapse button (quadratic) -->
+        <button
+          class="sidebar-toggle"
+          @click="sidebarCollapsed = !sidebarCollapsed"
+          :aria-expanded="!sidebarCollapsed"
+          :aria-label="sidebarCollapsed ? 'Open sidebar' : 'Close sidebar'"
+          title="Toggle sidebar"
+        >
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden="true"
+          >
+            <rect
+              x="4"
+              y="4"
+              width="16"
+              height="16"
+              rx="3"
+              stroke="currentColor"
+              stroke-width="1.2"
+              fill="transparent"
+            />
+          </svg>
+        </button>
+      </div>
 
       <!-- Layers -->
-      <div class="group">
+      <div class="group sidebar-content">
         <div class="title">Layers</div>
         <button
           :class="{ active: mode === 'lighting' }"
@@ -85,19 +115,15 @@
         </button>
       </div>
 
-      <!-- Height exaggeration -->
-      <div class="group" v-if="mode !== 'lighting'">
-        <div class="title">Height exaggeration</div>
-        <input
-          type="range"
-          min="0"
-          max="3"
-          step="0.1"
-          v-model.number="heightScale"
-        />
+      <!-- Legend box placed inside the sidebar -->
+      <div class="group sidebar-legend sidebar-content">
+        <div class="title">Color Legend</div>
+        <div class="legend-box">
+          <Legend :mode="mode" />
+        </div>
       </div>
 
-      <!-- Profile section -->
+      <!-- Profile section (stays visible, text hides when collapsed) -->
       <div class="profile">
         <div class="avatar">TR</div>
         <div class="info">
@@ -106,9 +132,6 @@
         </div>
       </div>
     </aside>
-
-    <!-- Dynamic legend -->
-    <Legend :mode="mode" />
 
     <!-- Hover popup -->
     <div
@@ -150,6 +173,9 @@ const hubs = ref([
 const popup = ref({ show: false, x: 0, y: 0, lights: 0, pois: 0, hub: "—" });
 
 let api = null;
+
+// sidebar collapse state
+const sidebarCollapsed = ref(false);
 
 // When Mapbox viewer is ready (will be implemented in MapboxViewer)
 function onViewerReady(exposed) {
@@ -217,10 +243,14 @@ body,
   background: #151517;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
   z-index: 10;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* keep profile pinned */
 }
 
 .sidebar h2 {
-  margin: 6px 0 20px 0;
+  margin: 6px 0 0 0;
   font-size: 24px;
   font-weight: 800;
   letter-spacing: 0.2px;
@@ -230,24 +260,27 @@ body,
   color: #b9b9c0;
   font-weight: 600;
 }
+.nowrap {
+  white-space: nowrap;
+}
 
 .sidebar .group {
   margin-top: 18px;
 }
-
 .sidebar .title {
   color: #9aa0a6;
-  font-size: 2 rem;
+  font-size: 12px;
+  letter-spacing: 0.02em;
   margin-bottom: 16px;
 }
-
 .sidebar .hint {
   color: #eaeaea;
   font-size: 13px;
   margin-bottom: 8px;
 }
 
-.sidebar button,
+/* generic sidebar controls – exclude the toggle from this rule */
+.sidebar button:not(.sidebar-toggle),
 .sidebar select,
 .sidebar input[type="range"] {
   width: 100%;
@@ -265,56 +298,84 @@ body,
 .sidebar button.active {
   background: #1c1e21;
 }
-
-.sidebar button:hover {
+.sidebar button:not(.sidebar-toggle):hover {
   background: #2a2f34;
 }
 
-/* Select polish (consistent height + caret) */
-.sidebar select {
-  appearance: none;
-  background-image:
-    linear-gradient(45deg, transparent 50%, #7b7f86 50%),
-    linear-gradient(135deg, #7b7f86 50%, transparent 50%);
-  background-position:
-    calc(100% - 18px) calc(50% - 3px),
-    calc(100% - 12px) calc(50% + 3px);
-  background-size:
-    6px 6px,
-    6px 6px;
-  background-repeat: no-repeat;
-  padding-right: 28px;
+/* header with square toggle */
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 
-/* Range styling */
-.sidebar input[type="range"] {
-  height: 36px;
-  background: transparent;
-  padding: 0 4px;
-  cursor: ew-resize;
+/* square toggle: same size in expanded & collapsed sidebar */
+.sidebar-toggle {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px; /* quadratic */
+  box-sizing: border-box;
+  padding: 0;
+
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  background: #151517;
+  color: #e6e6e8;
+  cursor: pointer;
 }
-.sidebar input[type="range"]::-webkit-slider-runnable-track {
-  height: 6px;
+.sidebar-toggle:hover {
   background: #2a2f34;
-  border-radius: 999px;
 }
-.sidebar input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  margin-top: -6px;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: #eaeaea;
-  border: 2px solid #0b0b0c;
+
+.sidebar-toggle:active {
+  background: #1c1e21;
+}
+
+/* collapse behaviour */
+.sidebar--collapsed {
+  width: 40px;
+  padding-left: 20px;
+  padding-right: 8px;
+  overflow: visible;
+}
+
+/* hide layer / legend content */
+.sidebar-content {
+  transition:
+    opacity 200ms ease,
+    transform 200ms ease;
+}
+.sidebar--collapsed .sidebar-content {
+  opacity: 0;
+  transform: translateX(-6px);
+  pointer-events: none;
+  height: 0;
+}
+
+/* when collapsed: hide title but keep toggle */
+.sidebar--collapsed .sidebar-header h2 {
+  display: none;
+}
+
+/* -------- LEGEND BOX -------- */
+.sidebar-legend {
+  margin-top: 16px;
+}
+.legend-box {
+  width: 230px;
+  height: 230px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #202124 0%, #171718 100%);
+  border: 1px solid #232428;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
 }
 
 /* -------- PROFILE SECTION -------- */
-.sidebar {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between; /* keep profile pinned */
-}
-
 .profile {
   display: flex;
   align-items: center;
@@ -326,8 +387,8 @@ body,
 }
 
 .profile .avatar {
-  width: 36px;
-  height: 36px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   background: linear-gradient(135deg, #33343a, #1e1f23);
   color: #eaeaea;
@@ -354,6 +415,16 @@ body,
   color: #9aa0a6;
 }
 
+/* when collapsed: keep only avatar, hide text */
+.sidebar--collapsed .profile .info {
+  display: none;
+}
+.sidebar--collapsed .profile {
+  border-top: none;
+  padding-top: 0;
+  padding-bottom: 6px;
+}
+
 /* -------- POPUP -------- */
 .popup {
   position: absolute;
@@ -373,7 +444,7 @@ body,
   gap: 12px;
 }
 
-/* -------- LEGEND -------- */
+/* -------- LEGEND COMPONENT Z-INDEX -------- */
 .legend {
   z-index: 9;
 }
@@ -382,7 +453,7 @@ body,
 .routingdock {
   position: fixed;
   right: 16px;
-  top: 16px; /* moved to the TOP-RIGHT */
+  top: 16px;
   z-index: 20;
 }
 
@@ -392,12 +463,12 @@ body,
   display: flex;
   align-items: stretch;
   gap: 10px;
-  padding: 10px 46px 10px 12px; /* tighter padding */
-  width: clamp(240px, 26vw, 320px); /* smaller & discrete */
+  padding: 10px 46px 10px 12px;
+  width: clamp(240px, 26vw, 320px);
   border-radius: 14px;
-  background: #151517; /* same base as sidebar */
+  background: #151517;
   color: #eaeaea;
-  border: 1px solid #202124; /* like sidebar border */
+  border: 1px solid #202124;
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
 }
 
