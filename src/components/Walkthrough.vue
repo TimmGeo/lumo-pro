@@ -57,6 +57,13 @@
     <button class="wt-close" @click="skip" aria-label="Close walkthrough">
       ×
     </button>
+
+    <!-- Smooth blackout overlay used to create a full-dark gap between slides -->
+    <div
+      class="blackout"
+      :class="{ active: blackout }"
+      aria-hidden="true"
+    ></div>
   </div>
 </template>
 
@@ -68,6 +75,7 @@ const emit = defineEmits(["close", "takeTour"]);
 const slide = ref(0); // 0 = black, 1 = intro, 2 = logo, 3 = final
 let timer = null;
 const fadingLogo = ref(false);
+const blackout = ref(true);
 
 function clearTimer() {
   if (timer) {
@@ -77,31 +85,49 @@ function clearTimer() {
 }
 
 function goTo(n) {
+  if (n === slide.value) return;
   clearTimer();
-  slide.value = n;
+  // fade to blackout, then show the target slide
+  blackout.value = true;
+  // short pause to allow blackout to reach full opacity (matches CSS transition)
+  timer = setTimeout(() => {
+    slide.value = n;
+    // remove blackout after a short reveal delay so the new slide fades in gently
+    setTimeout(() => {
+      blackout.value = false;
+      timer = null;
+    }, 200);
+  }, 420);
 }
 
 function handleTurnOn() {
-  // Sequence: darken briefly -> show logo -> after ~3s fade logo -> final slide
+  // Sequence: blackout -> show logo -> after ~3s fade logo -> blackout -> final slide
   clearTimer();
-  // darken
-  slide.value = 0;
+  // start blackout quickly
+  blackout.value = true;
 
-  // short dark pause then show logo
+  // short pause then show logo
   timer = setTimeout(() => {
     fadingLogo.value = false;
     slide.value = 2;
+    // reveal logo by removing blackout
+    blackout.value = false;
 
     // show logo for ~3s, then fade it and move to final slide
     timer = setTimeout(() => {
       // start fade-out animation for the logo
       fadingLogo.value = true;
       timer = setTimeout(() => {
-        // move to final slide (text will animate in)
+        // after logo fade-out, blackout and then show final slide
         fadingLogo.value = false;
-        slide.value = 3;
-        timer = null;
-      }, 520); // allow fade-out to complete
+        blackout.value = true;
+        setTimeout(() => {
+          slide.value = 3;
+          // reveal final slide gently
+          blackout.value = false;
+          timer = null;
+        }, 420);
+      }, 420); // allow fade-out to complete
     }, 3000);
   }, 420);
 }
@@ -124,8 +150,10 @@ onMounted(() => {
   window.addEventListener("keydown", onKey);
   // initial dark screen for ~1s, then reveal slide 1 slowly
   clearTimer();
+  // blackout starts true; after 1s set slide to 1 and fade blackout out
   timer = setTimeout(() => {
     slide.value = 1;
+    blackout.value = false;
     timer = null;
   }, 1000);
 });
@@ -165,6 +193,19 @@ onBeforeUnmount(() => {
     transform 700ms cubic-bezier(0.22, 0.9, 0.28, 1);
   pointer-events: none;
 }
+
+.blackout {
+  position: absolute;
+  inset: 0;
+  background: #0b0b0c;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 420ms cubic-bezier(0.22, 0.9, 0.24, 1);
+  z-index: 1200;
+}
+.blackout.active {
+  opacity: 1;
+}
 .slide.active {
   opacity: 1;
   transform: translateY(0) scale(1);
@@ -174,25 +215,31 @@ onBeforeUnmount(() => {
 /* content fade-up for titles/subtext/logo */
 .content > :is(.wt-title, .wt-sub, .lumo-logo, h2) {
   opacity: 0;
-  transform: translateY(22px) scale(0.995);
-  /* much gentler, slower fade-up with smooth ease-out */
+  /* start slightly scaled down, blurred and tighter tracking for an elegant emerge */
+  transform: scale(0.985);
+  filter: blur(6px);
+  letter-spacing: -0.01em;
+  /* much gentler, slower fade with smooth ease-out */
   transition:
-    opacity 1100ms cubic-bezier(0.22, 0.86, 0.28, 1),
-    transform 1100ms cubic-bezier(0.22, 0.86, 0.28, 1);
+    opacity 1500ms cubic-bezier(0.22, 0.86, 0.28, 1),
+    transform 1500ms cubic-bezier(0.22, 0.86, 0.28, 1),
+    filter 1200ms cubic-bezier(0.22, 0.86, 0.28, 1);
 }
 .slide.active .content > :is(.wt-title, .wt-sub, .lumo-logo, h2) {
   opacity: 1;
   transform: none;
+  filter: blur(0);
+  letter-spacing: 0;
 }
 
 /* buttons appear slightly delayed after the text with more emphasis */
 .content .btn {
   opacity: 0;
-  transform: translateY(18px) scale(0.995);
+  transform: translateY(10px) scale(0.995);
   /* slower, more elegant button entrance with a pronounced delay */
   transition:
-    opacity 900ms cubic-bezier(0.22, 0.9, 0.28, 1) 520ms,
-    transform 900ms cubic-bezier(0.22, 0.9, 0.28, 1) 520ms;
+    opacity 1000ms cubic-bezier(0.22, 0.9, 0.28, 1) 700ms,
+    transform 1000ms cubic-bezier(0.22, 0.9, 0.28, 1) 700ms;
 }
 .slide.active .content .btn {
   opacity: 1;
@@ -252,7 +299,7 @@ onBeforeUnmount(() => {
 
 /* logo fade-out animation when sequence moves on */
 .lumo-logo.fade-out {
-  animation: logoFadeOut 520ms cubic-bezier(0.2, 0.9, 0.24, 1) forwards;
+  animation: logoFadeOut 420ms cubic-bezier(0.2, 0.9, 0.24, 1) forwards;
 }
 @keyframes logoFadeOut {
   from {
@@ -261,7 +308,7 @@ onBeforeUnmount(() => {
   }
   to {
     opacity: 0;
-    transform: scale(0.9) translateY(-10px);
+    transform: scale(0.92) translateY(-6px);
   }
 }
 
