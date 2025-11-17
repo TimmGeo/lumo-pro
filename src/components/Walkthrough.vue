@@ -8,11 +8,13 @@
         :class="{ active: slide === 1 }"
         aria-hidden="false"
       >
-        <h1 class="wt-title">Everything changes when the lights come on</h1>
-        <div class="wt-actions">
-          <button class="btn btn-primary" @click="goTo(2)">
-            Turn the lights on
-          </button>
+        <div class="content">
+          <h1 class="wt-title">Everything changes when the lights come on</h1>
+          <div class="wt-actions">
+            <button class="btn btn-primary" @click="handleTurnOn">
+              Turn the lights on
+            </button>
+          </div>
         </div>
       </section>
 
@@ -22,7 +24,14 @@
         :class="{ active: slide === 2 }"
         aria-hidden="true"
       >
-        <img class="lumo-logo" src="/Lumo_icon_grey.svg" alt="Lumo" />
+        <div class="content">
+          <img
+            class="lumo-logo"
+            :class="{ 'fade-out': fadingLogo }"
+            src="/Lumo_icon_grey.svg"
+            alt="Lumo"
+          />
+        </div>
       </section>
 
       <!-- Slide 3: City awake + actions -->
@@ -31,14 +40,16 @@
         :class="{ active: slide === 3 }"
         aria-hidden="true"
       >
-        <h2 class="wt-title wt-title--small">
-          The City's awake.<br />Let's find your way.
-        </h2>
-        <div class="wt-actions">
-          <button class="btn btn-primary" @click="takeTour">
-            Take the Tour
-          </button>
-          <button class="btn btn-ghost" @click="skip">Skip to map</button>
+        <div class="content">
+          <h2 class="wt-title wt-title--small">
+            The City's awake.<br />Let's find your way.
+          </h2>
+          <div class="wt-actions">
+            <button class="btn btn-primary" @click="takeTour">
+              Take the Tour
+            </button>
+            <button class="btn btn-ghost" @click="skip">Skip to map</button>
+          </div>
         </div>
       </section>
     </div>
@@ -54,8 +65,9 @@ import { ref, defineEmits, onMounted, onBeforeUnmount } from "vue";
 
 const emit = defineEmits(["close", "takeTour"]);
 
-const slide = ref(1);
+const slide = ref(0); // 0 = black, 1 = intro, 2 = logo, 3 = final
 let timer = null;
+const fadingLogo = ref(false);
 
 function clearTimer() {
   if (timer) {
@@ -67,15 +79,31 @@ function clearTimer() {
 function goTo(n) {
   clearTimer();
   slide.value = n;
+}
 
-  // If moving to slide 2, auto-advance to 3 after ~3s
-  if (n === 2) {
-    // allow the logo to fade in then advance
+function handleTurnOn() {
+  // Sequence: darken briefly -> show logo -> after ~3s fade logo -> final slide
+  clearTimer();
+  // darken
+  slide.value = 0;
+
+  // short dark pause then show logo
+  timer = setTimeout(() => {
+    fadingLogo.value = false;
+    slide.value = 2;
+
+    // show logo for ~3s, then fade it and move to final slide
     timer = setTimeout(() => {
-      slide.value = 3;
-      timer = null;
+      // start fade-out animation for the logo
+      fadingLogo.value = true;
+      timer = setTimeout(() => {
+        // move to final slide (text will animate in)
+        fadingLogo.value = false;
+        slide.value = 3;
+        timer = null;
+      }, 520); // allow fade-out to complete
     }, 3000);
-  }
+  }, 420);
 }
 
 function skip() {
@@ -94,6 +122,12 @@ function onKey(e) {
 
 onMounted(() => {
   window.addEventListener("keydown", onKey);
+  // initial dark screen for ~1s, then reveal slide 1 slowly
+  clearTimer();
+  timer = setTimeout(() => {
+    slide.value = 1;
+    timer = null;
+  }, 1000);
 });
 onBeforeUnmount(() => {
   clearTimer();
@@ -127,14 +161,42 @@ onBeforeUnmount(() => {
   opacity: 0;
   transform: translateY(6px) scale(0.997);
   transition:
-    opacity 420ms cubic-bezier(0.2, 0.9, 0.24, 1),
-    transform 420ms cubic-bezier(0.2, 0.9, 0.24, 1);
+    opacity 700ms cubic-bezier(0.22, 0.9, 0.28, 1),
+    transform 700ms cubic-bezier(0.22, 0.9, 0.28, 1);
   pointer-events: none;
 }
 .slide.active {
   opacity: 1;
   transform: translateY(0) scale(1);
   pointer-events: auto;
+}
+
+/* content fade-up for titles/subtext/logo */
+.content > :is(.wt-title, .wt-sub, .lumo-logo, h2) {
+  opacity: 0;
+  transform: translateY(22px) scale(0.995);
+  /* much gentler, slower fade-up with smooth ease-out */
+  transition:
+    opacity 1100ms cubic-bezier(0.22, 0.86, 0.28, 1),
+    transform 1100ms cubic-bezier(0.22, 0.86, 0.28, 1);
+}
+.slide.active .content > :is(.wt-title, .wt-sub, .lumo-logo, h2) {
+  opacity: 1;
+  transform: none;
+}
+
+/* buttons appear slightly delayed after the text with more emphasis */
+.content .btn {
+  opacity: 0;
+  transform: translateY(18px) scale(0.995);
+  /* slower, more elegant button entrance with a pronounced delay */
+  transition:
+    opacity 900ms cubic-bezier(0.22, 0.9, 0.28, 1) 520ms,
+    transform 900ms cubic-bezier(0.22, 0.9, 0.28, 1) 520ms;
+}
+.slide.active .content .btn {
+  opacity: 1;
+  transform: none;
 }
 
 .wt-title {
@@ -174,17 +236,32 @@ onBeforeUnmount(() => {
 .lumo-logo {
   width: clamp(220px, 34vw, 420px);
   opacity: 0;
-  transform: scale(0.98);
-  animation: logoFade 1s ease forwards;
+  transform: scale(0.92);
+  animation: logoFade 900ms cubic-bezier(0.16, 0.84, 0.24, 1) forwards;
 }
 @keyframes logoFade {
   from {
     opacity: 0;
-    transform: scale(0.98);
+    transform: scale(0.92) translateY(8px);
   }
   to {
     opacity: 1;
-    transform: scale(1);
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* logo fade-out animation when sequence moves on */
+.lumo-logo.fade-out {
+  animation: logoFadeOut 520ms cubic-bezier(0.2, 0.9, 0.24, 1) forwards;
+}
+@keyframes logoFadeOut {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.9) translateY(-10px);
   }
 }
 
