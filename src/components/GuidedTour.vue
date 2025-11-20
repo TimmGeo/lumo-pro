@@ -1,11 +1,18 @@
 <template>
   <div class="guided-tour" role="dialog" aria-modal="true">
     <div class="tour-card">
-      <button class="tour-close" type="button" @click="finish" aria-label="Close tour">
+      <button
+        class="tour-close"
+        type="button"
+        @click="finish"
+        aria-label="Close tour"
+      >
         ×
       </button>
 
-      <p class="step-label">Step {{ currentStepIndex + 1 }} / {{ steps.length }}</p>
+      <p class="step-label">
+        Step {{ currentStepIndex + 1 }} / {{ steps.length }}
+      </p>
       <h2>{{ currentStep.title }}</h2>
       <p class="description">{{ currentStep.body }}</p>
 
@@ -26,7 +33,11 @@
         >
           Back
         </button>
-        <button class="tour-btn tour-btn-primary" type="button" @click="handlePrimary">
+        <button
+          class="tour-btn tour-btn-primary"
+          type="button"
+          @click="handlePrimary"
+        >
           {{ primaryLabel }}
         </button>
       </div>
@@ -91,40 +102,44 @@ function finish() {
   z-index: 1100;
   display: grid;
   place-items: center;
-  background: rgba(5, 5, 7, 0.75);
+  background: rgba(5, 5, 7, 0.8);
 }
 
 .tour-card {
   position: relative;
-  width: min(92vw, 640px);
-  padding: 48px;
-  border-radius: 36px;
-  background: linear-gradient(180deg, rgba(17, 18, 23, 0.95), rgba(12, 12, 16, 0.95));
+  width: min(92vw, 540px);
+  padding: 42px 48px;
+  border-radius: 32px;
+  background: rgba(245, 245, 250, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 40px 120px rgba(0, 0, 0, 0.65);
-  color: #f4f4f7;
-  text-align: center;
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6);
+  color: #fdfdfd;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  backdrop-filter: blur(18px);
 }
 
 .tour-card h2 {
-  margin: 12px 0 16px 0;
-  font-size: clamp(32px, 4vw, 40px);
-  letter-spacing: 0.03em;
+  margin: 0;
+  font-size: clamp(34px, 4.5vw, 42px);
+  letter-spacing: 0.02em;
   font-weight: 600;
 }
 
 .tour-card .description {
   margin: 0;
   font-size: 18px;
-  color: rgba(242, 242, 247, 0.76);
+  color: rgba(255, 255, 255, 0.82);
   line-height: 1.5;
 }
 
 .step-label {
   margin: 0;
-  font-size: 12px;
-  letter-spacing: 0.3em;
-  color: rgba(255, 255, 255, 0.5);
+  font-size: 11px;
+  letter-spacing: 0.35em;
+  color: rgba(255, 255, 255, 0.45);
   text-transform: uppercase;
 }
 
@@ -132,7 +147,7 @@ function finish() {
   display: flex;
   justify-content: center;
   gap: 10px;
-  margin: 24px 0;
+  margin: 8px 0 0 0;
 }
 
 .dot {
@@ -149,7 +164,7 @@ function finish() {
 
 .tour-actions {
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   gap: 12px;
 }
 
@@ -162,7 +177,9 @@ function finish() {
   font-weight: 600;
   letter-spacing: 0.02em;
   cursor: pointer;
-  transition: transform 200ms ease, box-shadow 200ms ease;
+  transition:
+    transform 200ms ease,
+    box-shadow 200ms ease;
 }
 
 .tour-btn:disabled {
@@ -171,15 +188,16 @@ function finish() {
 }
 
 .tour-btn-primary {
-  background: #ffffff;
-  color: #08080c;
-  box-shadow: 0 20px 60px rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
 }
 
 .tour-btn-secondary {
-  background: rgba(255, 255, 255, 0.08);
-  color: #f4f4f7;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .tour-btn:not(:disabled):hover {
@@ -203,4 +221,3 @@ function finish() {
   place-items: center;
 }
 </style>
-
