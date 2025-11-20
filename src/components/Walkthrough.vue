@@ -11,32 +11,35 @@
         <div class="content">
           <h1 class="wt-title">Everything changes when the lights come on</h1>
           <div class="wt-actions">
-            <button class="btn btn-primary" @click="handleTurnOn">
+            <button
+              class="btn btn-primary"
+              @click="handleTurnOn"
+              @mouseenter="lightsHover = true"
+              @mouseleave="lightsHover = false"
+            >
               Turn the lights on
             </button>
           </div>
         </div>
       </section>
 
-      <!-- Slide 2: Logo fade in -->
+      <!-- Slide 2: Lumo text fade in -->
       <section
         class="slide slide--logo"
         :class="{ active: slide === 2 }"
         aria-hidden="true"
       >
         <div class="content">
-          <img
-            class="lumo-logo"
-            :class="{ 'fade-out': fadingLogo }"
-            src="/Lumo_icon_grey.svg"
-            alt="Lumo"
-          />
+          <h1 class="lumo-text" :class="{ 'fade-out': fadingLogo }">Lumo</h1>
+          <p class="walk-brighter" :class="{ 'fade-out': fadingLogo }">
+            Walk brighter.
+          </p>
         </div>
       </section>
 
       <!-- Slide 3: City awake + actions -->
       <section
-        class="slide"
+        class="slide slide--final"
         :class="{ active: slide === 3 }"
         aria-hidden="true"
       >
@@ -48,7 +51,9 @@
             <button class="btn btn-primary" @click="takeTour">
               Take the Tour
             </button>
-            <button class="btn btn-ghost" @click="skip">Skip to map</button>
+            <button class="btn btn-ghost" @click="skipToMap">
+              Skip to map
+            </button>
           </div>
         </div>
       </section>
@@ -64,6 +69,16 @@
       :class="{ active: blackout }"
       aria-hidden="true"
     ></div>
+
+    <!-- Brightness overlay that gradually brightens to white when button is clicked -->
+    <div
+      class="brightness-overlay"
+      :class="{
+        active: lightsHover && slide === 1,
+        brightest: slide === 2 && !fadingLogo,
+      }"
+      aria-hidden="true"
+    ></div>
   </div>
 </template>
 
@@ -74,8 +89,10 @@ const emit = defineEmits(["close", "takeTour"]);
 
 const slide = ref(0); // 0 = black, 1 = intro, 2 = logo, 3 = final
 let timer = null;
+let skipTransitioning = false;
 const fadingLogo = ref(false);
 const blackout = ref(true);
+const lightsHover = ref(false);
 
 function clearTimer() {
   if (timer) {
@@ -89,52 +106,69 @@ function goTo(n) {
   clearTimer();
   // fade to blackout, then show the target slide
   blackout.value = true;
-  // short pause to allow blackout to reach full opacity (matches CSS transition)
+  // pause to allow blackout to reach full opacity (matches CSS transition: 500ms)
   timer = setTimeout(() => {
     slide.value = n;
     // remove blackout after a short reveal delay so the new slide fades in gently
     setTimeout(() => {
       blackout.value = false;
       timer = null;
-    }, 200);
-  }, 420);
+    }, 150);
+  }, 500);
 }
 
 function handleTurnOn() {
-  // Sequence: blackout -> show logo -> after ~3s fade logo -> blackout -> final slide
+  // Sequence: brightness from hover -> gradually brighten to white -> show Lumo text (white bg, black text) -> after ~3s fade -> smooth transition -> final slide
   clearTimer();
-  // start blackout quickly
-  blackout.value = true;
+  // Keep brightness active and gradually increase it to full white
+  lightsHover.value = true;
 
-  // short pause then show logo
+  // Gradually brighten the screen, then show Lumo text slide with white background
   timer = setTimeout(() => {
     fadingLogo.value = false;
     slide.value = 2;
-    // reveal logo by removing blackout
-    blackout.value = false;
+    // Keep brightness overlay active to maintain white background
+    // No blackout needed - let the brightness overlay create the white background
 
-    // show logo for ~3s, then fade it and move to final slide
+    // show Lumo for ~3.5s, then fade it and smoothly transition to final slide
     timer = setTimeout(() => {
-      // start fade-out animation for the logo
+      // start fade-out animation for the Lumo text
       fadingLogo.value = true;
       timer = setTimeout(() => {
-        // after logo fade-out, blackout and then show final slide
-        fadingLogo.value = false;
+        // Fade out brightness and add blackout before final slide
+        lightsHover.value = false;
         blackout.value = true;
+        slide.value = 0;
         setTimeout(() => {
           slide.value = 3;
-          // reveal final slide gently
-          blackout.value = false;
-          timer = null;
-        }, 420);
-      }, 420); // allow fade-out to complete
-    }, 3000);
-  }, 420);
+          // Wait for blackout to be fully opaque (700ms), then add delay before revealing
+          setTimeout(() => {
+            blackout.value = false;
+            // Content will start fading in after blackout is removed
+            timer = null;
+          }, 300);
+        }, 700);
+      }, 600); // allow fade-out animation to complete
+    }, 3500);
+  }, 800); // Give time for brightness to gradually increase
 }
 
 function skip() {
   clearTimer();
   emit("close");
+}
+
+function skipToMap() {
+  if (skipTransitioning) return;
+  skipTransitioning = true;
+  clearTimer();
+  lightsHover.value = false;
+  blackout.value = true;
+  timer = setTimeout(() => {
+    emit("close");
+    skipTransitioning = false;
+    timer = null;
+  }, 650);
 }
 
 function takeTour() {
@@ -153,8 +187,11 @@ onMounted(() => {
   // blackout starts true; after 1s set slide to 1 and fade blackout out
   timer = setTimeout(() => {
     slide.value = 1;
-    blackout.value = false;
-    timer = null;
+    // small delay before revealing to ensure slide transition is ready
+    setTimeout(() => {
+      blackout.value = false;
+      timer = null;
+    }, 50);
   }, 1000);
 });
 onBeforeUnmount(() => {
@@ -179,6 +216,7 @@ onBeforeUnmount(() => {
   padding: 64px 40px;
   box-sizing: border-box;
   text-align: center;
+  z-index: 1200;
 }
 .slide {
   position: absolute;
@@ -187,10 +225,12 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-items: center;
   opacity: 0;
+  visibility: hidden;
   transform: translateY(6px) scale(0.997);
   transition:
-    opacity 700ms cubic-bezier(0.22, 0.9, 0.28, 1),
-    transform 700ms cubic-bezier(0.22, 0.9, 0.28, 1);
+    opacity 800ms cubic-bezier(0.16, 0.84, 0.24, 1),
+    transform 800ms cubic-bezier(0.16, 0.84, 0.24, 1),
+    visibility 0ms 800ms;
   pointer-events: none;
 }
 
@@ -200,20 +240,50 @@ onBeforeUnmount(() => {
   background: #0b0b0c;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 420ms cubic-bezier(0.22, 0.9, 0.24, 1);
-  z-index: 1200;
+  transition: opacity 700ms cubic-bezier(0.16, 0.84, 0.24, 1);
+  z-index: 1400;
 }
 .blackout.active {
   opacity: 1;
 }
+
+/* Brightness overlay that gradually brightens to a brighter grey when button is clicked */
+.brightness-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.15);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 1200ms cubic-bezier(0.16, 0.84, 0.24, 1),
+    background 1800ms cubic-bezier(0.16, 0.84, 0.24, 1);
+  z-index: 1000;
+}
+.brightness-overlay.active {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.15);
+}
+.brightness-overlay.brightest {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.65);
+  transition:
+    opacity 1200ms cubic-bezier(0.16, 0.84, 0.24, 1),
+    background 1800ms cubic-bezier(0.16, 0.84, 0.24, 1);
+}
+
 .slide.active {
   opacity: 1;
+  visibility: visible;
   transform: translateY(0) scale(1);
+  transition:
+    opacity 1000ms cubic-bezier(0.16, 0.84, 0.24, 1),
+    transform 1000ms cubic-bezier(0.16, 0.84, 0.24, 1),
+    visibility 0ms;
   pointer-events: auto;
 }
 
-/* content fade-up for titles/subtext/logo */
-.content > :is(.wt-title, .wt-sub, .lumo-logo, h2) {
+/* content fade-up for titles/subtext - exclude logo/lumo-text which have their own animations */
+.content > :is(.wt-title, .wt-sub, h2):not(.lumo-text) {
   opacity: 0;
   /* start slightly scaled down, blurred and tighter tracking for an elegant emerge */
   transform: scale(0.985);
@@ -221,11 +291,11 @@ onBeforeUnmount(() => {
   letter-spacing: -0.01em;
   /* much gentler, slower fade with smooth ease-out */
   transition:
-    opacity 1500ms cubic-bezier(0.22, 0.86, 0.28, 1),
-    transform 1500ms cubic-bezier(0.22, 0.86, 0.28, 1),
-    filter 1200ms cubic-bezier(0.22, 0.86, 0.28, 1);
+    opacity 1400ms cubic-bezier(0.16, 0.84, 0.24, 1) 200ms,
+    transform 1400ms cubic-bezier(0.16, 0.84, 0.24, 1) 200ms,
+    filter 1200ms cubic-bezier(0.16, 0.84, 0.24, 1) 200ms;
 }
-.slide.active .content > :is(.wt-title, .wt-sub, .lumo-logo, h2) {
+.slide.active .content > :is(.wt-title, .wt-sub, h2):not(.lumo-text) {
   opacity: 1;
   transform: none;
   filter: blur(0);
@@ -238,35 +308,47 @@ onBeforeUnmount(() => {
   transform: translateY(10px) scale(0.995);
   /* slower, more elegant button entrance with a pronounced delay */
   transition:
-    opacity 1000ms cubic-bezier(0.22, 0.9, 0.28, 1) 700ms,
-    transform 1000ms cubic-bezier(0.22, 0.9, 0.28, 1) 700ms;
+    opacity 900ms cubic-bezier(0.16, 0.84, 0.24, 1) 600ms,
+    transform 900ms cubic-bezier(0.16, 0.84, 0.24, 1) 600ms;
 }
 .slide.active .content .btn {
   opacity: 1;
   transform: none;
+}
+.slide--final .content .btn {
+  transition:
+    opacity 900ms cubic-bezier(0.16, 0.84, 0.24, 1) 900ms,
+    transform 900ms cubic-bezier(0.16, 0.84, 0.24, 1) 900ms;
 }
 
 .wt-title {
   font-size: 44px;
   color: #fff;
   margin: 0 0 18px 0;
-  font-weight: 800;
+  font-weight: 500;
+  white-space: nowrap;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    system-ui, sans-serif;
 }
 .wt-title--small {
-  font-size: 36px;
+  font-size: 44px;
 }
 
 .wt-actions {
-  margin-top: 8px;
+  margin-top: 38px;
 }
 
 .btn {
   padding: 14px 28px;
   border-radius: 999px;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 16px;
   border: none;
   cursor: pointer;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    system-ui, sans-serif;
 }
 .btn-primary {
   background: #ffffff;
@@ -279,36 +361,152 @@ onBeforeUnmount(() => {
 
 .slide--logo {
   display: grid;
+  place-items: center;
 }
-.lumo-logo {
-  width: clamp(220px, 34vw, 420px);
+.slide--logo .content {
+  color: #000000 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  filter: none !important;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+.slide--logo.active .content {
+  color: #000000 !important;
+  background: transparent !important;
+}
+.lumo-text {
+  font-size: clamp(96px, 16vw, 180px);
+  font-weight: 800;
+  color: #000000 !important;
+  margin: 0;
+  padding: 0;
   opacity: 0;
-  transform: scale(0.92);
-  animation: logoFade 900ms cubic-bezier(0.16, 0.84, 0.24, 1) forwards;
+  transform: scale(0.92) translateY(8px);
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  z-index: 1200;
+  position: relative;
+  mix-blend-mode: normal;
+  background: transparent !important;
+  box-shadow: none !important;
+  filter: none !important;
+  text-shadow: none !important;
+  /* Only animate when slide 2 is active */
+  animation: none;
 }
-@keyframes logoFade {
+.slide--logo.active .lumo-text {
+  color: #000000 !important;
+}
+.slide--logo.active .lumo-text:not(.fade-out) {
+  animation: lumoFade 800ms cubic-bezier(0.16, 0.84, 0.24, 1) 200ms forwards;
+}
+@keyframes lumoFade {
   from {
     opacity: 0;
     transform: scale(0.92) translateY(8px);
+    color: #000000;
   }
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
+    color: #000000;
   }
 }
 
-/* logo fade-out animation when sequence moves on */
-.lumo-logo.fade-out {
-  animation: logoFadeOut 420ms cubic-bezier(0.2, 0.9, 0.24, 1) forwards;
+/* Lumo text fade-out animation when sequence moves on */
+.lumo-text.fade-out {
+  animation: lumoFadeOut 600ms cubic-bezier(0.16, 0.84, 0.24, 1) forwards !important;
 }
-@keyframes logoFadeOut {
+@keyframes lumoFadeOut {
   from {
     opacity: 1;
     transform: scale(1) translateY(0);
+    color: #000000;
   }
   to {
     opacity: 0;
     transform: scale(0.92) translateY(-6px);
+    color: #000000;
+  }
+}
+
+.walk-brighter {
+  font-size: clamp(24px, 4.5vw, 44px);
+  font-weight: 600;
+  color: #000000 !important;
+  margin: 32px 0 0 0;
+  padding: 0;
+  opacity: 0;
+  transform: translateY(12px);
+  font-family:
+    "SF Pro Text",
+    "SF Pro Display",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  z-index: 1200;
+  position: relative;
+  mix-blend-mode: normal;
+  background: transparent !important;
+  box-shadow: none !important;
+  filter: none !important;
+  text-shadow: none !important;
+  animation: none;
+}
+.slide--logo.active .walk-brighter {
+  color: #000000 !important;
+}
+.slide--logo.active .walk-brighter:not(.fade-out) {
+  animation: walkBrighterFade 1000ms cubic-bezier(0.16, 0.84, 0.24, 1) 600ms
+    forwards;
+}
+@keyframes walkBrighterFade {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+    color: #000000;
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    color: #000000;
+  }
+}
+
+.walk-brighter.fade-out {
+  animation: walkBrighterFadeOut 600ms cubic-bezier(0.16, 0.84, 0.24, 1)
+    forwards !important;
+}
+@keyframes walkBrighterFadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+    color: #000000;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-8px);
+    color: #000000;
   }
 }
 
@@ -329,9 +527,10 @@ onBeforeUnmount(() => {
   }
   .wt-title {
     font-size: 28px;
+    white-space: normal;
   }
   .wt-title--small {
-    font-size: 22px;
+    font-size: 28px;
   }
   .btn {
     padding: 12px 18px;
