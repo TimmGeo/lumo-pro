@@ -156,6 +156,10 @@
       @close="showWalkthrough = false"
       @takeTour="startTour"
     />
+    <GuidedTour
+      v-if="showGuidedTour"
+      @close="finishTour"
+    />
   </div>
 </template>
 
@@ -164,6 +168,7 @@ import { ref } from "vue";
 import MapboxViewer from "./components/MapboxViewer.vue";
 import Legend from "./components/Legend.vue";
 import Walkthrough from "./components/Walkthrough.vue";
+import GuidedTour from "./components/GuidedTour.vue";
 
 // UI state
 const mode = ref("combined");
@@ -185,6 +190,7 @@ let api = null;
 // sidebar collapse state
 const sidebarCollapsed = ref(false);
 const showWalkthrough = ref(true);
+const showGuidedTour = ref(false);
 
 // When Mapbox viewer is ready (will be implemented in MapboxViewer)
 function onViewerReady(exposed) {
@@ -223,9 +229,12 @@ function swapHubs() {
 }
 
 function startTour() {
-  // For now, simply close the walkthrough and you could implement
-  // step-by-step tour logic here.
   showWalkthrough.value = false;
+  showGuidedTour.value = true;
+}
+
+function finishTour() {
+  showGuidedTour.value = false;
 }
 </script>
 
