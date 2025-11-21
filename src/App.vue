@@ -4,6 +4,7 @@
     <MapboxViewer
       :mode="mode"
       :heightScale="heightScale"
+      :showHubs="routingHubsVisible"
       @ready="onViewerReady"
     />
 
@@ -93,24 +94,46 @@
       </div>
 
       <!-- Layers -->
+      <div class="group sidebar-content sidebar-routing">
+        <div class="title">Routing</div>
+        <button
+          :class="{ active: routingHubsVisible }"
+          @click="toggleRoutingHubs"
+        >
+          <span class="button-icon">
+            <img src="/routing_hubs.svg" alt="Routing hubs icon" />
+          </span>
+          Routing Hubs
+        </button>
+      </div>
+
       <div class="group sidebar-content">
         <div class="title">Layers</div>
         <button
           :class="{ active: mode === 'lighting' }"
           @click="mode = 'lighting'"
         >
+          <span class="button-icon">
+            <img src="/lighting.svg" alt="Lighting layer icon" />
+          </span>
           Lighting
         </button>
         <button
           :class="{ active: mode === 'vibrancy' }"
           @click="mode = 'vibrancy'"
         >
+          <span class="button-icon">
+            <img src="/vibrancy.svg" alt="Vibrancy layer icon" />
+          </span>
           Vibrancy
         </button>
         <button
           :class="{ active: mode === 'combined' }"
           @click="mode = 'combined'"
         >
+          <span class="button-icon">
+            <img src="/combined.svg" alt="Combined layer icon" />
+          </span>
           Combined
         </button>
       </div>
@@ -156,10 +179,7 @@
       @close="showWalkthrough = false"
       @takeTour="startTour"
     />
-    <GuidedTour
-      v-if="showGuidedTour"
-      @close="finishTour"
-    />
+    <GuidedTour v-if="showGuidedTour" @close="finishTour" />
   </div>
 </template>
 
@@ -190,8 +210,8 @@ let api = null;
 // sidebar collapse state
 const sidebarCollapsed = ref(false);
 const showWalkthrough = ref(true);
+const routingHubsVisible = ref(true);
 const showGuidedTour = ref(false);
-
 // When Mapbox viewer is ready (will be implemented in MapboxViewer)
 function onViewerReady(exposed) {
   api = exposed;
@@ -226,6 +246,10 @@ function swapHubs() {
   const a = startHub.value;
   startHub.value = endHub.value;
   endHub.value = a;
+}
+
+function toggleRoutingHubs() {
+  routingHubsVisible.value = !routingHubsVisible.value;
 }
 
 function startTour() {
@@ -317,10 +341,25 @@ body,
   text-align: left;
   cursor: pointer;
   outline: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .sidebar button.active {
   background: #1c1e21;
+}
+.sidebar button .button-icon {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.sidebar button .button-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 .sidebar button:not(.sidebar-toggle):hover {
   background: #2a2f34;

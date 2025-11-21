@@ -41,6 +41,10 @@ const props = defineProps({
     type: Number,
     default: 1.5,
   },
+  showHubs: {
+    type: Boolean,
+    default: true,
+  },
 });
 
 const sceneEl = ref(null);
@@ -49,6 +53,7 @@ const isFullscreen = ref(false);
 let map = null;
 let hubsData = null;
 let hexData = null;
+let hubsLoaded = false;
 
 // Paths that work both locally and in deploy
 const BASE = import.meta.env.BASE_URL || "/";
@@ -227,6 +232,8 @@ onMounted(async () => {
           "visibility",
           props.mode === "lighting" ? "visible" : "none"
         );
+        setHubsVisibility(props.showHubs);
+        hubsLoaded = true;
 
         // Zoom to hex bounds
         if (hexData.features.length > 0) {
@@ -286,6 +293,36 @@ watch(
     );
   }
 );
+
+watch(
+  () => props.showHubs,
+  (visible) => {
+    if (!map || !map.isStyleLoaded() || !hubsLoaded) return;
+    const visibility = visible ? "visible" : "none";
+    map.setLayoutProperty("hubs-circles", "visibility", visibility);
+    map.setLayoutProperty("hubs-labels", "visibility", visibility);
+  }
+);
+
+function ensureHubsOnTop() {
+  if (!map || !map.isStyleLoaded()) return;
+  if (map.getLayer("hubs-labels")) {
+    map.moveLayer("hubs-labels");
+  }
+  if (map.getLayer("hubs-circles")) {
+    map.moveLayer("hubs-circles");
+  }
+}
+
+function setHubsVisibility(visible) {
+  if (!map || !map.isStyleLoaded()) return;
+  const visibility = visible ? "visible" : "none";
+  map.setLayoutProperty("hubs-circles", "visibility", visibility);
+  map.setLayoutProperty("hubs-labels", "visibility", visibility);
+  if (visible) {
+    ensureHubsOnTop();
+  }
+}
 
 onBeforeUnmount(() => {
   // Remove fullscreen event listeners
