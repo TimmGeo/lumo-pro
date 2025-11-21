@@ -72,24 +72,12 @@
           :aria-label="sidebarCollapsed ? 'Open sidebar' : 'Close sidebar'"
           title="Toggle sidebar"
         >
-          <svg
-            width="12"
-            height="12"
-            viewBox="0 0 24 24"
-            fill="none"
+          <img
+            src="/sidebar.svg"
+            alt="Toggle sidebar"
+            class="sidebar-toggle-icon"
             aria-hidden="true"
-          >
-            <rect
-              x="4"
-              y="4"
-              width="16"
-              height="16"
-              rx="3"
-              stroke="currentColor"
-              stroke-width="1.2"
-              fill="transparent"
-            />
-          </svg>
+          />
         </button>
       </div>
 
@@ -394,6 +382,12 @@ body,
 
 .sidebar-toggle:active {
   background: #1c1e21;
+}
+.sidebar-toggle-icon {
+  width: 20px;
+  height: 20px;
+  display: block;
+  object-fit: contain;
 }
 
 /* collapse behaviour */
