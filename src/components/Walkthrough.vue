@@ -1,5 +1,10 @@
 <template>
-  <div class="walkthrough" role="dialog" aria-modal="true">
+  <div
+    class="walkthrough"
+    :class="{ 'lights-hover': lightsHover && slide === 1 }"
+    role="dialog"
+    aria-modal="true"
+  >
     <!-- Slide container -->
     <div class="slides">
       <!-- Slide 1: Intro with main CTA -->
@@ -31,9 +36,6 @@
       >
         <div class="content">
           <h1 class="lumo-text" :class="{ 'fade-out': fadingLogo }">Lumo</h1>
-          <p class="walk-brighter" :class="{ 'fade-out': fadingLogo }">
-            Walk brighter.
-          </p>
         </div>
       </section>
 
@@ -70,13 +72,10 @@
       aria-hidden="true"
     ></div>
 
-    <!-- Brightness overlay that gradually brightens to white when button is clicked -->
+    <!-- Brightness overlay that gradually brightens the screen during hover -->
     <div
       class="brightness-overlay"
-      :class="{
-        active: lightsHover && slide === 1,
-        brightest: slide === 2 && !fadingLogo,
-      }"
+      :class="{ active: lightsHover && slide === 1 }"
       aria-hidden="true"
     ></div>
   </div>
@@ -137,15 +136,12 @@ function handleTurnOn() {
         // Fade out brightness and add blackout before final slide
         lightsHover.value = false;
         blackout.value = true;
-        slide.value = 0;
+        slide.value = 3;
+        // Wait for blackout to be fully opaque (700ms), then add delay before revealing
         setTimeout(() => {
-          slide.value = 3;
-          // Wait for blackout to be fully opaque (700ms), then add delay before revealing
-          setTimeout(() => {
-            blackout.value = false;
-            // Content will start fading in after blackout is removed
-            timer = null;
-          }, 300);
+          blackout.value = false;
+          // Content will start fading in after blackout is removed
+          timer = null;
         }, 700);
       }, 600); // allow fade-out animation to complete
     }, 3500);
@@ -201,8 +197,12 @@ onBeforeUnmount(() => {
   inset: 0;
   display: grid;
   place-items: center;
-  background: #0b0b0c; /* opaque background that covers the map */
+  background: #000000; /* keep true black backdrop */
   z-index: 1000;
+}
+.walkthrough.lights-hover {
+  filter: brightness(1.25);
+  transition: filter 350ms ease;
 }
 .slides {
   position: relative;
@@ -216,6 +216,7 @@ onBeforeUnmount(() => {
 .slide {
   position: absolute;
   inset: 0;
+  background: #000000;
   display: grid;
   align-items: center;
   justify-items: center;
@@ -227,6 +228,22 @@ onBeforeUnmount(() => {
     transform 800ms cubic-bezier(0.16, 0.84, 0.24, 1),
     visibility 0ms 800ms;
   pointer-events: none;
+}
+
+.brightness-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.15);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 1200ms cubic-bezier(0.16, 0.84, 0.24, 1),
+    background 1400ms cubic-bezier(0.16, 0.84, 0.24, 1);
+  z-index: 1350;
+}
+.brightness-overlay.active {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .blackout {
@@ -242,28 +259,9 @@ onBeforeUnmount(() => {
   opacity: 1;
 }
 
-/* Brightness overlay that gradually brightens to a brighter grey when button is clicked */
-.brightness-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(255, 255, 255, 0.15);
-  opacity: 0;
-  pointer-events: none;
-  transition:
-    opacity 1200ms cubic-bezier(0.16, 0.84, 0.24, 1),
-    background 1800ms cubic-bezier(0.16, 0.84, 0.24, 1);
-  z-index: 1000;
-}
-.brightness-overlay.active {
-  opacity: 1;
-  background: rgba(255, 255, 255, 0.15);
-}
-.brightness-overlay.brightest {
-  opacity: 1;
-  background: rgba(255, 255, 255, 0.65);
-  transition:
-    opacity 1200ms cubic-bezier(0.16, 0.84, 0.24, 1),
-    background 1800ms cubic-bezier(0.16, 0.84, 0.24, 1);
+.walkthrough.lights-hover {
+  filter: brightness(1.25);
+  transition: filter 350ms ease;
 }
 
 .slide.active {
@@ -357,28 +355,31 @@ onBeforeUnmount(() => {
 .slide--logo {
   display: grid;
   place-items: center;
+  background: #000;
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
 }
 .slide--logo .content {
-  color: #000000 !important;
-  background: transparent !important;
+  color: #fff !important;
+  background: transparent;
   box-shadow: none !important;
-  filter: none !important;
-  text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  padding: 0;
   width: 100%;
   height: 100%;
 }
 .slide--logo.active .content {
-  color: #000000 !important;
-  background: transparent !important;
+  color: #fff !important;
+  background: transparent;
 }
 .lumo-text {
   font-size: clamp(96px, 16vw, 180px);
-  font-weight: 800;
-  color: #000000 !important;
+  font-weight: 500;
+  color: #ffffff !important;
   margin: 0;
   padding: 0;
   opacity: 0;
@@ -404,104 +405,38 @@ onBeforeUnmount(() => {
   /* Only animate when slide 2 is active */
   animation: none;
 }
-.slide--logo.active .lumo-text {
-  color: #000000 !important;
-}
-.slide--logo.active .lumo-text:not(.fade-out) {
-  animation: lumoFade 800ms cubic-bezier(0.16, 0.84, 0.24, 1) 200ms forwards;
-}
 @keyframes lumoFade {
   from {
     opacity: 0;
     transform: scale(0.92) translateY(8px);
-    color: #000000;
+    color: #ffffff;
   }
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
-    color: #000000;
+    color: #ffffff;
   }
 }
-
-/* Lumo text fade-out animation when sequence moves on */
-.lumo-text.fade-out {
-  animation: lumoFadeOut 600ms cubic-bezier(0.16, 0.84, 0.24, 1) forwards !important;
+.slide--logo.active .lumo-text {
+  color: #ffffff !important;
 }
+.slide--logo.active .lumo-text:not(.fade-out) {
+  animation: lumoFade 800ms cubic-bezier(0.16, 0.84, 0.24, 1) 200ms forwards;
+}
+.slide--logo.active .lumo-text.fade-out {
+  animation: lumoFadeOut 800ms cubic-bezier(0.16, 0.84, 0.24, 1) 0ms forwards;
+}
+
 @keyframes lumoFadeOut {
   from {
     opacity: 1;
     transform: scale(1) translateY(0);
-    color: #000000;
+    color: #ffffff;
   }
   to {
     opacity: 0;
     transform: scale(0.92) translateY(-6px);
-    color: #000000;
-  }
-}
-
-.walk-brighter {
-  font-size: clamp(24px, 4.5vw, 44px);
-  font-weight: 600;
-  color: #000000 !important;
-  margin: 32px 0 0 0;
-  padding: 0;
-  opacity: 0;
-  transform: translateY(12px);
-  font-family:
-    "SF Pro Text",
-    "SF Pro Display",
-    -apple-system,
-    BlinkMacSystemFont,
-    system-ui,
-    sans-serif;
-  letter-spacing: 0.01em;
-  line-height: 1.2;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  z-index: 1200;
-  position: relative;
-  mix-blend-mode: normal;
-  background: transparent !important;
-  box-shadow: none !important;
-  filter: none !important;
-  text-shadow: none !important;
-  animation: none;
-}
-.slide--logo.active .walk-brighter {
-  color: #000000 !important;
-}
-.slide--logo.active .walk-brighter:not(.fade-out) {
-  animation: walkBrighterFade 1000ms cubic-bezier(0.16, 0.84, 0.24, 1) 600ms
-    forwards;
-}
-@keyframes walkBrighterFade {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-    color: #000000;
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-    color: #000000;
-  }
-}
-
-.walk-brighter.fade-out {
-  animation: walkBrighterFadeOut 600ms cubic-bezier(0.16, 0.84, 0.24, 1)
-    forwards !important;
-}
-@keyframes walkBrighterFadeOut {
-  from {
-    opacity: 1;
-    transform: translateY(0);
-    color: #000000;
-  }
-  to {
-    opacity: 0;
-    transform: translateY(-8px);
-    color: #000000;
+    color: #ffffff;
   }
 }
 
