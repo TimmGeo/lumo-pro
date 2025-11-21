@@ -45,7 +45,13 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  focusZurichKey: {
+    type: Number,
+    default: 0,
+  },
 });
+
+const emit = defineEmits(["zurichZoomComplete"]);
 
 const sceneEl = ref(null);
 const mapEl = ref(null);
@@ -54,6 +60,7 @@ let map = null;
 let hubsData = null;
 let hexData = null;
 let hubsLoaded = false;
+let pendingZurichFocusKey = 0;
 
 // Paths that work both locally and in deploy
 const BASE = import.meta.env.BASE_URL || "/";
@@ -153,8 +160,8 @@ onMounted(async () => {
     map = new mapboxgl.Map({
       container: mapEl.value,
       style: "mapbox://styles/mapbox/dark-v11",
-      center: [8.55, 47.37], // Zürich
-      zoom: 12,
+      center: [0, 18],
+      zoom: 1.2,
       pitch: 0,
       bearing: 0,
     });
@@ -235,28 +242,16 @@ onMounted(async () => {
         setHubsVisibility(props.showHubs);
         hubsLoaded = true;
 
-        // Zoom to hex bounds
-        if (hexData.features.length > 0) {
-          const bounds = new mapboxgl.LngLatBounds();
-          hexData.features.forEach((feature) => {
-            if (feature.geometry.type === "Polygon") {
-              feature.geometry.coordinates[0].forEach((coord) => {
-                bounds.extend(coord);
-              });
-            }
-          });
-          map.fitBounds(bounds, {
-            padding: 50,
-            duration: 1000,
-          });
-        }
-
         // Debug
         window.map = map;
         console.log("Loaded:", {
           hubs: hubsData.features.length,
           hex: hexData.features.length,
         });
+        if (pendingZurichFocusKey) {
+          performZurichFocus();
+          pendingZurichFocusKey = 0;
+        }
       } catch (error) {
         console.error("Failed to load GeoJSON data:", error);
       }
@@ -298,9 +293,14 @@ watch(
   () => props.showHubs,
   (visible) => {
     if (!map || !map.isStyleLoaded() || !hubsLoaded) return;
-    const visibility = visible ? "visible" : "none";
-    map.setLayoutProperty("hubs-circles", "visibility", visibility);
-    map.setLayoutProperty("hubs-labels", "visibility", visibility);
+    setHubsVisibility(visible);
+  }
+);
+
+watch(
+  () => props.focusZurichKey,
+  (key) => {
+    requestZurichFocus(key);
   }
 );
 
@@ -322,6 +322,31 @@ function setHubsVisibility(visible) {
   if (visible) {
     ensureHubsOnTop();
   }
+}
+
+function requestZurichFocus(key) {
+  if (!key) return;
+  pendingZurichFocusKey = key;
+  if (map && map.isStyleLoaded()) {
+    performZurichFocus();
+    pendingZurichFocusKey = 0;
+  }
+}
+
+function performZurichFocus() {
+  if (!map || !map.isStyleLoaded()) return;
+  map.flyTo({
+    center: [8.55, 47.37],
+    zoom: 12.4,
+    pitch: 45,
+    bearing: -5,
+    duration: 4000,
+    curve: 1.4,
+    essential: true,
+  });
+  map.once("moveend", () => {
+    emit("zurichZoomComplete");
+  });
 }
 
 onBeforeUnmount(() => {

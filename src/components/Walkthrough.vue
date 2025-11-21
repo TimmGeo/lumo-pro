@@ -85,7 +85,7 @@
 <script setup>
 import { ref, defineEmits, onMounted, onBeforeUnmount } from "vue";
 
-const emit = defineEmits(["close", "takeTour"]);
+const emit = defineEmits(["close", "takeTour", "enterMap"]);
 
 const slide = ref(0); // 0 = black, 1 = intro, 2 = logo, 3 = final
 let timer = null;
@@ -164,6 +164,7 @@ function skipToMap() {
   clearTimer();
   lightsHover.value = false;
   blackout.value = true;
+  emit("enterMap");
   timer = setTimeout(() => {
     emit("close");
     skipTransitioning = false;
@@ -173,6 +174,7 @@ function skipToMap() {
 
 function takeTour() {
   clearTimer();
+  emit("enterMap");
   emit("takeTour");
 }
 

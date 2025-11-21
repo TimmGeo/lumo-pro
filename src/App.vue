@@ -6,6 +6,8 @@
       :heightScale="heightScale"
       :showHubs="routingHubsVisible"
       @ready="onViewerReady"
+      :focusZurichKey="zurichFocusKey"
+      @zurichZoomComplete="handleZurichZoomComplete"
     />
 
     <!-- Floating Routing Dock (top-right, dark & compact) -->
@@ -166,6 +168,7 @@
       v-if="showWalkthrough"
       @close="showWalkthrough = false"
       @takeTour="startTour"
+      @enterMap="focusZurich"
     />
     <GuidedTour v-if="showGuidedTour" @close="finishTour" />
   </div>
@@ -200,6 +203,8 @@ const sidebarCollapsed = ref(false);
 const showWalkthrough = ref(true);
 const routingHubsVisible = ref(true);
 const showGuidedTour = ref(false);
+const zurichFocusKey = ref(0);
+const pendingTourAfterZoom = ref(false);
 // When Mapbox viewer is ready (will be implemented in MapboxViewer)
 function onViewerReady(exposed) {
   api = exposed;
@@ -242,11 +247,21 @@ function toggleRoutingHubs() {
 
 function startTour() {
   showWalkthrough.value = false;
-  showGuidedTour.value = true;
+  pendingTourAfterZoom.value = true;
 }
 
 function finishTour() {
   showGuidedTour.value = false;
+}
+
+function focusZurich() {
+  zurichFocusKey.value = Date.now();
+}
+
+function handleZurichZoomComplete() {
+  if (!pendingTourAfterZoom.value) return;
+  showGuidedTour.value = true;
+  pendingTourAfterZoom.value = false;
 }
 </script>
 
