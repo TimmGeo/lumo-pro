@@ -340,8 +340,12 @@ function performZurichFocus() {
     zoom: 12.4,
     pitch: 45,
     bearing: -5,
-    duration: 4000,
-    curve: 1.4,
+    duration: 5200,
+    speed: 0.25,
+    curve: 1.1,
+    easing(t) {
+      return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+    },
     essential: true,
   });
   map.once("moveend", () => {

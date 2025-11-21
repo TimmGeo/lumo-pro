@@ -89,7 +89,6 @@ const emit = defineEmits(["close", "takeTour", "enterMap"]);
 
 const slide = ref(0); // 0 = black, 1 = intro, 2 = logo, 3 = final
 let timer = null;
-let skipTransitioning = false;
 const fadingLogo = ref(false);
 const blackout = ref(true);
 const lightsHover = ref(false);
@@ -159,17 +158,11 @@ function skip() {
 }
 
 function skipToMap() {
-  if (skipTransitioning) return;
-  skipTransitioning = true;
   clearTimer();
   lightsHover.value = false;
   blackout.value = true;
   emit("enterMap");
-  timer = setTimeout(() => {
-    emit("close");
-    skipTransitioning = false;
-    timer = null;
-  }, 650);
+  emit("close");
 }
 
 function takeTour() {
