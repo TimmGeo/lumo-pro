@@ -321,8 +321,12 @@ onBeforeUnmount(() => {
   font-weight: 500;
   white-space: nowrap;
   font-family:
-    -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
-    system-ui, sans-serif;
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
 }
 .wt-title--small {
   font-size: 44px;
@@ -340,8 +344,12 @@ onBeforeUnmount(() => {
   border: none;
   cursor: pointer;
   font-family:
-    -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
-    system-ui, sans-serif;
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
 }
 .btn-primary {
   background: #ffffff;

@@ -8,14 +8,24 @@
       @ready="onViewerReady"
       :focusZurichKey="zurichFocusKey"
       @zurichZoomComplete="handleZurichZoomComplete"
+      @zoom="handleMapZoom"
+      @move="handleMapMove"
     />
 
     <!-- Sidebar controls -->
     <aside
       :class="['sidebar', { 'sidebar--collapsed': sidebarCollapsed }]"
+      :style="!sidebarCollapsed ? { width: sidebarWidth + 'px' } : {}"
       @mouseenter="isHovering = true"
       @mouseleave="handleMouseLeave"
     >
+      <!-- Resize handle -->
+      <div
+        class="sidebar-resize-handle"
+        @mousedown="startResize"
+        @mouseenter="isResizing = true"
+        @mouseleave="isResizing = false"
+      ></div>
       <div class="sidebar-header">
         <h2 class="nowrap">Lumo <span class="muted">Pro</span></h2>
 
@@ -186,9 +196,9 @@
 
       <!-- Profile section (stays visible, text hides when collapsed) -->
       <div class="profile">
-        <div class="avatar">TR</div>
+        <div class="avatar">JD</div>
         <div class="info">
-          <div class="name">Timm Rogenmoser</div>
+          <div class="name">John Doe</div>
           <div class="tier">Plus</div>
         </div>
       </div>
@@ -219,6 +229,18 @@
       @enterMap="focusZurich"
     />
     <GuidedTour v-if="showGuidedTour" @close="finishTour" />
+
+    <!-- Scale indicator -->
+    <div class="map-scale">
+      <div class="scale-line"></div>
+      <div class="scale-label">{{ scaleText }}</div>
+    </div>
+
+    <!-- Location indicator -->
+    <div v-if="mapZoom >= 11 && locationText" class="map-location">
+      <div class="location-name">{{ locationText }}</div>
+      <div class="location-time">{{ zurichTime }}</div>
+    </div>
   </div>
 </template>
 
@@ -248,6 +270,8 @@ let api = null;
 
 // sidebar collapse state
 const sidebarCollapsed = ref(false);
+const sidebarWidth = ref(320);
+const isResizing = ref(false);
 const showWalkthrough = ref(true);
 const routingHubsVisible = ref(true);
 const showGuidedTour = ref(false);
@@ -258,6 +282,94 @@ const pendingTourAfterZoom = ref(false);
 const routingCollapsed = ref(false);
 const layersCollapsed = ref(false);
 const legendCollapsed = ref(false);
+
+// Map scale state
+const mapZoom = ref(1.2);
+const mapCenter = ref([0, 18]);
+const scaleText = ref("1 km");
+const locationText = ref("");
+const zurichTime = ref("");
+
+// Update Zürich time
+function updateZurichTime() {
+  const now = new Date();
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Europe/Zurich",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+  zurichTime.value = formatter.format(now);
+}
+
+// Set up time update interval
+let timeInterval = null;
+onMounted(() => {
+  updateZurichTime();
+  timeInterval = setInterval(updateZurichTime, 1000); // Update every second
+});
+
+onBeforeUnmount(() => {
+  if (timeInterval) {
+    clearInterval(timeInterval);
+  }
+});
+
+// Calculate scale based on zoom level
+function calculateScale(zoom, center) {
+  // Reference: 120px on screen at current zoom
+  const pixels = 120;
+  const metersPerPixel =
+    (156543.03392 * Math.cos((center[1] * Math.PI) / 180)) / Math.pow(2, zoom);
+  const meters = metersPerPixel * pixels;
+
+  // Format the scale text adaptively
+  if (meters >= 1000) {
+    const km = meters / 1000;
+    if (km >= 10) {
+      return `${Math.round(km)} km`;
+    } else if (km >= 1) {
+      return `${(Math.round(km * 10) / 10).toFixed(1)} km`;
+    } else {
+      return `${Math.round(meters)} m`;
+    }
+  } else if (meters >= 100) {
+    return `${Math.round(meters / 50) * 50} m`;
+  } else if (meters >= 10) {
+    return `${Math.round(meters / 10) * 10} m`;
+  } else {
+    return `${Math.round(meters)} m`;
+  }
+}
+
+function updateLocation(zoom) {
+  // Simply show "Zürich" when zoomed in enough
+  if (zoom >= 11) {
+    locationText.value = "Zürich";
+  } else {
+    locationText.value = "";
+  }
+}
+
+function handleMapZoom(event) {
+  mapZoom.value = event.zoom;
+  mapCenter.value = [event.center.lng, event.center.lat];
+  scaleText.value = calculateScale(event.zoom, [
+    event.center.lng,
+    event.center.lat,
+  ]);
+  updateLocation(event.zoom);
+}
+
+function handleMapMove(event) {
+  mapZoom.value = event.zoom;
+  mapCenter.value = [event.center.lng, event.center.lat];
+  scaleText.value = calculateScale(event.zoom, [
+    event.center.lng,
+    event.center.lat,
+  ]);
+  updateLocation(event.zoom);
+}
 
 // Scrollbar visibility
 const scrollableRef = ref(null);
@@ -366,6 +478,29 @@ function handleZurichZoomComplete() {
   showGuidedTour.value = true;
   pendingTourAfterZoom.value = false;
 }
+
+// Sidebar resize functionality
+function startResize(e) {
+  e.preventDefault();
+  const startX = e.clientX;
+  const startWidth = sidebarWidth.value;
+
+  function handleMouseMove(e) {
+    const diff = e.clientX - startX;
+    const newWidth = Math.max(240, Math.min(600, startWidth + diff));
+    sidebarWidth.value = newWidth;
+  }
+
+  function handleMouseUp() {
+    document.removeEventListener("mousemove", handleMouseMove);
+    document.removeEventListener("mouseup", handleMouseUp);
+    isResizing.value = false;
+  }
+
+  document.addEventListener("mousemove", handleMouseMove);
+  document.addEventListener("mouseup", handleMouseUp);
+  isResizing.value = true;
+}
 </script>
 
 <style>
@@ -377,7 +512,13 @@ body,
   margin: 0;
   background: #0b0b0c;
   color: #eaeaea;
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
 }
 
 .app {
@@ -386,21 +527,65 @@ body,
   overflow: hidden;
 }
 
+/* Remove blue focus outlines globally */
+*:focus,
+*:focus-visible,
+*:focus-within {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+button:focus,
+button:focus-visible,
+input:focus,
+input:focus-visible,
+select:focus,
+select:focus-visible,
+textarea:focus,
+textarea:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: transparent !important;
+}
+
 /* -------- SIDEBAR -------- */
 .sidebar {
   position: absolute;
-  top: 0px;
-  left: 0px;
-  bottom: 0px;
+  top: 20px;
+  left: 20px;
+  bottom: 20px;
   width: 320px;
   padding: 20px 16px 16px 20px;
   background: #151517;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
   z-index: 10;
+  border-radius: 16px;
 
   display: flex;
   flex-direction: column;
   justify-content: space-between; /* keep profile pinned */
+}
+
+/* Resize handle */
+.sidebar-resize-handle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 4px;
+  cursor: col-resize;
+  z-index: 11;
+  background: transparent;
+  transition: background-color 0.2s ease;
+}
+
+.sidebar-resize-handle:hover,
+.sidebar-resize-handle:active {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar--collapsed .sidebar-resize-handle {
+  display: none;
 }
 
 /* Scrollable content area */
@@ -601,6 +786,9 @@ body,
   background: #151517;
   color: #e6e6e8;
   cursor: pointer;
+  outline: none !important;
+  box-shadow: none !important;
+  border: none;
 }
 .sidebar-toggle:hover {
   background: #2a2f34;
@@ -608,6 +796,13 @@ body,
 
 .sidebar-toggle:active {
   background: #1c1e21;
+}
+
+.sidebar-toggle:focus,
+.sidebar-toggle:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
 }
 .sidebar-toggle-icon {
   width: 18px;
@@ -622,6 +817,7 @@ body,
   padding-left: 20px;
   padding-right: 8px;
   overflow: visible;
+  border-radius: 16px;
 }
 
 .sidebar--collapsed .sidebar-scrollable {
@@ -775,7 +971,9 @@ body,
 }
 
 .route-select-clean:focus {
-  border-bottom-color: #4285f4;
+  border-bottom-color: rgba(255, 255, 255, 0.25);
+  outline: none;
+  box-shadow: none;
 }
 
 .route-swap-clean {
@@ -896,5 +1094,84 @@ body,
 /* -------- LEGEND COMPONENT Z-INDEX -------- */
 .legend {
   z-index: 9;
+}
+
+/* -------- MAP SCALE -------- */
+.map-scale {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 12;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  pointer-events: none;
+}
+
+.scale-line {
+  width: 120px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.8);
+  border-top: 1px solid rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+.scale-label {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.85);
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* -------- MAP LOCATION -------- */
+.map-location {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 12;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  pointer-events: none;
+}
+
+.location-name {
+  font-size: 26px;
+  color: #ffffff;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+.location-time {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.85);
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
 }
 </style>

@@ -37,7 +37,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["zurichZoomComplete"]);
+const emit = defineEmits(["zurichZoomComplete", "zoom", "move"]);
 
 const sceneEl = ref(null);
 const mapEl = ref(null);
@@ -133,6 +133,16 @@ onMounted(async () => {
       zoom: 1.2,
       pitch: 0,
       bearing: 0,
+      attributionControl: false,
+    });
+
+    // Emit zoom and move events for scale calculation
+    map.on("zoom", () => {
+      emit("zoom", { zoom: map.getZoom(), center: map.getCenter() });
+    });
+
+    map.on("move", () => {
+      emit("move", { zoom: map.getZoom(), center: map.getCenter() });
     });
 
     map.on("load", async () => {
@@ -140,6 +150,9 @@ onMounted(async () => {
 
       // Add zoom and rotation controls to the map
       map.addControl(new mapboxgl.NavigationControl());
+      
+      // Emit initial zoom/center
+      emit("zoom", { zoom: map.getZoom(), center: map.getCenter() });
 
       try {
         // --- Load and add Routing Hubs (points) ---
@@ -355,6 +368,15 @@ onBeforeUnmount(() => {
 :deep(.mapboxgl-ctrl-top-right) {
   top: 100px !important;
   right: 20px;
+}
+
+/* Hide Mapbox watermark/attribution */
+:deep(.mapboxgl-ctrl-attrib) {
+  display: none !important;
+}
+
+:deep(.mapboxgl-ctrl-logo) {
+  display: none !important;
 }
 
 /* Fullscreen button */
