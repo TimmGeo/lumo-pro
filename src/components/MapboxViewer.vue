@@ -276,8 +276,8 @@ onMounted(async () => {
             source: "hex-vibrancy",
             filter: [">", ["get", "NUMPOINTS"], 0], // Only show hexagons with NUMPOINTS > 0
             paint: {
-              "fill-extrusion-color": "#70f0c3",
-              "fill-extrusion-opacity": 0.7,
+              "fill-extrusion-color": "#9ca3af",
+              "fill-extrusion-opacity": 0.4,
               "fill-extrusion-height": [
                 "*",
                 ["get", "NUMPOINTS"],

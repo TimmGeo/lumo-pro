@@ -880,9 +880,10 @@ const vibrancyBars = computed(() => {
 .bar-fill-vertical {
   height: 100%;
   width: 100%;
-  background: linear-gradient(to right, #70f0c3 0%, #70f0c3 100%);
+  background: linear-gradient(to right, #9ca3af 0%, #6b7280 100%);
   border-radius: 0 2px 2px 0;
   min-width: 4px;
+  opacity: 0.8;
 }
 
 .legend-bar {
@@ -895,9 +896,10 @@ const vibrancyBars = computed(() => {
 
 .bar-fill {
   width: 100%;
-  background: linear-gradient(to top, #70f0c3 0%, #70f0c3 100%);
+  background: linear-gradient(to top, #9ca3af 0%, #6b7280 100%);
   border-radius: 2px 2px 0 0;
   min-height: 4px;
+  opacity: 0.8;
 }
 
 .legend-note {
