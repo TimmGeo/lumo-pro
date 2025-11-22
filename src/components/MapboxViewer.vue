@@ -18,7 +18,7 @@
           v-if="!isFullscreen"
           d="M8 3H5C3.89543 3 3 3.89543 3 5V8M21 8V5C21 3.89543 20.1046 3 19 3H16M16 21H19C20.1046 21 21 20.1046 21 19V16M3 16V19C3 20.1046 3.89543 21 5 21H8"
           stroke="currentColor"
-          stroke-width="2"
+          stroke-width="2.5"
           stroke-linecap="round"
           stroke-linejoin="round"
         />
@@ -26,7 +26,7 @@
           v-else
           d="M8 3V8M8 21V16M16 3V8M16 21V16M3 8H8M16 8H21M3 16H8M16 16H21"
           stroke="currentColor"
-          stroke-width="2"
+          stroke-width="2.5"
           stroke-linecap="round"
           stroke-linejoin="round"
         />
@@ -462,5 +462,7 @@ onBeforeUnmount(() => {
 .fullscreen-btn svg {
   width: 16px;
   height: 16px;
+  display: block;
+  margin: 0 auto;
 }
 </style>
