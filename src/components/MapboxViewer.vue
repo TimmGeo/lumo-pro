@@ -2,28 +2,14 @@
   <div ref="sceneEl" class="scene">
     <div ref="mapEl" class="map"></div>
 
-    <!-- Zoom/Fullscreen controls -->
-    <div class="map-toolbar">
-      <button class="map-tool" @click="zoomIn" aria-label="Zoom in">+</button>
-      <button class="map-tool" @click="zoomOut" aria-label="Zoom out">−</button>
-      <button
-        class="map-tool compass"
-        @click="resetNorth"
-        aria-label="Reset north"
-      >
-        <span class="compass-ring">
-          <span class="compass-arrow"></span>
-          <span class="compass-label">N</span>
-        </span>
-      </button>
-      <button
-        class="map-tool"
-        @click="toggleFullscreen"
-        aria-label="Toggle fullscreen"
-      >
-        {{ isFullscreen ? "✕" : "⛶" }}
-      </button>
-    </div>
+    <!-- Fullscreen control -->
+    <button
+      class="fullscreen-btn"
+      @click="toggleFullscreen"
+      aria-label="Toggle fullscreen"
+    >
+      {{ isFullscreen ? "✕" : "⛶" }}
+    </button>
   </div>
 </template>
 
@@ -67,24 +53,7 @@ const BASE = import.meta.env.BASE_URL || "/";
 const hubsUrl = `${BASE}data/routing_hubs.geojson`.replace(/\/{2,}/g, "/");
 const hexUrl = `${BASE}data/hex_light_100m.geojson`.replace(/\/{2,}/g, "/");
 
-// Zoom functions
-function zoomIn() {
-  if (map) {
-    map.zoomIn({ duration: 300 });
-  }
-}
-
-function zoomOut() {
-  if (map) {
-    map.zoomOut({ duration: 300 });
-  }
-}
-
-function resetNorth() {
-  if (map) {
-    map.easeTo({ bearing: 0, pitch: 0, duration: 400 });
-  }
-}
+// NavigationControl handles zoom and rotation
 
 // Fullscreen function - enter fullscreen on the app container (keeps sidebar and routing dock visible)
 function toggleFullscreen() {
@@ -168,6 +137,9 @@ onMounted(async () => {
 
     map.on("load", async () => {
       console.log("✅ Mapbox map loaded successfully!");
+
+      // Add zoom and rotation controls to the map
+      map.addControl(new mapboxgl.NavigationControl());
 
       try {
         // --- Load and add Routing Hubs (points) ---
@@ -379,82 +351,39 @@ onBeforeUnmount(() => {
   height: 100%;
 }
 
-/* Floating toolbar */
-.map-toolbar {
-  position: absolute;
+/* Position Mapbox NavigationControl lower to avoid routing bar */
+:deep(.mapboxgl-ctrl-top-right) {
+  top: 100px !important;
   right: 20px;
-  top: 120px;
-  display: flex;
-  flex-direction: column;
-  background: rgba(14, 14, 16, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(8px);
-  z-index: 15;
 }
 
-/* Buttons */
-.map-tool {
-  width: 42px;
-  height: 42px;
+/* Fullscreen button */
+.fullscreen-btn {
+  position: absolute;
+  right: 20px;
+  top: 200px;
+  width: 29px;
+  height: 29px;
   border: none;
-  background: transparent;
-  color: #f2f2f2;
-  font-size: 20px;
-  font-weight: 500;
+  background: #ffffff;
+  color: #333;
+  font-size: 16px;
   line-height: 1;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition:
-    background 0.2s,
-    color 0.2s;
+  border-radius: 2px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  transition: background 0.15s ease;
+  z-index: 15;
 }
 
-.map-tool + .map-tool {
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+.fullscreen-btn:hover {
+  background: #f5f5f5;
 }
 
-.map-tool:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: #ffffff;
-}
-
-.map-tool:active {
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.map-tool.compass {
-  padding: 8px;
-}
-
-.compass-ring {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.35);
-  display: grid;
-  place-items: center;
-  position: relative;
-}
-
-.compass-arrow {
-  width: 0;
-  height: 0;
-  border-left: 6px solid transparent;
-  border-right: 6px solid transparent;
-  border-bottom: 10px solid #f5f5f5;
-  position: absolute;
-  top: 4px;
-}
-
-.compass-label {
-  font-size: 10px;
-  letter-spacing: 1px;
-  margin-top: 10px;
-  color: rgba(255, 255, 255, 0.8);
+.fullscreen-btn:active {
+  background: #eeeeee;
 }
 </style>

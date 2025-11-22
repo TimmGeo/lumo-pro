@@ -10,57 +10,6 @@
       @zurichZoomComplete="handleZurichZoomComplete"
     />
 
-    <!-- Floating Routing Dock (top-right, dark & compact) -->
-    <div class="routingdock routingdock--compact">
-      <div class="rd-card">
-        <div class="rd-rail">
-          <span class="dot"></span>
-          <span class="line"></span>
-          <span class="dot"></span>
-        </div>
-
-        <div class="rd-fields">
-          <div class="rd-field">
-            <select v-model="startHub" class="rd-input">
-              <option disabled value="">From</option>
-              <option v-for="h in hubs" :key="h.id" :value="h.id">
-                {{ h.name }}
-              </option>
-            </select>
-          </div>
-
-          <div class="rd-divider"></div>
-
-          <div class="rd-field">
-            <select v-model="endHub" class="rd-input">
-              <option disabled value="">To</option>
-              <option v-for="h in hubs" :key="h.id" :value="h.id">
-                {{ h.name }}
-              </option>
-            </select>
-          </div>
-        </div>
-
-        <button class="rd-swap" @click="swapHubs()" aria-label="Swap">
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            aria-hidden="true"
-          >
-            <path
-              d="M7 4v12M7 4l-3 3M7 4l3 3M17 20V8M17 20l-3-3M17 20l3-3"
-              stroke="currentColor"
-              stroke-width="1.7"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
-        </button>
-      </div>
-    </div>
-
     <!-- Sidebar controls -->
     <aside :class="['sidebar', { 'sidebar--collapsed': sidebarCollapsed }]">
       <div class="sidebar-header">
@@ -83,56 +32,99 @@
         </button>
       </div>
 
-      <!-- Layers -->
-      <div class="group sidebar-content sidebar-routing">
-        <div class="title">Routing</div>
-        <button
-          :class="{ active: routingHubsVisible }"
-          @click="toggleRoutingHubs"
-        >
-          <span class="button-icon">
-            <img src="/routing_hubs.svg" alt="Routing hubs icon" />
-          </span>
-          Routing Hubs
-        </button>
-      </div>
+      <!-- Scrollable content area -->
+      <div class="sidebar-scrollable">
+        <!-- Routing section -->
+        <div class="group sidebar-content sidebar-routing">
+          <div class="title">Routing</div>
+          <button
+            :class="{ active: routingHubsVisible }"
+            @click="toggleRoutingHubs"
+          >
+            <span class="button-icon">
+              <img src="/routing_hubs.svg" alt="Routing hubs icon" />
+            </span>
+            Routing Hubs
+          </button>
+        </div>
 
-      <div class="group sidebar-content">
-        <div class="title">Layers</div>
-        <button
-          :class="{ active: mode === 'lighting' }"
-          @click="mode = 'lighting'"
-        >
-          <span class="button-icon">
-            <img src="/lighting.svg" alt="Lighting layer icon" />
-          </span>
-          Lighting
-        </button>
-        <button
-          :class="{ active: mode === 'vibrancy' }"
-          @click="mode = 'vibrancy'"
-        >
-          <span class="button-icon">
-            <img src="/vibrancy.svg" alt="Vibrancy layer icon" />
-          </span>
-          Vibrancy
-        </button>
-        <button
-          :class="{ active: mode === 'combined' }"
-          @click="mode = 'combined'"
-        >
-          <span class="button-icon">
-            <img src="/combined.svg" alt="Combined layer icon" />
-          </span>
-          Combined
-        </button>
-      </div>
+        <!-- Route planning -->
+        <div class="group sidebar-content sidebar-route-planning">
+          <div class="route-clean">
+            <div class="route-connector">
+              <div class="route-line"></div>
+              <div class="route-marker route-marker-start"></div>
+              <div class="route-marker route-marker-end"></div>
+            </div>
+            <div class="route-inputs">
+              <div class="route-input-wrapper">
+                <label
+                  class="route-label-float"
+                  :class="{ 'route-label-float--active': startHub }"
+                  >From</label
+                >
+                <select v-model="startHub" class="route-select-clean">
+                  <option disabled value=""></option>
+                  <option v-for="h in hubs" :key="h.id" :value="h.id">
+                    {{ h.name }}
+                  </option>
+                </select>
+              </div>
+              <div class="route-input-wrapper">
+                <label
+                  class="route-label-float"
+                  :class="{ 'route-label-float--active': endHub }"
+                  >To</label
+                >
+                <select v-model="endHub" class="route-select-clean">
+                  <option disabled value=""></option>
+                  <option v-for="h in hubs" :key="h.id" :value="h.id">
+                    {{ h.name }}
+                  </option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
 
-      <!-- Legend box placed inside the sidebar -->
-      <div class="group sidebar-legend sidebar-content">
-        <div class="title">Color Legend</div>
-        <div class="legend-box">
-          <Legend :mode="mode" />
+        <!-- Layers -->
+        <div class="group sidebar-content">
+          <div class="title">Layers</div>
+          <button
+            :class="{ active: mode === 'lighting' }"
+            @click="mode = 'lighting'"
+          >
+            <span class="button-icon">
+              <img src="/lighting.svg" alt="Lighting layer icon" />
+            </span>
+            Lighting
+          </button>
+          <button
+            :class="{ active: mode === 'vibrancy' }"
+            @click="mode = 'vibrancy'"
+          >
+            <span class="button-icon">
+              <img src="/vibrancy.svg" alt="Vibrancy layer icon" />
+            </span>
+            Vibrancy
+          </button>
+          <button
+            :class="{ active: mode === 'combined' }"
+            @click="mode = 'combined'"
+          >
+            <span class="button-icon">
+              <img src="/combined.svg" alt="Combined layer icon" />
+            </span>
+            Combined
+          </button>
+        </div>
+
+        <!-- Legend box placed inside the sidebar -->
+        <div class="group sidebar-legend sidebar-content">
+          <div class="title">Color Legend</div>
+          <div class="legend-box">
+            <Legend :mode="mode" />
+          </div>
         </div>
       </div>
 
@@ -289,7 +281,7 @@ body,
   top: 0px;
   left: 0px;
   bottom: 0px;
-  width: 260px;
+  width: 320px;
   padding: 20px 16px 16px 20px;
   background: #151517;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
@@ -298,6 +290,33 @@ body,
   display: flex;
   flex-direction: column;
   justify-content: space-between; /* keep profile pinned */
+}
+
+/* Scrollable content area */
+.sidebar-scrollable {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+  margin-right: -4px;
+}
+
+/* Custom scrollbar styling */
+.sidebar-scrollable::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-scrollable::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-scrollable::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.sidebar-scrollable::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .sidebar h2 {
@@ -413,6 +432,10 @@ body,
   overflow: visible;
 }
 
+.sidebar--collapsed .sidebar-scrollable {
+  display: none;
+}
+
 /* hide layer / legend content */
 .sidebar-content {
   transition:
@@ -431,12 +454,174 @@ body,
   display: none;
 }
 
+/* -------- ROUTE PLANNING -------- */
+.sidebar-route-planning {
+  margin-top: 16px;
+}
+
+.route-clean {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 2px 0;
+}
+
+.route-connector {
+  position: relative;
+  width: 16px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.route-line {
+  position: absolute;
+  left: 50%;
+  top: 12px;
+  bottom: 12px;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateX(-50%);
+}
+
+.route-marker {
+  position: relative;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #151517;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  z-index: 1;
+}
+
+.route-marker-start {
+  margin-bottom: 18px;
+}
+
+.route-marker-end {
+  margin-top: 18px;
+}
+
+.route-inputs {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.route-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.route-label-float {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 400;
+  pointer-events: none;
+  transition: all 0.2s ease;
+  z-index: 1;
+}
+
+.route-label-float--active {
+  top: 0;
+  transform: translateY(0);
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.route-select-clean {
+  flex: 1;
+  padding: 8px 24px 8px 0;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  background: transparent;
+  color: #eaeaea;
+  font-size: 13px;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, rgba(255, 255, 255, 0.5) 50%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.5) 50%, transparent 50%);
+  background-position:
+    calc(100% - 8px) calc(50% - 1px),
+    calc(100% - 2px) calc(50% + 1px);
+  background-size:
+    4px 4px,
+    4px 4px;
+  background-repeat: no-repeat;
+  transition:
+    border-color 0.2s ease,
+    padding-top 0.2s ease;
+}
+
+.route-input-wrapper:has(.route-label-float--active) .route-select-clean,
+.route-input-wrapper:has(.route-select-clean:focus) .route-select-clean {
+  padding-top: 16px;
+  padding-bottom: 4px;
+}
+
+.route-input-wrapper:has(.route-select-clean:focus) .route-label-float {
+  top: 0;
+  transform: translateY(0);
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.route-select-clean:hover {
+  border-bottom-color: rgba(255, 255, 255, 0.25);
+}
+
+.route-select-clean:focus {
+  border-bottom-color: #4285f4;
+}
+
+.route-swap-clean {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.7);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.route-swap-clean:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.route-swap-clean:active {
+  background: rgba(255, 255, 255, 0.15);
+}
+
 /* -------- LEGEND BOX -------- */
 .sidebar-legend {
   margin-top: 16px;
 }
 .legend-box {
-  width: 230px;
+  width: 100%;
+  max-width: 288px;
   height: 230px;
   border-radius: 18px;
   background: linear-gradient(180deg, #202124 0%, #171718 100%);
@@ -445,6 +630,7 @@ body,
   align-items: center;
   justify-content: center;
   padding: 12px;
+  box-sizing: border-box;
 }
 
 /* -------- PROFILE SECTION -------- */
@@ -519,136 +705,5 @@ body,
 /* -------- LEGEND COMPONENT Z-INDEX -------- */
 .legend {
   z-index: 9;
-}
-
-/* -------- ROUTING DOCK: dark, discrete, top-right -------- */
-.routingdock {
-  position: fixed;
-  right: 16px;
-  top: 16px;
-  z-index: 20;
-}
-
-/* compact: matches sidebar look */
-.routingdock--compact .rd-card {
-  position: relative;
-  display: flex;
-  align-items: stretch;
-  gap: 10px;
-  padding: 10px 46px 10px 12px;
-  width: clamp(240px, 26vw, 320px);
-  border-radius: 14px;
-  background: #151517;
-  color: #eaeaea;
-  border: 1px solid #202124;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
-}
-
-/* left rail (subtle, dark theme) */
-.rd-rail {
-  display: grid;
-  grid-template-rows: 12px 1fr 12px;
-  align-items: center;
-  justify-items: center;
-  width: 16px;
-  margin-right: 2px;
-}
-.rd-rail .dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  border: 1.4px solid #7b7f86;
-  background: #0b0b0c;
-}
-.rd-rail .line {
-  width: 2px;
-  height: 100%;
-  background: #2a2f34;
-  border-radius: 2px;
-}
-
-/* fields column */
-.rd-fields {
-  flex: 1 1 auto;
-  display: grid;
-  grid-template-rows: 1fr auto 1fr;
-  gap: 6px;
-  min-width: 160px;
-}
-.rd-field {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.rd-label {
-  font-size: 11px;
-  color: #9aa0a6;
-  letter-spacing: 0.04em;
-}
-
-/* compact select, dark */
-.rd-input {
-  appearance: none;
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid #232428;
-  padding: 6px 26px 6px 0;
-  font-size: 13.5px;
-  color: #eaeaea;
-  outline: none;
-  background-image:
-    linear-gradient(45deg, transparent 50%, #7b7f86 50%),
-    linear-gradient(135deg, #7b7f86 50%, transparent 50%);
-  background-position:
-    calc(100% - 12px) calc(50% - 3px),
-    calc(100% - 6px) calc(50% + 3px);
-  background-size:
-    5px 5px,
-    5px 5px;
-  background-repeat: no-repeat;
-}
-
-.rd-input:focus {
-  border-bottom-color: #2f343a;
-}
-
-.rd-divider {
-  height: 1px;
-  background: #232428;
-}
-
-/* swap button: small circle that matches dark UI */
-.rd-swap {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  border: 1px solid #232428;
-  background: #1b1d21;
-  color: #d6d6d9;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-}
-
-.rd-swap:hover {
-  background: #202329;
-  border-color: #2a2f34;
-}
-
-.rd-swap:focus {
-  outline: 2px solid #2f343a;
-  outline-offset: 2px;
-}
-
-/* very small screens: stretch slightly but keep discrete look */
-@media (max-width: 520px) {
-  .routingdock--compact .rd-card {
-    width: 92vw;
-  }
 }
 </style>
