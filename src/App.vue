@@ -192,8 +192,52 @@
             class="section-content"
             :class="{ 'section-content--collapsed': legendCollapsed }"
           >
-            <div class="legend-box">
-              <Legend :mode="mode" />
+            <div 
+              class="legend-box-new"
+              :class="{ 
+                'legend-box-new--highlight': legendOverBox 
+              }"
+              ref="legendBoxRef"
+            >
+              <Legend
+                v-if="!legendDraggedOut"
+                :mode="mode"
+                :in-box="true"
+                :dragged-out="false"
+                :position="legendPosition"
+                @take-out="handleLegendDragOut"
+                @drag-back="handleLegendDragBack"
+                @drag-start="() => {}"
+                @drag-end="() => {}"
+                @position-update="handleLegendPositionUpdate"
+              />
+              <div v-else class="legend-box-empty">
+                <svg
+                  width="32"
+                  height="32"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    d="M12 2L2 7L12 12L22 7L12 2Z"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M2 17L12 22L22 17"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M2 12L12 17L22 12"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+                <span class="legend-box-empty-text">Legend is outside</span>
+              </div>
             </div>
           </div>
         </div>
@@ -275,6 +319,21 @@
         </template>
       </div>
     </div>
+
+    <!-- Dragged out legend (floating) -->
+    <Legend
+      v-if="legendDraggedOut"
+      :mode="mode"
+      :dragged-out="true"
+      :in-box="false"
+      :position="legendPosition"
+      :size="legendSize"
+      @close="handleLegendClose"
+      @position-update="handleLegendPositionUpdate"
+      @size-update="handleLegendSizeUpdate"
+      @drag-back="handleLegendDragBack"
+      class="legend-floating"
+    />
   </div>
 </template>
 
@@ -318,7 +377,7 @@ const mode = computed(() => {
   if (combinedVisible.value) return "combined";
   if (vibrancyVisible.value) return "vibrancy";
   if (lightingVisible.value) return "lighting";
-  return "combined"; // default fallback
+  return null; // No layer selected
 });
 const startHub = ref("");
 const endHub = ref("");
@@ -348,6 +407,60 @@ const pendingTourAfterZoom = ref(false);
 const routingCollapsed = ref(false);
 const layersCollapsed = ref(false);
 const legendCollapsed = ref(false);
+
+// Legend drag state
+const legendDraggedOut = ref(false);
+const legendPosition = ref({ x: 100, y: 100 });
+const legendSize = ref({ width: 280, height: 280 });
+const legendOverBox = ref(false);
+const legendBoxRef = ref(null);
+
+function handleLegendDragOut() {
+  legendDraggedOut.value = true;
+}
+
+function handleLegendClose() {
+  legendDraggedOut.value = false;
+  legendPosition.value = { x: 100, y: 100 }; // Reset position
+  legendSize.value = { width: 280, height: 280 }; // Reset size
+  legendOverBox.value = false;
+}
+
+function handleLegendPositionUpdate(position) {
+  legendPosition.value = position;
+  
+  // Check if legend is over the box (only when dragged out and being moved)
+  if (legendBoxRef.value && legendDraggedOut.value) {
+    const boxRect = legendBoxRef.value.getBoundingClientRect();
+    const legendWidth = legendSize.value.width;
+    const legendHeight = legendSize.value.height;
+    const legendCenterX = position.x + legendWidth / 2;
+    const legendCenterY = position.y + legendHeight / 2;
+    
+    const isOverBox = 
+      legendCenterX >= boxRect.left &&
+      legendCenterX <= boxRect.right &&
+      legendCenterY >= boxRect.top &&
+      legendCenterY <= boxRect.bottom;
+    
+    legendOverBox.value = isOverBox;
+  } else {
+    legendOverBox.value = false;
+  }
+}
+
+function handleLegendDragBack() {
+  if (legendOverBox.value) {
+    legendDraggedOut.value = false;
+    legendPosition.value = { x: 100, y: 100 };
+    legendSize.value = { width: 280, height: 280 }; // Reset size
+    legendOverBox.value = false;
+  }
+}
+
+function handleLegendSizeUpdate(size) {
+  legendSize.value = size;
+}
 
 // Map scale state
 const mapZoom = ref(1.2);
@@ -1114,29 +1227,6 @@ textarea:focus-visible {
 }
 
 /* -------- LEGEND BOX -------- */
-.sidebar-legend {
-  margin-top: 16px;
-}
-.legend-box {
-  position: relative;
-  width: 100%;
-  padding-bottom: 100%;
-  border-radius: 18px;
-  background: linear-gradient(180deg, #202124 0%, #171718 100%);
-  border: 1px solid #232428;
-  box-sizing: border-box;
-}
-
-.legend-box > * {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  right: 12px;
-  bottom: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
 
 /* -------- PROFILE SECTION -------- */
 .profile {
@@ -1373,5 +1463,59 @@ textarea:focus-visible {
   50% {
     opacity: 0.2;
   }
+}
+
+/* -------- LEGEND BOX -------- */
+.sidebar-legend {
+  margin-top: 16px;
+}
+
+.legend-box-new {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #1a1b1e 0%, #141517 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-sizing: border-box;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.legend-box-new--highlight {
+  background: linear-gradient(180deg, #2a2b2e 0%, #242527 100%);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.legend-box-empty {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.legend-box-empty svg {
+  opacity: 0.5;
+}
+
+.legend-box-empty-text {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  text-align: center;
 }
 </style>

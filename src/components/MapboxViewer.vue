@@ -394,51 +394,106 @@ onMounted(async () => {
   }
 });
 
+// Helper function to safely update layer visibility
+function updateLayerVisibility(layerId, visible) {
+  if (!map || !map.isStyleLoaded()) return false;
+  const layer = map.getLayer(layerId);
+  if (!layer) return false;
+  try {
+    map.setLayoutProperty(layerId, "visibility", visible ? "visible" : "none");
+    return true;
+  } catch (error) {
+    console.warn(`Failed to update layer ${layerId}:`, error);
+    return false;
+  }
+}
+
 // React to layer visibility changes
 watch(
   () => props.lightingVisible,
   (isVisible) => {
-    if (!map || !map.isStyleLoaded()) return;
+    if (!map) return;
+    
+    // Use nextTick to ensure DOM and map are ready
+    nextTick(() => {
+      const updateVisibility = () => {
+        if (!map.isStyleLoaded()) {
+          setTimeout(updateVisibility, 50);
+          return;
+        }
 
-    // Show/hide hex layer only when lighting layer is selected
-    map.setLayoutProperty(
-      "hex-layer",
-      "visibility",
-      isVisible ? "visible" : "none"
-    );
-  }
+        // Show/hide hex layer only when lighting layer is selected
+        updateLayerVisibility("hex-layer", isVisible);
+        
+        // Ensure other layers are hidden when lighting is selected
+        if (isVisible) {
+          updateLayerVisibility("hex-vibrancy-layer", false);
+          updateLayerVisibility("hex-combined-layer", false);
+        }
+      };
+      
+      updateVisibility();
+    });
+  },
+  { immediate: true }
 );
 
 watch(
   () => props.vibrancyVisible,
   (isVisible) => {
-    if (!map || !map.isStyleLoaded()) return;
+    if (!map) return;
+    
+    // Use nextTick to ensure DOM and map are ready
+    nextTick(() => {
+      const updateVisibility = () => {
+        if (!map.isStyleLoaded()) {
+          setTimeout(updateVisibility, 50);
+          return;
+        }
 
-    // Show/hide 3D vibrancy layer when vibrancy layer is selected
-    if (map.getLayer("hex-vibrancy-layer")) {
-      map.setLayoutProperty(
-        "hex-vibrancy-layer",
-        "visibility",
-        isVisible ? "visible" : "none"
-      );
-    }
-  }
+        // Show/hide 3D vibrancy layer when vibrancy layer is selected
+        updateLayerVisibility("hex-vibrancy-layer", isVisible);
+        
+        // Ensure other layers are hidden when vibrancy is selected
+        if (isVisible) {
+          updateLayerVisibility("hex-layer", false);
+          updateLayerVisibility("hex-combined-layer", false);
+        }
+      };
+      
+      updateVisibility();
+    });
+  },
+  { immediate: true }
 );
 
 watch(
   () => props.combinedVisible,
   (isVisible) => {
-    if (!map || !map.isStyleLoaded()) return;
+    if (!map) return;
+    
+    // Use nextTick to ensure DOM and map are ready
+    nextTick(() => {
+      const updateVisibility = () => {
+        if (!map.isStyleLoaded()) {
+          setTimeout(updateVisibility, 50);
+          return;
+        }
 
-    // Show/hide 3D combined layer when combined layer is selected
-    if (map.getLayer("hex-combined-layer")) {
-      map.setLayoutProperty(
-        "hex-combined-layer",
-        "visibility",
-        isVisible ? "visible" : "none"
-      );
-    }
-  }
+        // Show/hide 3D combined layer when combined layer is selected
+        updateLayerVisibility("hex-combined-layer", isVisible);
+        
+        // Ensure other layers are hidden when combined is selected
+        if (isVisible) {
+          updateLayerVisibility("hex-layer", false);
+          updateLayerVisibility("hex-vibrancy-layer", false);
+        }
+      };
+      
+      updateVisibility();
+    });
+  },
+  { immediate: true }
 );
 
 watch(
