@@ -32,10 +32,10 @@
         <!-- square collapse button (quadratic) -->
         <button
           class="sidebar-toggle"
+          :class="{ 'sidebar-toggle--will-close': !sidebarCollapsed }"
           @click="sidebarCollapsed = !sidebarCollapsed"
           :aria-expanded="!sidebarCollapsed"
           :aria-label="sidebarCollapsed ? 'Open sidebar' : 'Close sidebar'"
-          title="Toggle sidebar"
         >
           <img
             src="/sidebar.svg"
@@ -43,6 +43,9 @@
             class="sidebar-toggle-icon"
             aria-hidden="true"
           />
+          <span class="sidebar-toggle-tooltip">
+            {{ sidebarCollapsed ? "Open sidebar" : "Close sidebar" }}
+          </span>
         </button>
       </div>
 
@@ -235,6 +238,44 @@
       <div class="scale-line"></div>
       <div class="scale-label">{{ scaleText }}</div>
     </div>
+
+    <!-- City button (shows when not at Zurich level) -->
+    <button
+      class="map-city-button"
+      :class="{ 'map-city-button--visible': mapZoom < 11 }"
+      @click="focusZurich"
+      aria-label="Zoom to Zurich"
+    >
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M12 2L2 7L12 12L22 7L12 2Z"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+        <path
+          d="M2 17L12 22L22 17"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+        <path
+          d="M2 12L12 17L22 12"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </button>
 
     <!-- Location indicator -->
     <div
@@ -649,15 +690,6 @@ textarea:focus-visible {
   margin-top: 24px;
 }
 
-.sidebar-routing::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: rgba(255, 255, 255, 0.08);
-}
 .sidebar .title {
   color: #b8bcc0;
   font-size: 14px;
@@ -782,16 +814,20 @@ textarea:focus-visible {
   height: 30px; /* quadratic */
   box-sizing: border-box;
   padding: 0;
+  position: relative;
 
   border-radius: 8px;
   display: grid;
   place-items: center;
   background: #151517;
   color: #e6e6e8;
-  cursor: pointer;
+  cursor: e-resize; /* Default: pointing right (will open/expand) */
   outline: none !important;
   box-shadow: none !important;
   border: none;
+}
+.sidebar-toggle--will-close {
+  cursor: w-resize; /* Pointing left (will close/fold) */
 }
 .sidebar-toggle:hover {
   background: #2a2f34;
@@ -812,6 +848,40 @@ textarea:focus-visible {
   height: 18px;
   display: block;
   object-fit: contain;
+}
+.sidebar-toggle-tooltip {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: #ffffff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0ms,
+    visibility 0ms;
+  z-index: 10000;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  font-weight: 500;
+}
+.sidebar-toggle:hover .sidebar-toggle-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 0ms,
+    visibility 0ms;
 }
 
 /* collapse behaviour */
@@ -1143,6 +1213,47 @@ textarea:focus-visible {
   font-weight: 500;
   letter-spacing: 0.01em;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* -------- MAP CITY BUTTON -------- */
+.map-city-button {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 12;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  background: #151517;
+  border: none;
+  color: #ffffff;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition:
+    opacity 0.4s cubic-bezier(0.16, 0.84, 0.24, 1),
+    transform 0.4s cubic-bezier(0.16, 0.84, 0.24, 1),
+    visibility 0ms 0.4s;
+  pointer-events: none;
+}
+.map-city-button--visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  transition:
+    opacity 0.4s cubic-bezier(0.16, 0.84, 0.24, 1),
+    transform 0.4s cubic-bezier(0.16, 0.84, 0.24, 1),
+    visibility 0ms;
+  pointer-events: auto;
+}
+.map-city-button--visible:hover {
+  background: #2a2f34;
+}
+.map-city-button--visible:active {
+  background: #1c1e21;
 }
 
 /* -------- MAP LOCATION -------- */

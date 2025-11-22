@@ -128,23 +128,22 @@ function handleTurnOn() {
     // Keep brightness overlay active to maintain white background
     // No blackout needed - let the brightness overlay create the white background
 
-    // show Lumo for ~3.5s, then fade it and smoothly transition to final slide
+    // show Lumo for ~2.5s, then transition to final slide using simple blackout
     timer = setTimeout(() => {
-      // start fade-out animation for the Lumo text
-      fadingLogo.value = true;
+      // Turn off brightness overlay
+      lightsHover.value = false;
+      // Simple blackout transition like goTo function
+      blackout.value = true;
+      // Wait for blackout to reach full opacity (500ms), then change slide
       timer = setTimeout(() => {
-        // Fade out brightness and add blackout before final slide
-        lightsHover.value = false;
-        blackout.value = true;
         slide.value = 3;
-        // Wait for blackout to be fully opaque (700ms), then add delay before revealing
+        // Remove blackout after a short reveal delay so the new slide fades in gently
         setTimeout(() => {
           blackout.value = false;
-          // Content will start fading in after blackout is removed
           timer = null;
-        }, 700);
-      }, 600); // allow fade-out animation to complete
-    }, 3500);
+        }, 150);
+      }, 500);
+    }, 2500);
   }, 800); // Give time for brightness to gradually increase
 }
 
@@ -197,7 +196,7 @@ onBeforeUnmount(() => {
   inset: 0;
   display: grid;
   place-items: center;
-  background: #000000; /* keep true black backdrop */
+  background: #151517; /* match sidebar background */
   z-index: 1000;
 }
 .walkthrough.lights-hover {
@@ -216,7 +215,7 @@ onBeforeUnmount(() => {
 .slide {
   position: absolute;
   inset: 0;
-  background: #000000;
+  background: #151517;
   display: grid;
   align-items: center;
   justify-items: center;
@@ -334,6 +333,9 @@ onBeforeUnmount(() => {
 
 .wt-actions {
   margin-top: 38px;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
 }
 
 .btn {
@@ -350,20 +352,54 @@ onBeforeUnmount(() => {
     BlinkMacSystemFont,
     system-ui,
     sans-serif;
+  min-width: 140px;
+  transition:
+    transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 400ms cubic-bezier(0.16, 0.84, 0.24, 1),
+    filter 400ms ease;
+  transform: scale(1) rotate(0deg);
+  position: relative;
+}
+.btn:hover {
+  transform: scale(1.06) rotate(1deg);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+  filter: brightness(1.05);
+}
+/* Remove brightness filter on hover when parent has brightness filter */
+.walkthrough.lights-hover .btn:hover {
+  filter: brightness(0.8); /* Keep counteracted brightness, no additional hover brightness */
+}
+.btn:active {
+  transform: scale(1.02) rotate(0.5deg);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  transition:
+    transform 150ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 150ms ease;
 }
 .btn-primary {
   background: #ffffff;
   color: #111;
 }
+.btn-primary:hover {
+  background: #ffffff; /* Keep same color, no brightness change */
+}
+/* Counteract parent brightness filter to keep button at normal brightness */
+.walkthrough.lights-hover .btn-primary {
+  filter: brightness(0.8); /* Inverse of parent's brightness(1.25) to maintain normal appearance */
+  transition: filter 350ms ease, transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 400ms cubic-bezier(0.16, 0.84, 0.24, 1); /* Match parent transition timing */
+}
 .btn-ghost {
   background: rgba(255, 255, 255, 0.06);
   color: #eaeaea;
+}
+.btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.06); /* Keep same color */
 }
 
 .slide--logo {
   display: grid;
   place-items: center;
-  background: #000;
+  background: #151517;
   position: fixed;
   inset: 0;
   z-index: 1300;
