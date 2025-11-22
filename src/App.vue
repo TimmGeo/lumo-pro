@@ -247,32 +247,15 @@
       aria-label="Zoom to Zurich"
     >
       <svg
+        class="map-city-button-icon"
         width="20"
         height="20"
-        viewBox="0 0 24 24"
-        fill="none"
+        viewBox="0 0 32.42 39.57"
         xmlns="http://www.w3.org/2000/svg"
       >
         <path
-          d="M12 2L2 7L12 12L22 7L12 2Z"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        />
-        <path
-          d="M2 17L12 22L22 17"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        />
-        <path
-          d="M2 12L12 17L22 12"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
+          d="M16.21,0C7.27,0,0,7.27,0,16.21c0,2.57.59,5.04,1.73,7.29,3.17,7.01,9.89,13.08,12.62,15.35.39.35,1.09.72,1.89.72.65,0,1.26-.24,1.79-.7,2.75-2.28,9.48-8.35,12.63-15.33,1.16-2.29,1.75-4.76,1.75-7.33C32.42,7.27,25.15,0,16.21,0ZM30.66,16.21c0,2.29-.53,4.5-1.57,6.55v.02c-3.02,6.68-9.53,12.53-12.19,14.75-.64.56-1.23.14-1.4-.01-2.65-2.2-9.15-8.06-12.18-14.77-1.04-2.04-1.56-4.24-1.56-6.53C1.76,8.24,8.24,1.76,16.21,1.76s14.45,6.48,14.45,14.45Z"
+          fill="#ffffff"
         />
       </svg>
     </button>
@@ -429,11 +412,11 @@ function handleScroll() {
     clearTimeout(scrollTimeout);
   }
 
-  // Hide scrollbar after scrolling stops (0.3s delay)
+  // Hide scrollbar after scrolling stops (1s delay to match fade-out)
   scrollTimeout = setTimeout(() => {
     isScrolling.value = false;
     scrollTimeout = null;
-  }, 300);
+  }, 1000);
 }
 
 onMounted(async () => {
@@ -637,13 +620,13 @@ textarea:focus-visible {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding-right: 4px;
-  margin-right: -4px;
+  margin-right: -16px;
+  padding-right: 16px;
 }
 
-/* Custom scrollbar styling */
+/* Scrollbar - only visible when scrolling */
 .sidebar-scrollable::-webkit-scrollbar {
-  width: 8px;
+  width: 14px;
 }
 
 .sidebar-scrollable::-webkit-scrollbar-track {
@@ -652,17 +635,28 @@ textarea:focus-visible {
 
 .sidebar-scrollable::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.4);
-  border-radius: 4px;
+  border-radius: 7px;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .sidebar-scrollable--scrolling::-webkit-scrollbar-thumb {
   opacity: 1;
+  transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .sidebar-scrollable--scrolling::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.5);
+}
+
+/* Firefox */
+.sidebar-scrollable {
+  scrollbar-width: none;
+}
+
+.sidebar-scrollable--scrolling {
+  scrollbar-width: auto;
+  scrollbar-color: rgba(255, 255, 255, 0.4) transparent;
 }
 
 .sidebar h2 {
@@ -1226,9 +1220,11 @@ textarea:focus-visible {
   border-radius: 8px;
   background: #151517;
   border: none;
-  color: #ffffff;
-  display: grid;
-  place-items: center;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   opacity: 0;
   visibility: hidden;
@@ -1254,6 +1250,12 @@ textarea:focus-visible {
 }
 .map-city-button--visible:active {
   background: #1c1e21;
+}
+.map-city-button-icon {
+  width: 20px;
+  height: 20px;
+  display: block;
+  flex-shrink: 0;
 }
 
 /* -------- MAP LOCATION -------- */
