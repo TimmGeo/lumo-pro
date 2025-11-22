@@ -11,7 +11,11 @@
     />
 
     <!-- Sidebar controls -->
-    <aside :class="['sidebar', { 'sidebar--collapsed': sidebarCollapsed }]">
+    <aside
+      :class="['sidebar', { 'sidebar--collapsed': sidebarCollapsed }]"
+      @mouseenter="isHovering = true"
+      @mouseleave="handleMouseLeave"
+    >
       <div class="sidebar-header">
         <h2 class="nowrap">Lumo <span class="muted">Pro</span></h2>
 
@@ -33,55 +37,74 @@
       </div>
 
       <!-- Scrollable content area -->
-      <div class="sidebar-scrollable">
+      <div
+        ref="scrollableRef"
+        class="sidebar-scrollable"
+        :class="{ 'sidebar-scrollable--scrolling': isScrolling }"
+      >
         <!-- Routing section -->
         <div class="group sidebar-content sidebar-routing">
-          <div class="title">Routing</div>
-          <button
-            :class="{ active: routingHubsVisible }"
-            @click="toggleRoutingHubs"
+          <div
+            class="title title-collapsible"
+            @click="routingCollapsed = !routingCollapsed"
           >
-            <span class="button-icon">
-              <img src="/routing_hubs.svg" alt="Routing hubs icon" />
-            </span>
-            Routing Hubs
-          </button>
-        </div>
+            Routing
+            <span
+              class="chevron"
+              :class="{ 'chevron--collapsed': routingCollapsed }"
+              >▼</span
+            >
+          </div>
+          <div
+            class="section-content"
+            :class="{ 'section-content--collapsed': routingCollapsed }"
+          >
+            <button
+              :class="{ active: routingHubsVisible }"
+              @click="toggleRoutingHubs"
+            >
+              <span class="button-icon">
+                <img src="/routing_hubs.svg" alt="Routing hubs icon" />
+              </span>
+              Routing Hubs
+            </button>
 
-        <!-- Route planning -->
-        <div class="group sidebar-content sidebar-route-planning">
-          <div class="route-clean">
-            <div class="route-connector">
-              <div class="route-line"></div>
-              <div class="route-marker route-marker-start"></div>
-              <div class="route-marker route-marker-end"></div>
-            </div>
-            <div class="route-inputs">
-              <div class="route-input-wrapper">
-                <label
-                  class="route-label-float"
-                  :class="{ 'route-label-float--active': startHub }"
-                  >From</label
-                >
-                <select v-model="startHub" class="route-select-clean">
-                  <option disabled value=""></option>
-                  <option v-for="h in hubs" :key="h.id" :value="h.id">
-                    {{ h.name }}
-                  </option>
-                </select>
-              </div>
-              <div class="route-input-wrapper">
-                <label
-                  class="route-label-float"
-                  :class="{ 'route-label-float--active': endHub }"
-                  >To</label
-                >
-                <select v-model="endHub" class="route-select-clean">
-                  <option disabled value=""></option>
-                  <option v-for="h in hubs" :key="h.id" :value="h.id">
-                    {{ h.name }}
-                  </option>
-                </select>
+            <!-- Route planning -->
+            <div class="sidebar-route-planning">
+              <div class="route-clean">
+                <div class="route-connector">
+                  <div class="route-line"></div>
+                  <div class="route-marker route-marker-start"></div>
+                  <div class="route-marker route-marker-end"></div>
+                </div>
+                <div class="route-inputs">
+                  <div class="route-input-wrapper">
+                    <label
+                      class="route-label-float"
+                      :class="{ 'route-label-float--active': startHub }"
+                      >From</label
+                    >
+                    <select v-model="startHub" class="route-select-clean">
+                      <option disabled value=""></option>
+                      <option v-for="h in hubs" :key="h.id" :value="h.id">
+                        {{ h.name }}
+                      </option>
+                    </select>
+                  </div>
+                  <div class="route-input-wrapper">
+                    <label
+                      class="route-label-float"
+                      :class="{ 'route-label-float--active': endHub }"
+                      >To</label
+                    >
+                    <select v-model="endHub" class="route-select-clean">
+                      <option disabled value=""></option>
+                      <option v-for="h in hubs" :key="h.id" :value="h.id">
+                        {{ h.name }}
+                      </option>
+                    </select>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -89,41 +112,71 @@
 
         <!-- Layers -->
         <div class="group sidebar-content">
-          <div class="title">Layers</div>
-          <button
-            :class="{ active: mode === 'lighting' }"
-            @click="mode = 'lighting'"
+          <div
+            class="title title-collapsible"
+            @click="layersCollapsed = !layersCollapsed"
           >
-            <span class="button-icon">
-              <img src="/lighting.svg" alt="Lighting layer icon" />
-            </span>
-            Lighting
-          </button>
-          <button
-            :class="{ active: mode === 'vibrancy' }"
-            @click="mode = 'vibrancy'"
+            Layers
+            <span
+              class="chevron"
+              :class="{ 'chevron--collapsed': layersCollapsed }"
+              >▼</span
+            >
+          </div>
+          <div
+            class="section-content"
+            :class="{ 'section-content--collapsed': layersCollapsed }"
           >
-            <span class="button-icon">
-              <img src="/vibrancy.svg" alt="Vibrancy layer icon" />
-            </span>
-            Vibrancy
-          </button>
-          <button
-            :class="{ active: mode === 'combined' }"
-            @click="mode = 'combined'"
-          >
-            <span class="button-icon">
-              <img src="/combined.svg" alt="Combined layer icon" />
-            </span>
-            Combined
-          </button>
+            <button
+              :class="{ active: mode === 'lighting' }"
+              @click="mode = 'lighting'"
+            >
+              <span class="button-icon">
+                <img src="/lighting.svg" alt="Lighting layer icon" />
+              </span>
+              Lighting
+            </button>
+            <button
+              :class="{ active: mode === 'vibrancy' }"
+              @click="mode = 'vibrancy'"
+            >
+              <span class="button-icon">
+                <img src="/vibrancy.svg" alt="Vibrancy layer icon" />
+              </span>
+              Vibrancy
+            </button>
+            <button
+              :class="{ active: mode === 'combined' }"
+              @click="mode = 'combined'"
+            >
+              <span class="button-icon">
+                <img src="/combined.svg" alt="Combined layer icon" />
+              </span>
+              Combined
+            </button>
+          </div>
         </div>
 
         <!-- Legend box placed inside the sidebar -->
         <div class="group sidebar-legend sidebar-content">
-          <div class="title">Color Legend</div>
-          <div class="legend-box">
-            <Legend :mode="mode" />
+          <div
+            class="title title-collapsible"
+            @click="legendCollapsed = !legendCollapsed"
+          >
+            Color Legend
+            <span
+              class="chevron"
+              :class="{ 'chevron--collapsed': legendCollapsed }"
+              >▼</span
+            >
+          </div>
+          <div
+            class="section-content"
+            :class="{ 'section-content--collapsed': legendCollapsed }"
+          >
+            <div class="legend-box">
+              <Legend :mode="mode" />
+            </div>
           </div>
         </div>
       </div>
@@ -167,7 +220,7 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted, onBeforeUnmount, nextTick } from "vue";
 import MapboxViewer from "./components/MapboxViewer.vue";
 import Legend from "./components/Legend.vue";
 import Walkthrough from "./components/Walkthrough.vue";
@@ -197,6 +250,61 @@ const routingHubsVisible = ref(true);
 const showGuidedTour = ref(false);
 const zurichFocusKey = ref(0);
 const pendingTourAfterZoom = ref(false);
+
+// Section collapse states
+const routingCollapsed = ref(false);
+const layersCollapsed = ref(false);
+const legendCollapsed = ref(false);
+
+// Scrollbar visibility
+const scrollableRef = ref(null);
+const isScrolling = ref(false);
+let scrollTimeout = null;
+
+function handleScroll() {
+  // Show scrollbar immediately when scrolling
+  isScrolling.value = true;
+
+  // Clear existing timeout
+  if (scrollTimeout) {
+    clearTimeout(scrollTimeout);
+  }
+
+  // Hide scrollbar after scrolling stops (0.3s delay)
+  scrollTimeout = setTimeout(() => {
+    isScrolling.value = false;
+    scrollTimeout = null;
+  }, 300);
+}
+
+onMounted(async () => {
+  await nextTick();
+  if (scrollableRef.value) {
+    scrollableRef.value.addEventListener("scroll", handleScroll, {
+      passive: true,
+    });
+    // Also listen for wheel events to catch mouse wheel scrolling
+    scrollableRef.value.addEventListener("wheel", handleScroll, {
+      passive: true,
+    });
+    // Listen for touch events on mobile
+    scrollableRef.value.addEventListener("touchmove", handleScroll, {
+      passive: true,
+    });
+  }
+});
+
+onBeforeUnmount(() => {
+  if (scrollTimeout) {
+    clearTimeout(scrollTimeout);
+  }
+  if (scrollableRef.value) {
+    scrollableRef.value.removeEventListener("scroll", handleScroll);
+    scrollableRef.value.removeEventListener("wheel", handleScroll);
+    scrollableRef.value.removeEventListener("touchmove", handleScroll);
+  }
+});
+
 // When Mapbox viewer is ready (will be implemented in MapboxViewer)
 function onViewerReady(exposed) {
   api = exposed;
@@ -303,7 +411,7 @@ body,
 
 /* Custom scrollbar styling */
 .sidebar-scrollable::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 
 .sidebar-scrollable::-webkit-scrollbar-track {
@@ -311,12 +419,18 @@ body,
 }
 
 .sidebar-scrollable::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
-.sidebar-scrollable::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.15);
+.sidebar-scrollable--scrolling::-webkit-scrollbar-thumb {
+  opacity: 1;
+}
+
+.sidebar-scrollable--scrolling::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
 }
 
 .sidebar h2 {
@@ -337,11 +451,69 @@ body,
 .sidebar .group {
   margin-top: 18px;
 }
+
+.sidebar-routing {
+  position: relative;
+  padding-top: 20px;
+  margin-top: 24px;
+}
+
+.sidebar-routing::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+}
 .sidebar .title {
-  color: #9aa0a6;
-  font-size: 12px;
+  color: #b8bcc0;
+  font-size: 14px;
   letter-spacing: 0.02em;
   margin-bottom: 16px;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+}
+
+.title-collapsible {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+}
+
+.chevron {
+  font-size: 8px;
+  color: rgba(255, 255, 255, 0.4);
+  transition: transform 0.2s ease;
+  margin-left: 6px;
+  line-height: 1;
+}
+
+.chevron--collapsed {
+  transform: rotate(-90deg);
+}
+
+.section-content {
+  overflow: hidden;
+  max-height: 1000px;
+  transition:
+    max-height 0.3s ease,
+    opacity 0.2s ease;
+  opacity: 1;
+}
+
+.section-content--collapsed {
+  max-height: 0;
+  opacity: 0;
+  margin-bottom: 0;
 }
 .sidebar .hint {
   color: #eaeaea;
@@ -360,6 +532,14 @@ body,
   background: #151517;
   border: 1px solid transparent;
   color: #eaeaea;
+  font-size: 14px;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
   text-align: left;
   cursor: pointer;
   outline: none;
@@ -372,8 +552,8 @@ body,
   background: #1c1e21;
 }
 .sidebar button .button-icon {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -418,8 +598,8 @@ body,
   background: #1c1e21;
 }
 .sidebar-toggle-icon {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   display: block;
   object-fit: contain;
 }
