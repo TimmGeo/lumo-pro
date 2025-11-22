@@ -268,7 +268,12 @@
       :class="{ 'map-location--visible': mapZoom >= 11 && locationText }"
     >
       <div class="location-name">{{ locationText }}</div>
-      <div class="location-time">{{ zurichTime }}</div>
+      <div class="location-time">
+        <template v-if="zurichTime">
+          {{ zurichTime.split(":")[0] }}<span class="time-colon">:</span
+          >{{ zurichTime.split(":")[1] }}
+        </template>
+      </div>
     </div>
   </div>
 </template>
@@ -1353,5 +1358,20 @@ textarea:focus-visible {
   font-weight: 500;
   letter-spacing: 0.01em;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+.time-colon {
+  animation: fadeInOut 1s ease-in-out infinite;
+  display: inline-block;
+}
+
+@keyframes fadeInOut {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.2;
+  }
 }
 </style>
