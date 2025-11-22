@@ -75,6 +75,7 @@ const isFullscreen = ref(false);
 let map = null;
 let hubsData = null;
 let hexData = null;
+let hexVibrancyData = null;
 let hubsLoaded = false;
 let pendingZurichFocusKey = 0;
 
@@ -82,6 +83,7 @@ let pendingZurichFocusKey = 0;
 const BASE = import.meta.env.BASE_URL || "/";
 const hubsUrl = `${BASE}data/routing_hubs.geojson`.replace(/\/{2,}/g, "/");
 const hexUrl = `${BASE}data/hex_light_100m.geojson`.replace(/\/{2,}/g, "/");
+const hexVibrancyUrl = `${BASE}data/hex_vibrancy_100m.geojson`.replace(/\/{2,}/g, "/");
 
 // NavigationControl handles zoom and rotation
 
@@ -257,11 +259,114 @@ onMounted(async () => {
         setHubsVisibility(props.showHubs);
         hubsLoaded = true;
 
+        // --- Load and add Vibrancy Hexagons (3D extruded) ---
+        try {
+          const vibrancyResponse = await fetch(hexVibrancyUrl);
+          hexVibrancyData = await vibrancyResponse.json();
+
+          map.addSource("hex-vibrancy", {
+            type: "geojson",
+            data: hexVibrancyData,
+          });
+
+          // Add 3D extruded hexagon layer for vibrancy
+          map.addLayer({
+            id: "hex-vibrancy-layer",
+            type: "fill-extrusion",
+            source: "hex-vibrancy",
+            filter: [">", ["get", "NUMPOINTS"], 0], // Only show hexagons with NUMPOINTS > 0
+            paint: {
+              "fill-extrusion-color": "#70f0c3",
+              "fill-extrusion-opacity": 0.7,
+              "fill-extrusion-height": [
+                "*",
+                ["get", "NUMPOINTS"],
+                150, // Scale factor - extremely high for dramatic skyscraper effect
+              ],
+              "fill-extrusion-base": 0,
+            },
+          });
+
+          // Initial visibility - only show vibrancy layer when vibrancy layer is selected
+          map.setLayoutProperty(
+            "hex-vibrancy-layer",
+            "visibility",
+            props.vibrancyVisible ? "visible" : "none"
+          );
+
+          // Create combined layer: vibrancy 3D hexagons with lighting colors
+          // Create a color lookup map from lighting data
+          const colorLookup = new Map();
+          if (hexData && hexData.features) {
+            hexData.features.forEach((feature) => {
+              if (feature.properties && feature.properties.id) {
+                colorLookup.set(
+                  feature.properties.id,
+                  feature.properties.color || "#969696"
+                );
+              }
+            });
+          }
+
+          // Merge vibrancy geometry with lighting colors
+          const combinedData = {
+            type: "FeatureCollection",
+            features: hexVibrancyData.features.map((feature) => {
+              const color =
+                colorLookup.get(feature.properties.id) || "#969696";
+              return {
+                ...feature,
+                properties: {
+                  ...feature.properties,
+                  lightingColor: color,
+                },
+              };
+            }),
+          };
+
+          map.addSource("hex-combined", {
+            type: "geojson",
+            data: combinedData,
+          });
+
+          // Add 3D extruded hexagon layer for combined (vibrancy height + lighting color)
+          map.addLayer({
+            id: "hex-combined-layer",
+            type: "fill-extrusion",
+            source: "hex-combined",
+            filter: [">", ["get", "NUMPOINTS"], 0], // Only show hexagons with NUMPOINTS > 0
+            paint: {
+              "fill-extrusion-color": [
+                "coalesce",
+                ["get", "lightingColor"],
+                "#969696",
+              ],
+              "fill-extrusion-opacity": 0.7,
+              "fill-extrusion-height": [
+                "*",
+                ["get", "NUMPOINTS"],
+                150, // Scale factor - extremely high for dramatic skyscraper effect
+              ],
+              "fill-extrusion-base": 0,
+            },
+          });
+
+          // Initial visibility - only show combined layer when combined layer is selected
+          map.setLayoutProperty(
+            "hex-combined-layer",
+            "visibility",
+            props.combinedVisible ? "visible" : "none"
+          );
+        } catch (error) {
+          console.error("Failed to load vibrancy GeoJSON data:", error);
+        }
+
         // Debug
         window.map = map;
         console.log("Loaded:", {
           hubs: hubsData.features.length,
           hex: hexData.features.length,
+          hexVibrancy: hexVibrancyData ? hexVibrancyData.features.length : 0,
         });
         if (pendingZurichFocusKey) {
           performZurichFocus();
@@ -301,6 +406,38 @@ watch(
       "visibility",
       isVisible ? "visible" : "none"
     );
+  }
+);
+
+watch(
+  () => props.vibrancyVisible,
+  (isVisible) => {
+    if (!map || !map.isStyleLoaded()) return;
+
+    // Show/hide 3D vibrancy layer when vibrancy layer is selected
+    if (map.getLayer("hex-vibrancy-layer")) {
+      map.setLayoutProperty(
+        "hex-vibrancy-layer",
+        "visibility",
+        isVisible ? "visible" : "none"
+      );
+    }
+  }
+);
+
+watch(
+  () => props.combinedVisible,
+  (isVisible) => {
+    if (!map || !map.isStyleLoaded()) return;
+
+    // Show/hide 3D combined layer when combined layer is selected
+    if (map.getLayer("hex-combined-layer")) {
+      map.setLayoutProperty(
+        "hex-combined-layer",
+        "visibility",
+        isVisible ? "visible" : "none"
+      );
+    }
   }
 );
 
