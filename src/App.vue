@@ -51,9 +51,10 @@
             Routing
             <span
               class="chevron"
-              :class="{ 'chevron--collapsed': routingCollapsed }"
-              >▼</span
+              :class="{ 'chevron--expanded': !routingCollapsed }"
             >
+              >
+            </span>
           </div>
           <div
             class="section-content"
@@ -119,9 +120,10 @@
             Layers
             <span
               class="chevron"
-              :class="{ 'chevron--collapsed': layersCollapsed }"
-              >▼</span
+              :class="{ 'chevron--expanded': !layersCollapsed }"
             >
+              >
+            </span>
           </div>
           <div
             class="section-content"
@@ -166,9 +168,10 @@
             Color Legend
             <span
               class="chevron"
-              :class="{ 'chevron--collapsed': legendCollapsed }"
-              >▼</span
+              :class="{ 'chevron--expanded': !legendCollapsed }"
             >
+              >
+            </span>
           </div>
           <div
             class="section-content"
@@ -484,21 +487,30 @@ body,
 .title-collapsible {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 6px;
   cursor: pointer;
   user-select: none;
 }
 
 .chevron {
-  font-size: 8px;
+  font-size: 12px;
   color: rgba(255, 255, 255, 0.4);
-  transition: transform 0.2s ease;
-  margin-left: 6px;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
   line-height: 1;
+  flex-shrink: 0;
+  display: inline-block;
+  transform: scaleY(1.3);
+  opacity: 0;
 }
 
-.chevron--collapsed {
-  transform: rotate(-90deg);
+.group:hover .chevron {
+  opacity: 1;
+}
+
+.chevron--expanded {
+  transform: scaleX(1.3) rotate(90deg);
 }
 
 .section-content {
@@ -801,8 +813,7 @@ body,
 }
 .legend-box {
   width: 100%;
-  max-width: 288px;
-  height: 230px;
+  aspect-ratio: 1;
   border-radius: 18px;
   background: linear-gradient(180deg, #202124 0%, #171718 100%);
   border: 1px solid #232428;
