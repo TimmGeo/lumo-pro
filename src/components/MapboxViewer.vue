@@ -1,14 +1,36 @@
 <template>
   <div ref="sceneEl" class="scene">
     <div ref="mapEl" class="map"></div>
-
-    <!-- Fullscreen control -->
     <button
       class="fullscreen-btn"
       @click="toggleFullscreen"
+      :class="{ active: isFullscreen }"
       aria-label="Toggle fullscreen"
     >
-      {{ isFullscreen ? "✕" : "⛶" }}
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          v-if="!isFullscreen"
+          d="M8 3H5C3.89543 3 3 3.89543 3 5V8M21 8V5C21 3.89543 20.1046 3 19 3H16M16 21H19C20.1046 21 21 20.1046 21 19V16M3 16V19C3 20.1046 3.89543 21 5 21H8"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+        <path
+          v-else
+          d="M8 3V8M8 21V16M16 3V8M16 21V16M3 8H8M16 8H21M3 16H8M16 16H21"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
     </button>
   </div>
 </template>
@@ -19,9 +41,17 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 const props = defineProps({
-  mode: {
-    type: String,
-    default: "combined",
+  lightingVisible: {
+    type: Boolean,
+    default: true,
+  },
+  vibrancyVisible: {
+    type: Boolean,
+    default: false,
+  },
+  combinedVisible: {
+    type: Boolean,
+    default: false,
   },
   heightScale: {
     type: Number,
@@ -218,11 +248,11 @@ onMounted(async () => {
           },
         });
 
-        // Initial visibility based on mode
+        // Initial visibility - only show hex layer when lighting layer is selected
         map.setLayoutProperty(
           "hex-layer",
           "visibility",
-          props.mode === "lighting" ? "visible" : "none"
+          props.lightingVisible ? "visible" : "none"
         );
         setHubsVisibility(props.showHubs);
         hubsLoaded = true;
@@ -259,17 +289,17 @@ onMounted(async () => {
   }
 });
 
-// React to sidebar mode changes
+// React to layer visibility changes
 watch(
-  () => props.mode,
-  (newMode) => {
+  () => props.lightingVisible,
+  (isVisible) => {
     if (!map || !map.isStyleLoaded()) return;
 
-    // Show/hide hex layer based on mode
+    // Show/hide hex layer only when lighting layer is selected
     map.setLayoutProperty(
       "hex-layer",
       "visibility",
-      newMode === "lighting" ? "visible" : "none"
+      isVisible ? "visible" : "none"
     );
   }
 );
@@ -364,10 +394,22 @@ onBeforeUnmount(() => {
   height: 100%;
 }
 
-/* Position Mapbox NavigationControl lower to avoid routing bar */
+/* Position Mapbox NavigationControl in bottom right, above scale */
 :deep(.mapboxgl-ctrl-top-right) {
-  top: 100px !important;
-  right: 20px;
+  top: auto !important;
+  bottom: 120px !important;
+  right: 20px !important;
+  left: auto !important;
+  margin: 0 !important;
+}
+
+:deep(.mapboxgl-ctrl-top-right .mapboxgl-ctrl-group) {
+  margin: 0 !important;
+  box-shadow: 0 0 0 0 rgba(0, 0, 0, 0) !important;
+}
+
+:deep(.mapboxgl-ctrl-top-right button) {
+  margin: 0 !important;
 }
 
 /* Hide Mapbox watermark/attribution */
@@ -381,31 +423,44 @@ onBeforeUnmount(() => {
 
 /* Fullscreen button */
 .fullscreen-btn {
-  position: absolute;
+  position: fixed;
+  bottom: 220px;
   right: 20px;
-  top: 200px;
   width: 29px;
   height: 29px;
+  min-width: 29px;
+  min-height: 29px;
   border: none;
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.9);
   color: #333;
-  font-size: 16px;
-  line-height: 1;
+  border-radius: 4px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 2px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
-  transition: background 0.15s ease;
   z-index: 15;
+  transition: background 0.15s ease;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  backdrop-filter: blur(10px);
+  box-sizing: border-box;
+  padding: 0;
 }
 
 .fullscreen-btn:hover {
-  background: #f5f5f5;
+  background: rgba(255, 255, 255, 1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .fullscreen-btn:active {
-  background: #eeeeee;
+  background: rgba(245, 245, 245, 1);
+}
+
+.fullscreen-btn.active {
+  background: rgba(240, 240, 240, 1);
+}
+
+.fullscreen-btn svg {
+  width: 16px;
+  height: 16px;
 }
 </style>

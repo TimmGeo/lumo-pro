@@ -2,7 +2,9 @@
   <div class="app">
     <!-- Main map viewer -->
     <MapboxViewer
-      :mode="mode"
+      :lightingVisible="lightingVisible"
+      :vibrancyVisible="vibrancyVisible"
+      :combinedVisible="combinedVisible"
       :heightScale="heightScale"
       :showHubs="routingHubsVisible"
       @ready="onViewerReady"
@@ -143,8 +145,8 @@
             :class="{ 'section-content--collapsed': layersCollapsed }"
           >
             <button
-              :class="{ active: mode === 'lighting' }"
-              @click="mode = 'lighting'"
+              :class="{ active: lightingVisible }"
+              @click="selectLayer('lighting')"
             >
               <span class="button-icon">
                 <img src="/lighting.svg" alt="Lighting layer icon" />
@@ -152,8 +154,8 @@
               Lighting
             </button>
             <button
-              :class="{ active: mode === 'vibrancy' }"
-              @click="mode = 'vibrancy'"
+              :class="{ active: vibrancyVisible }"
+              @click="selectLayer('vibrancy')"
             >
               <span class="button-icon">
                 <img src="/vibrancy.svg" alt="Vibrancy layer icon" />
@@ -161,8 +163,8 @@
               Vibrancy
             </button>
             <button
-              :class="{ active: mode === 'combined' }"
-              @click="mode = 'combined'"
+              :class="{ active: combinedVisible }"
+              @click="selectLayer('combined')"
             >
               <span class="button-icon">
                 <img src="/combined.svg" alt="Combined layer icon" />
@@ -272,15 +274,47 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, nextTick } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount, nextTick } from "vue";
 import MapboxViewer from "./components/MapboxViewer.vue";
 import Legend from "./components/Legend.vue";
 import Walkthrough from "./components/Walkthrough.vue";
 import GuidedTour from "./components/GuidedTour.vue";
 
 // UI state
-const mode = ref("combined");
 const heightScale = ref(1.5);
+// Layer visibility states - only one can be active at a time
+const lightingVisible = ref(true);
+const vibrancyVisible = ref(false);
+const combinedVisible = ref(false);
+
+// Function to select/deselect a layer (only one can be active at a time)
+function selectLayer(layerName) {
+  // Check if the clicked layer is already active
+  const isCurrentlyActive =
+    (layerName === "lighting" && lightingVisible.value) ||
+    (layerName === "vibrancy" && vibrancyVisible.value) ||
+    (layerName === "combined" && combinedVisible.value);
+
+  if (isCurrentlyActive) {
+    // If already active, deselect it
+    lightingVisible.value = false;
+    vibrancyVisible.value = false;
+    combinedVisible.value = false;
+  } else {
+    // Otherwise, select this layer and deselect others
+    lightingVisible.value = layerName === "lighting";
+    vibrancyVisible.value = layerName === "vibrancy";
+    combinedVisible.value = layerName === "combined";
+  }
+}
+
+// Computed mode for Legend component
+const mode = computed(() => {
+  if (combinedVisible.value) return "combined";
+  if (vibrancyVisible.value) return "vibrancy";
+  if (lightingVisible.value) return "lighting";
+  return "combined"; // default fallback
+});
 const startHub = ref("");
 const endHub = ref("");
 const hubs = ref([
@@ -840,7 +874,9 @@ textarea:focus-visible {
 .sidebar-toggle-icon {
   width: 18px;
   height: 18px;
-  display: block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   object-fit: contain;
 }
 .sidebar-toggle-tooltip {
@@ -1077,16 +1113,24 @@ textarea:focus-visible {
   margin-top: 16px;
 }
 .legend-box {
+  position: relative;
   width: 100%;
-  aspect-ratio: 1;
+  padding-bottom: 100%;
   border-radius: 18px;
   background: linear-gradient(180deg, #202124 0%, #171718 100%);
   border: 1px solid #232428;
+  box-sizing: border-box;
+}
+
+.legend-box > * {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 12px;
-  box-sizing: border-box;
 }
 
 /* -------- PROFILE SECTION -------- */
@@ -1187,8 +1231,8 @@ textarea:focus-visible {
 }
 
 .scale-line {
-  width: 120px;
-  height: 3px;
+  width: 80px;
+  height: 7px;
   background: rgba(255, 255, 255, 0.8);
   border-top: 1px solid rgba(0, 0, 0, 0.3);
   border-bottom: 1px solid rgba(0, 0, 0, 0.3);
