@@ -231,13 +231,16 @@
     <GuidedTour v-if="showGuidedTour" @close="finishTour" />
 
     <!-- Scale indicator -->
-    <div class="map-scale">
+    <div class="map-scale" :class="{ 'map-scale--visible': mapZoom >= 11 }">
       <div class="scale-line"></div>
       <div class="scale-label">{{ scaleText }}</div>
     </div>
 
     <!-- Location indicator -->
-    <div v-if="mapZoom >= 11 && locationText" class="map-location">
+    <div
+      class="map-location"
+      :class="{ 'map-location--visible': mapZoom >= 11 && locationText }"
+    >
       <div class="location-name">{{ locationText }}</div>
       <div class="location-time">{{ zurichTime }}</div>
     </div>
@@ -1107,6 +1110,16 @@ textarea:focus-visible {
   align-items: flex-end;
   gap: 4px;
   pointer-events: none;
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 0.4s ease,
+    transform 0.4s ease;
+}
+
+.map-scale--visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .scale-line {
@@ -1143,6 +1156,16 @@ textarea:focus-visible {
   align-items: flex-end;
   gap: 4px;
   pointer-events: none;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition:
+    opacity 0.4s ease,
+    transform 0.4s ease;
+}
+
+.map-location--visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .location-name {
