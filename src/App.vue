@@ -52,6 +52,11 @@
             </span>
           </button>
 
+          <!-- Lumo logo when opened (at same position as collapsed toggle button) -->
+          <div v-if="!sidebarCollapsed" class="sidebar-logo">
+            <img src="/Lumo_icon_grey.svg" alt="Lumo" class="sidebar-logo-icon" />
+          </div>
+
           <button
             class="sidebar-icon-btn"
             :class="{ active: activeSidebarTab === 'routing' }"
@@ -93,7 +98,6 @@
 
         <!-- Profile in icon bar when collapsed -->
         <div v-if="sidebarCollapsed" class="profile">
-          <div class="avatar">JD</div>
           <div class="info">
             <div class="name">John Doe</div>
             <div class="tier">Plus</div>
@@ -104,10 +108,18 @@
       <!-- Divider line (only when expanded) -->
       <div v-if="!sidebarCollapsed" class="sidebar-divider"></div>
 
+      <!-- Avatar positioned outside sidebar-main to avoid fade-in - always visible -->
+      <div class="profile-avatar-fixed" :class="{ 'profile-avatar-fixed--collapsed': sidebarCollapsed }">
+        <div class="avatar">JD</div>
+      </div>
+
       <!-- Main content area -->
       <div class="sidebar-main">
         <div class="sidebar-header">
-          <h2 class="nowrap">Lumo <span class="muted">Pro</span></h2>
+          <div class="sidebar-header-content">
+            <h2 class="nowrap">{{ sectionTitle }}</h2>
+            <p class="sidebar-header-hint">{{ sectionHint }}</p>
+          </div>
 
           <!-- square collapse button (quadratic) - only when expanded -->
           <button
@@ -142,16 +154,6 @@
             class="group sidebar-content sidebar-routing"
           >
             <div class="section-content">
-              <button
-                :class="{ active: routingHubsVisible }"
-                @click="toggleRoutingHubs"
-              >
-                <span class="button-icon">
-                  <img src="/routing_hubs.svg" alt="Routing hubs icon" />
-                </span>
-                Routing Hubs
-              </button>
-
               <!-- Route planning -->
               <div class="sidebar-route-planning">
                 <div class="route-clean">
@@ -226,6 +228,15 @@
                 </span>
                 Combined
               </button>
+              <button
+                :class="{ active: routingHubsVisible }"
+                @click="toggleRoutingHubs"
+              >
+                <span class="button-icon">
+                  <img src="/routing_hubs.svg" alt="Routing hubs icon" />
+                </span>
+                Routing Hubs
+              </button>
             </div>
           </div>
 
@@ -288,7 +299,6 @@
 
         <!-- Profile section (stays visible, text hides when collapsed) -->
         <div class="profile">
-          <div class="avatar">JD</div>
           <div class="info">
             <div class="name">John Doe</div>
             <div class="tier">Plus</div>
@@ -492,6 +502,26 @@ const HOVER_DELAY = 800; // 800ms delay before opening
 
 // Sidebar tab state - which section is currently active
 const activeSidebarTab = ref("routing"); // "routing", "layers", or "statistics"
+
+// Computed section title based on active tab
+const sectionTitle = computed(() => {
+  const titles = {
+    routing: "Routing",
+    layers: "Layers",
+    statistics: "Stats",
+  };
+  return titles[activeSidebarTab.value] || "Lumo Pro";
+});
+
+// Computed section hint/instruction text based on active tab
+const sectionHint = computed(() => {
+  const hints = {
+    routing: "Select hubs to plan your route",
+    layers: "Choose a layer to visualize on the map",
+    statistics: "View statistics and legend information",
+  };
+  return hints[activeSidebarTab.value] || "";
+});
 
 // Section collapse states (kept for backward compatibility, but not used in new structure)
 const routingCollapsed = ref(false);
@@ -925,6 +955,26 @@ textarea:focus-visible {
   padding: 20px 16px 16px 20px;
   min-width: 0; /* Allow flex shrinking */
   overflow: visible; /* Allow profile avatar to extend beyond bounds */
+  opacity: 1;
+  transform: translateX(0);
+  visibility: visible;
+  transition:
+    opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.1s,
+    transform 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.1s,
+    visibility 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.1s; /* Smooth fade-in with slight delay */
+}
+
+/* Hide sidebar-main content when collapsed */
+.sidebar--collapsed .sidebar-main {
+  display: flex; /* Keep flex layout for transitions */
+  opacity: 0;
+  transform: translateX(-10px); /* Slight slide-in effect */
+  pointer-events: none;
+  visibility: hidden; /* Hide but allow transitions */
+  transition:
+    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    visibility 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Faster fade-out */
 }
 
 /* Resize handle */
@@ -982,6 +1032,7 @@ textarea:focus-visible {
   justify-content: flex-start; /* Align buttons at top */
   width: 100%;
   padding-top: 90px; /* Match collapsed sidebar exactly: collapsed routing button at 8px + 12px + 40px + 4px + 34px = 98px, so opened needs 8px + 90px = 98px */
+  position: relative; /* Allow absolute positioning of logo */
 }
 
 .sidebar-icon-btn {
@@ -1077,6 +1128,26 @@ textarea:focus-visible {
 /* Divider line between icon bar and content */
 .sidebar-divider {
   display: none; /* Hide the vertical divider line */
+}
+
+/* Lumo logo in icon bar when opened - positioned where collapsed toggle button is */
+.sidebar-logo {
+  position: absolute;
+  top: 20px; /* Align with Lumo Pro text: sidebar-main padding-top (20px) - logo should align with text baseline */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.sidebar-logo-icon {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
 }
 
 /* Collapsed sidebar icon bar - width is set in .sidebar--collapsed .sidebar-icon-bar below */
@@ -1177,6 +1248,15 @@ textarea:focus-visible {
   overflow-x: hidden;
   margin-right: -16px;
   padding-right: 16px;
+  margin-top: 24px; /* Coherent space below section header across all sections */
+  opacity: 1;
+  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.15s; /* Smooth fade-in with slight delay */
+}
+
+/* Fade out scrollable when collapsed */
+.sidebar--collapsed .sidebar-scrollable {
+  opacity: 0;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Faster fade-out */
 }
 
 /* Scrollbar - only visible when scrolling */
@@ -1216,7 +1296,7 @@ textarea:focus-visible {
 
 .sidebar h2 {
   margin: 6px 0 0 0;
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 800;
   letter-spacing: 0.2px;
 }
@@ -1235,8 +1315,8 @@ textarea:focus-visible {
 
 .sidebar-routing {
   position: relative;
-  padding-top: 20px;
-  margin-top: 24px;
+  padding-top: 0;
+  margin-top: 0; /* Spacing is now handled by sidebar-scrollable */
 }
 
 .sidebar .title {
@@ -1351,9 +1431,35 @@ textarea:focus-visible {
 /* header with square toggle */
 .sidebar-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 8px;
+}
+
+.sidebar-header-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.sidebar-header-hint {
+  margin: 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sidebar-header-hint::before {
+  content: "↗";
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 14px;
+  flex-shrink: 0;
 }
 
 /* square toggle: same size in expanded & collapsed sidebar */
@@ -1463,10 +1569,6 @@ textarea:focus-visible {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
 }
 
-.sidebar--collapsed .sidebar-main {
-  display: none;
-}
-
 .sidebar--collapsed .sidebar-divider {
   display: none;
 }
@@ -1485,7 +1587,7 @@ textarea:focus-visible {
 }
 
 .sidebar--collapsed .sidebar-scrollable {
-  display: none;
+  display: none; /* Keep display none for collapsed, opacity transition handles fade */
 }
 
 /* hide layer / legend content */
@@ -1502,8 +1604,9 @@ textarea:focus-visible {
   height: 0;
 }
 
-/* when collapsed: hide title but keep toggle */
-.sidebar--collapsed .sidebar-header h2 {
+/* when collapsed: hide title and hint but keep toggle */
+.sidebar--collapsed .sidebar-header h2,
+.sidebar--collapsed .sidebar-header-hint {
   display: none;
 }
 
@@ -1694,6 +1797,8 @@ textarea:focus-visible {
   left: -67px; /* Position avatar left edge at 17px from sidebar left: sidebar-main starts at 64px, has 20px padding = 84px content start, avatar center at 32px means left edge at 17px, so 84px - 17px = 67px shift left */
   bottom: 6px; /* Match profile padding-bottom to align with collapsed sidebar (6px padding + 16px sidebar-main padding = 22px total, same as collapsed: 14px + 8px = 22px) */
   z-index: 11; /* Bring avatar above the icon bar (sidebar has z-index 10) */
+  opacity: 1 !important; /* Always visible, no fade-in */
+  visibility: visible !important; /* Always visible, no fade-in */
   transition:
     left 0.4s cubic-bezier(0.4, 0, 0.2, 1),
     bottom 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* Smooth transition matching sidebar */
@@ -1779,6 +1884,40 @@ textarea:focus-visible {
 /* Hide profile in main content when collapsed */
 .sidebar--collapsed .sidebar-main .profile {
   display: none;
+}
+
+/* Fixed avatar positioned outside sidebar-main to avoid fade-in - always visible */
+.profile-avatar-fixed {
+  position: absolute;
+  left: 17px; /* Avatar left edge at 17px from sidebar left (center at 32px, avatar is 30px wide, so 32px - 15px = 17px) */
+  bottom: 22px; /* Match collapsed sidebar: 14px padding + 8px icon-bar padding = 22px from sidebar bottom */
+  z-index: 11; /* Bring avatar above the icon bar */
+  pointer-events: none; /* Don't interfere with clicks */
+  opacity: 1 !important; /* Always fully visible, no fade */
+  visibility: visible !important; /* Always visible */
+  /* No opacity or visibility transitions - avatar should never fade */
+  transition: none !important;
+}
+
+/* When collapsed, avatar stays in same position (no change needed) */
+.profile-avatar-fixed--collapsed {
+  /* Position stays the same - avatar doesn't move */
+}
+
+.profile-avatar-fixed .avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #33343a, #1e1f23);
+  color: #eaeaea;
+  font-weight: 600;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* No transitions - should appear instantly */
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
 /* -------- POPUP -------- */
