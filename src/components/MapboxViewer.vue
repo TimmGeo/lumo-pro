@@ -9,11 +9,14 @@
     <div
       class="map-controls-bar"
       :class="{ 'map-controls-bar--collapsed': controlsCollapsed }"
+      @mouseenter="handleControlsBarMouseEnter"
+      @mouseleave="handleControlsBarMouseLeave"
     >
       <div class="map-controls-header">
         <button
           class="map-controls-toggle"
-          @click="controlsCollapsed = !controlsCollapsed"
+          :class="{ 'map-controls-toggle--will-close': !controlsCollapsed }"
+          @click="handleToggleControls"
           :aria-expanded="!controlsCollapsed"
           aria-label="Toggle map controls"
         >
@@ -41,90 +44,95 @@
               stroke-linejoin="round"
             />
           </svg>
+          <span class="map-controls-toggle-tooltip">
+            {{ controlsCollapsed ? "Open Map Controls" : "Close Map Controls" }}
+          </span>
         </button>
       </div>
       <div class="map-controls-content">
-        <!-- Mapbox NavigationControl (zoom/rotation) will be positioned here -->
-        <div class="mapbox-nav-control-wrapper"></div>
-        <button
-          class="map-control-btn tilt-btn"
-          @click="toggleTilt"
-          :class="{ active: isTilted }"
-          aria-label="Toggle map tilt"
-        >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
+        <div class="map-controls-grid">
+          <!-- Mapbox NavigationControl (zoom/rotation) will be positioned here -->
+          <div class="mapbox-nav-control-wrapper"></div>
+          <button
+            class="map-control-btn tilt-btn"
+            @click="toggleTilt"
+            :class="{ active: isTilted }"
+            aria-label="Toggle map tilt"
           >
-            <!-- Flat view icon (2D square) -->
-            <path
-              v-if="!isTilted"
-              d="M3 3H21V21H3V3Z"
-              stroke="currentColor"
-              stroke-width="2.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-            <!-- Tilted view icon (3D perspective) -->
-            <g v-else>
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <!-- Flat view icon (2D square) -->
               <path
-                d="M3 3L12 8L21 3"
+                v-if="!isTilted"
+                d="M3 3H21V21H3V3Z"
                 stroke="currentColor"
                 stroke-width="2.5"
                 stroke-linecap="round"
                 stroke-linejoin="round"
               />
-              <path
-                d="M3 21L12 16L21 21"
-                stroke="currentColor"
-                stroke-width="2.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-              <path
-                d="M3 3V21M21 3V21"
-                stroke="currentColor"
-                stroke-width="2.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </g>
-          </svg>
-        </button>
-        <button
-          class="map-control-btn fullscreen-btn"
-          @click="toggleFullscreen"
-          :class="{ active: isFullscreen }"
-          aria-label="Toggle fullscreen"
-        >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
+              <!-- Tilted view icon (3D perspective) -->
+              <g v-else>
+                <path
+                  d="M3 3L12 8L21 3"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M3 21L12 16L21 21"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M3 3V21M21 3V21"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </g>
+            </svg>
+          </button>
+          <button
+            class="map-control-btn fullscreen-btn"
+            @click="toggleFullscreen"
+            :class="{ active: isFullscreen }"
+            aria-label="Toggle fullscreen"
           >
-            <path
-              v-if="!isFullscreen"
-              d="M8 3H5C3.89543 3 3 3.89543 3 5V8M21 8V5C21 3.89543 20.1046 3 19 3H16M16 21H19C20.1046 21 21 20.1046 21 19V16M3 16V19C3 20.1046 3.89543 21 5 21H8"
-              stroke="currentColor"
-              stroke-width="2.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-            <path
-              v-else
-              d="M8 3V8M8 21V16M16 3V8M16 21V16M3 8H8M16 8H21M3 16H8M16 16H21"
-              stroke="currentColor"
-              stroke-width="2.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
-        </button>
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                v-if="!isFullscreen"
+                d="M8 3H5C3.89543 3 3 3.89543 3 5V8M21 8V5C21 3.89543 20.1046 3 19 3H16M16 21H19C20.1046 21 21 20.1046 21 19V16M3 16V19C3 20.1046 3.89543 21 5 21H8"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <path
+                v-else
+                d="M8 3V8M8 21V16M16 3V8M16 21V16M3 8H8M16 8H21M3 16H8M16 16H21"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -169,7 +177,12 @@ const mapEl = ref(null);
 const isFullscreen = ref(false);
 const isTilted = ref(false);
 const controlsCollapsed = ref(false);
+const isHoveringControls = ref(false);
 let map = null;
+
+// Hover timer for opening collapsed controls bar
+let controlsHoverTimer = null;
+const CONTROLS_HOVER_DELAY = 800; // 800ms delay before opening
 let hubsData = null;
 let hexData = null;
 let hexVibrancyData = null;
@@ -236,6 +249,50 @@ function toggleFullscreen() {
       // IE/Edge
       document.msExitFullscreen();
     }
+  }
+}
+
+// Handle toggle button click - toggle controls bar with smooth transition
+function handleToggleControls() {
+  // Clear any hover timer
+  if (controlsHoverTimer) {
+    clearTimeout(controlsHoverTimer);
+    controlsHoverTimer = null;
+  }
+
+  // Toggle controls bar (transition will handle the smooth animation)
+  controlsCollapsed.value = !controlsCollapsed.value;
+}
+
+// Handle controls bar mouse enter - start hover timer if collapsed
+function handleControlsBarMouseEnter() {
+  isHoveringControls.value = true;
+
+  // If controls bar is collapsed, start timer to open it
+  if (controlsCollapsed.value) {
+    // Clear any existing timer
+    if (controlsHoverTimer) {
+      clearTimeout(controlsHoverTimer);
+    }
+
+    // Start new timer
+    controlsHoverTimer = setTimeout(() => {
+      if (controlsCollapsed.value && isHoveringControls.value) {
+        controlsCollapsed.value = false;
+      }
+      controlsHoverTimer = null;
+    }, CONTROLS_HOVER_DELAY);
+  }
+}
+
+// Handle controls bar mouse leave - clear hover timer
+function handleControlsBarMouseLeave() {
+  isHoveringControls.value = false;
+
+  // Clear hover timer if it exists
+  if (controlsHoverTimer) {
+    clearTimeout(controlsHoverTimer);
+    controlsHoverTimer = null;
   }
 }
 
@@ -830,6 +887,11 @@ onBeforeUnmount(() => {
   );
   document.removeEventListener("msfullscreenchange", handleFullscreenChange);
 
+  // Clear hover timer
+  if (controlsHoverTimer) {
+    clearTimeout(controlsHoverTimer);
+  }
+
   if (map) {
     map.remove();
     map = null;
@@ -858,9 +920,50 @@ onBeforeUnmount(() => {
 }
 
 .mapbox-nav-control-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  display: contents; /* Make it part of the grid */
+}
+
+/* Style Mapbox NavigationControl buttons to fit in grid */
+:deep(.mapboxgl-ctrl-top-right) {
+  display: contents !important; /* Make the container part of the grid */
+}
+
+:deep(.mapboxgl-ctrl-top-right .mapboxgl-ctrl-group) {
+  display: contents !important; /* Make the group part of the grid */
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+:deep(.mapboxgl-ctrl-top-right button) {
+  width: 28px !important;
+  height: 28px !important;
+  background: #1c1e21 !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 6px !important;
+  margin: 0 !important;
+  transition: background 0.15s ease !important;
+  grid-column: span 1; /* Each button takes one grid cell */
+}
+
+:deep(.mapboxgl-ctrl-top-right button:hover) {
+  background: #2a2f34 !important;
+}
+
+:deep(.mapboxgl-ctrl-top-right button:active) {
+  background: #1c1e21 !important;
+}
+
+/* Make NavigationControl icons white */
+:deep(.mapboxgl-ctrl-top-right button svg) {
+  fill: #ffffff !important;
+}
+
+:deep(.mapboxgl-ctrl-top-right button path) {
+  fill: #ffffff !important;
+  stroke: #ffffff !important;
 }
 
 :deep(.mapboxgl-ctrl-top-right .mapboxgl-ctrl-group) {
@@ -884,7 +987,7 @@ onBeforeUnmount(() => {
 /* Map Controls Bar - Sidebar Style */
 .map-controls-bar {
   position: fixed;
-  bottom: 80px; /* Above the scale (scale is at bottom: 20px, height ~50px) */
+  bottom: 120px; /* Higher up, above the scale */
   right: 20px;
   z-index: 15;
   background: #151517;
@@ -894,11 +997,22 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  min-width: 45px;
+  min-width: 70px; /* Width for 2 columns: (28px + 6px gap) * 2 + 16px padding */
   transition:
     width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     padding 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.map-controls-bar--collapsed {
+  background: rgba(21, 21, 23, 0.3);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.map-controls-bar--collapsed:hover {
+  background: #151517;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
 }
 
 .map-controls-header {
@@ -913,15 +1027,72 @@ onBeforeUnmount(() => {
   height: 28px;
   border: none;
   background: #1c1e21;
-  color: #e6e6e8;
+  color: #ffffff;
   border-radius: 6px;
-  cursor: pointer;
+  cursor: n-resize; /* Default: pointing up (will open/expand) */
   display: flex;
   align-items: center;
   justify-content: center;
   transition: background 0.15s ease;
   padding: 0;
   box-sizing: border-box;
+  position: relative;
+  /* Always fully visible, even when bar is collapsed */
+  opacity: 1 !important;
+  isolation: isolate;
+}
+
+.map-controls-toggle--will-close {
+  cursor: s-resize; /* Pointing down (will close/fold) */
+}
+
+.map-controls-toggle:hover {
+  background: #2a2f34;
+}
+
+.map-controls-toggle:active {
+  background: #1c1e21;
+}
+
+.map-controls-toggle svg {
+  color: #ffffff;
+  stroke: #ffffff;
+}
+
+.map-controls-toggle-tooltip {
+  position: absolute;
+  top: 50%;
+  right: calc(100% + 8px);
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: #ffffff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0ms,
+    visibility 0ms;
+  z-index: 10000;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  font-weight: 500;
+}
+
+.map-controls-toggle:hover .map-controls-toggle-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 0ms,
+    visibility 0ms;
 }
 
 .map-controls-toggle:hover {
@@ -942,6 +1113,13 @@ onBeforeUnmount(() => {
   transition:
     opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.map-controls-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  width: 100%;
 }
 
 .map-controls-bar--collapsed .map-controls-content {
@@ -982,7 +1160,9 @@ onBeforeUnmount(() => {
 .map-control-btn svg {
   display: block;
   margin: 0 auto;
-  color: #e6e6e8;
+  color: #ffffff;
+  stroke: #ffffff;
+  fill: none;
 }
 
 .tilt-btn svg {
@@ -992,36 +1172,5 @@ onBeforeUnmount(() => {
 .fullscreen-btn svg {
   width: 16px;
   height: 16px;
-}
-
-/* Style Mapbox NavigationControl to match sidebar buttons */
-:deep(.mapboxgl-ctrl-top-right .mapboxgl-ctrl-group) {
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  border-radius: 0 !important;
-}
-
-:deep(.mapboxgl-ctrl-top-right button) {
-  width: 28px !important;
-  height: 28px !important;
-  background: #1c1e21 !important;
-  color: #e6e6e8 !important;
-  border: none !important;
-  border-radius: 6px !important;
-  margin-bottom: 6px !important;
-  transition: background 0.15s ease !important;
-}
-
-:deep(.mapboxgl-ctrl-top-right button:hover) {
-  background: #2a2f34 !important;
-}
-
-:deep(.mapboxgl-ctrl-top-right button:active) {
-  background: #1c1e21 !important;
-}
-
-:deep(.mapboxgl-ctrl-top-right button:last-child) {
-  margin-bottom: 0 !important;
 }
 </style>
