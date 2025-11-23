@@ -29,53 +29,112 @@
         @mouseenter="isResizing = true"
         @mouseleave="isResizing = false"
       ></div>
-      <div class="sidebar-header">
-        <h2 class="nowrap">Lumo <span class="muted">Pro</span></h2>
+      <!-- Sidebar Icon Bar (VS Code style) -->
+      <div class="sidebar-icon-bar">
+        <div class="sidebar-icon-bar-top">
+          <!-- Toggle button at top when collapsed, or in header when expanded -->
+          <button
+            v-if="sidebarCollapsed"
+            class="sidebar-icon-btn sidebar-toggle-icon-btn"
+            :class="{ 'sidebar-toggle--will-close': !sidebarCollapsed }"
+            @click.stop="handleToggleSidebar"
+            :aria-expanded="!sidebarCollapsed"
+            aria-label="Toggle sidebar"
+          >
+            <img
+              src="/sidebar.svg"
+              alt="Toggle sidebar"
+              class="sidebar-toggle-icon"
+              aria-hidden="true"
+            />
+            <span class="sidebar-icon-tooltip">
+              {{ sidebarCollapsed ? "Open sidebar" : "Close sidebar" }}
+            </span>
+          </button>
 
-        <!-- square collapse button (quadratic) -->
-        <button
-          class="sidebar-toggle"
-          :class="{ 'sidebar-toggle--will-close': !sidebarCollapsed }"
-          @click="handleToggleSidebar"
-          :aria-expanded="!sidebarCollapsed"
-          :aria-label="sidebarCollapsed ? 'Open sidebar' : 'Close sidebar'"
-        >
-          <img
-            src="/sidebar.svg"
-            alt="Toggle sidebar"
-            class="sidebar-toggle-icon"
-            aria-hidden="true"
-          />
-          <span class="sidebar-toggle-tooltip">
-            {{ sidebarCollapsed ? "Open sidebar" : "Close sidebar" }}
-          </span>
-        </button>
+          <button
+            class="sidebar-icon-btn"
+            :class="{ active: activeSidebarTab === 'routing' }"
+            @click.stop="activeSidebarTab = 'routing'"
+            aria-label="Routing"
+          >
+            <img src="/routing_hubs.svg" alt="Routing" />
+            <span class="sidebar-icon-tooltip">Routing</span>
+          </button>
+          <button
+            class="sidebar-icon-btn"
+            :class="{ active: activeSidebarTab === 'layers' }"
+            @click.stop="activeSidebarTab = 'layers'"
+            aria-label="Layers"
+          >
+            <img src="/lighting.svg" alt="Layers" />
+            <span class="sidebar-icon-tooltip">Layers</span>
+          </button>
+          <button
+            class="sidebar-icon-btn"
+            :class="{ active: activeSidebarTab === 'statistics' }"
+            @click.stop="activeSidebarTab = 'statistics'"
+            aria-label="Statistics"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <path d="M3 9h18M9 21V9" />
+            </svg>
+            <span class="sidebar-icon-tooltip">Statistics</span>
+          </button>
+        </div>
+
+        <!-- Profile in icon bar when collapsed -->
+        <div v-if="sidebarCollapsed" class="profile">
+          <div class="avatar">JD</div>
+          <div class="info">
+            <div class="name">John Doe</div>
+            <div class="tier">Plus</div>
+          </div>
+        </div>
       </div>
 
-      <!-- Scrollable content area -->
-      <div
-        ref="scrollableRef"
-        class="sidebar-scrollable"
-        :class="{ 'sidebar-scrollable--scrolling': isScrolling }"
-      >
-        <!-- Routing section -->
-        <div class="group sidebar-content sidebar-routing">
-          <div
-            class="title title-collapsible"
-            @click="routingCollapsed = !routingCollapsed"
+      <!-- Divider line (only when expanded) -->
+      <div v-if="!sidebarCollapsed" class="sidebar-divider"></div>
+
+      <!-- Main content area -->
+      <div class="sidebar-main">
+        <div class="sidebar-header">
+          <h2 class="nowrap">Lumo <span class="muted">Pro</span></h2>
+
+          <!-- square collapse button (quadratic) - only when expanded -->
+          <button
+            v-if="!sidebarCollapsed"
+            class="sidebar-toggle"
+            :class="{ 'sidebar-toggle--will-close': !sidebarCollapsed }"
+            @click="handleToggleSidebar"
+            :aria-expanded="!sidebarCollapsed"
+            :aria-label="sidebarCollapsed ? 'Open sidebar' : 'Close sidebar'"
           >
-            Routing
-            <span
-              class="chevron"
-              :class="{ 'chevron--expanded': !routingCollapsed }"
-            >
-              >
+            <img
+              src="/sidebar.svg"
+              alt="Toggle sidebar"
+              class="sidebar-toggle-icon"
+              aria-hidden="true"
+            />
+            <span class="sidebar-toggle-tooltip">
+              {{ sidebarCollapsed ? "Open sidebar" : "Close sidebar" }}
             </span>
-          </div>
-          <div
-            class="section-content"
-            :class="{ 'section-content--collapsed': routingCollapsed }"
-          >
+          </button>
+        </div>
+
+        <!-- Scrollable content area -->
+        <div
+          ref="scrollableRef"
+          class="sidebar-scrollable"
+          :class="{ 'sidebar-scrollable--scrolling': isScrolling }"
+        >
+        <!-- Routing section -->
+        <div 
+          v-show="activeSidebarTab === 'routing'"
+          class="group sidebar-content sidebar-routing"
+        >
+          <div class="section-content">
             <button
               :class="{ active: routingHubsVisible }"
               @click="toggleRoutingHubs"
@@ -128,23 +187,11 @@
         </div>
 
         <!-- Layers -->
-        <div class="group sidebar-content">
-          <div
-            class="title title-collapsible"
-            @click="layersCollapsed = !layersCollapsed"
-          >
-            Layers
-            <span
-              class="chevron"
-              :class="{ 'chevron--expanded': !layersCollapsed }"
-            >
-              >
-            </span>
-          </div>
-          <div
-            class="section-content"
-            :class="{ 'section-content--collapsed': layersCollapsed }"
-          >
+        <div 
+          v-show="activeSidebarTab === 'layers'"
+          class="group sidebar-content"
+        >
+          <div class="section-content">
             <button
               :class="{ active: lightingVisible }"
               @click="selectLayer('lighting')"
@@ -175,24 +222,12 @@
           </div>
         </div>
 
-        <!-- Legend box placed inside the sidebar -->
-        <div class="group sidebar-legend sidebar-content">
-          <div
-            class="title title-collapsible"
-            @click="legendCollapsed = !legendCollapsed"
-          >
-            Color Legend
-            <span
-              class="chevron"
-              :class="{ 'chevron--expanded': !legendCollapsed }"
-            >
-              >
-            </span>
-          </div>
-          <div
-            class="section-content"
-            :class="{ 'section-content--collapsed': legendCollapsed }"
-          >
+        <!-- Statistics (formerly Color Legend) -->
+        <div 
+          v-show="activeSidebarTab === 'statistics'"
+          class="group sidebar-legend sidebar-content"
+        >
+          <div class="section-content">
             <div 
               class="legend-box-new"
               :class="{ 
@@ -244,12 +279,13 @@
         </div>
       </div>
 
-      <!-- Profile section (stays visible, text hides when collapsed) -->
-      <div class="profile">
-        <div class="avatar">JD</div>
-        <div class="info">
-          <div class="name">John Doe</div>
-          <div class="tier">Plus</div>
+        <!-- Profile section (stays visible, text hides when collapsed) -->
+        <div class="profile">
+          <div class="avatar">JD</div>
+          <div class="info">
+            <div class="name">John Doe</div>
+            <div class="tier">Plus</div>
+          </div>
         </div>
       </div>
     </aside>
@@ -449,7 +485,10 @@ const pendingTourAfterZoom = ref(false);
 let hoverTimer = null;
 const HOVER_DELAY = 800; // 800ms delay before opening
 
-// Section collapse states
+// Sidebar tab state - which section is currently active
+const activeSidebarTab = ref("routing"); // "routing", "layers", or "statistics"
+
+// Section collapse states (kept for backward compatibility, but not used in new structure)
 const routingCollapsed = ref(false);
 const layersCollapsed = ref(false);
 const legendCollapsed = ref(false);
@@ -767,6 +806,9 @@ function handleSidebarClick(e) {
   // Don't open if clicking on the resize handle
   if (e.target.closest('.sidebar-resize-handle')) return;
   
+  // Don't open if clicking on icon bar buttons
+  if (e.target.closest('.sidebar-icon-bar')) return;
+  
   // Clear hover timer since we're opening via click
   if (hoverTimer) {
     clearTimeout(hoverTimer);
@@ -853,20 +895,30 @@ textarea:focus-visible {
   left: 20px;
   bottom: 20px;
   width: 320px;
-  padding: 20px 16px 16px 20px;
+  padding: 0;
   background: #151517;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
   z-index: 10;
   border-radius: 16px;
 
   display: flex;
-  flex-direction: column;
-  justify-content: space-between; /* keep profile pinned */
+  flex-direction: row; /* Changed to row to accommodate icon bar */
+  justify-content: flex-start;
   
   transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
               padding 0.4s cubic-bezier(0.4, 0, 0.2, 1),
               background 0.3s ease,
               box-shadow 0.3s ease;
+}
+
+/* Sidebar main content wrapper */
+.sidebar-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 16px 16px 20px;
+  min-width: 0; /* Allow flex shrinking */
+  overflow: hidden;
 }
 
 /* Resize handle */
@@ -898,6 +950,155 @@ textarea:focus-visible {
 
 .sidebar--collapsed .sidebar-resize-handle {
   cursor: col-resize;
+}
+
+/* Sidebar Icon Bar (VS Code style) */
+.sidebar-icon-bar {
+  width: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 0;
+  gap: 4px;
+  background: #1a1b1e;
+  border-radius: 16px 0 0 16px;
+  flex-shrink: 0;
+  justify-content: flex-start;
+  position: relative; /* Ensure it stays in place */
+}
+
+.sidebar-icon-bar-top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  justify-content: flex-start; /* Align buttons at top */
+  width: 100%;
+  padding-top: 56px; /* Align with section content start (20px sidebar-main padding + ~36px header height) */
+}
+
+.sidebar-icon-btn {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent; /* No button background, only SVG visible */
+  color: rgba(255, 255, 255, 0.4); /* Darker grey for SVG */
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s ease;
+  padding: 0;
+  position: relative;
+  box-sizing: border-box;
+}
+
+.sidebar-icon-btn:hover {
+  background: transparent; /* No background change on hover */
+  color: #ffffff; /* SVG turns white on hover */
+}
+
+.sidebar-icon-btn.active {
+  background: transparent; /* No background for active state */
+  color: #ffffff; /* White when active */
+}
+
+.sidebar-icon-btn.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 20px;
+  background: #ffffff;
+  border-radius: 0 2px 2px 0;
+}
+
+.sidebar-icon-btn img,
+.sidebar-icon-btn svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+.sidebar-icon-btn svg {
+  stroke: currentColor;
+  fill: none;
+}
+
+.sidebar-icon-tooltip {
+  position: absolute;
+  left: calc(100% + 12px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: #ffffff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0ms,
+    visibility 0ms;
+  z-index: 10000;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  font-weight: 500;
+}
+
+.sidebar-icon-btn:hover .sidebar-icon-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 0ms,
+    visibility 0ms;
+}
+
+/* Divider line between icon bar and content */
+.sidebar-divider {
+  width: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+  margin: 0;
+}
+
+/* Collapsed sidebar icon bar - width is set in .sidebar--collapsed .sidebar-icon-bar below */
+
+.sidebar--collapsed .sidebar-icon-bar-top {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  justify-content: flex-start; /* Position buttons at the top */
+  flex: 0 0 auto; /* Don't take all space, keep buttons at top */
+  padding-top: 8px; /* Add some top padding - override the expanded padding */
+}
+
+.sidebar--collapsed .sidebar-icon-btn {
+  width: 40px;
+  height: 40px; /* Quadratic (square) */
+}
+
+.sidebar--collapsed .sidebar-icon-btn.active::before {
+  display: none; /* Hide active indicator when collapsed */
+}
+
+.sidebar--collapsed .sidebar-icon-btn img,
+.sidebar--collapsed .sidebar-icon-btn svg {
+  width: 20px;
+  height: 20px;
 }
 
 /* Scrollable content area */
@@ -1167,9 +1368,8 @@ textarea:focus-visible {
 
 /* collapse behaviour */
 .sidebar--collapsed {
-  width: 40px;
-  padding-left: 20px;
-  padding-right: 8px;
+  width: 64px;
+  padding: 0;
   overflow: visible;
   border-radius: 16px;
   background: rgba(21, 21, 23, 0.3);
@@ -1181,6 +1381,27 @@ textarea:focus-visible {
               padding 0.4s cubic-bezier(0.4, 0, 0.2, 1),
               background 0.3s ease,
               box-shadow 0.3s ease;
+}
+
+.sidebar--collapsed:hover {
+  background: #151517;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+.sidebar--collapsed .sidebar-main {
+  display: none;
+}
+
+.sidebar--collapsed .sidebar-divider {
+  display: none;
+}
+
+.sidebar--collapsed .sidebar-icon-bar {
+  width: 64px;
+  border-radius: 16px;
+  background: transparent;
+  padding: 8px 0;
+  justify-content: space-between; /* Space icons and profile */
 }
 
 .sidebar--collapsed:hover {
@@ -1416,14 +1637,31 @@ textarea:focus-visible {
   color: #9aa0a6;
 }
 
-/* when collapsed: keep only avatar, hide text */
-.sidebar--collapsed .profile .info {
+/* Profile in icon bar when collapsed */
+.sidebar-icon-bar .profile {
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0 0 0;
+  margin-top: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.sidebar-icon-bar .profile .info {
   display: none;
 }
-.sidebar--collapsed .profile {
-  border-top: none;
-  padding-top: 0;
-  padding-bottom: 6px;
+
+.sidebar-icon-bar .profile .avatar {
+  width: 24px;
+  height: 24px;
+  font-size: 12px;
+}
+
+/* Hide profile in main content when collapsed */
+.sidebar--collapsed .sidebar-main .profile {
+  display: none;
 }
 
 /* -------- POPUP -------- */
