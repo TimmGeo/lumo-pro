@@ -20,6 +20,7 @@
       :style="!sidebarCollapsed ? { width: sidebarWidth + 'px' } : {}"
       @mouseenter="isHovering = true"
       @mouseleave="handleMouseLeave"
+      @click="handleSidebarClick"
     >
       <!-- Resize handle -->
       <div
@@ -703,6 +704,21 @@ function handleZurichZoomComplete() {
   pendingTourAfterZoom.value = false;
 }
 
+// Handle sidebar click - open if collapsed (unless clicking on button or resize handle)
+function handleSidebarClick(e) {
+  // Only open if collapsed
+  if (!sidebarCollapsed.value) return;
+  
+  // Don't open if clicking on the toggle button (let button handle its own click)
+  if (e.target.closest('.sidebar-toggle')) return;
+  
+  // Don't open if clicking on the resize handle
+  if (e.target.closest('.sidebar-resize-handle')) return;
+  
+  // Open the sidebar
+  sidebarCollapsed.value = false;
+}
+
 // Sidebar resize functionality
 function startResize(e) {
   e.preventDefault();
@@ -810,6 +826,15 @@ textarea:focus-visible {
 
 .sidebar--collapsed .sidebar-resize-handle {
   display: none;
+}
+
+/* Ensure button and resize handle keep their own cursors */
+.sidebar--collapsed .sidebar-toggle {
+  cursor: e-resize;
+}
+
+.sidebar--collapsed .sidebar-resize-handle {
+  cursor: col-resize;
 }
 
 /* Scrollable content area */
@@ -1084,6 +1109,15 @@ textarea:focus-visible {
   padding-right: 8px;
   overflow: visible;
   border-radius: 16px;
+  background: rgba(21, 21, 23, 0.3);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.sidebar--collapsed:hover {
+  background: #151517;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
 }
 
 .sidebar--collapsed .sidebar-scrollable {
