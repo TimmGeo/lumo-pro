@@ -76,7 +76,14 @@
             @click.stop="activeSidebarTab = 'statistics'"
             aria-label="Statistics"
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
               <rect x="3" y="3" width="18" height="18" rx="2" />
               <path d="M3 9h18M9 21V9" />
             </svg>
@@ -129,155 +136,155 @@
           class="sidebar-scrollable"
           :class="{ 'sidebar-scrollable--scrolling': isScrolling }"
         >
-        <!-- Routing section -->
-        <div 
-          v-show="activeSidebarTab === 'routing'"
-          class="group sidebar-content sidebar-routing"
-        >
-          <div class="section-content">
-            <button
-              :class="{ active: routingHubsVisible }"
-              @click="toggleRoutingHubs"
-            >
-              <span class="button-icon">
-                <img src="/routing_hubs.svg" alt="Routing hubs icon" />
-              </span>
-              Routing Hubs
-            </button>
+          <!-- Routing section -->
+          <div
+            v-show="activeSidebarTab === 'routing'"
+            class="group sidebar-content sidebar-routing"
+          >
+            <div class="section-content">
+              <button
+                :class="{ active: routingHubsVisible }"
+                @click="toggleRoutingHubs"
+              >
+                <span class="button-icon">
+                  <img src="/routing_hubs.svg" alt="Routing hubs icon" />
+                </span>
+                Routing Hubs
+              </button>
 
-            <!-- Route planning -->
-            <div class="sidebar-route-planning">
-              <div class="route-clean">
-                <div class="route-connector">
-                  <div class="route-line"></div>
-                  <div class="route-marker route-marker-start"></div>
-                  <div class="route-marker route-marker-end"></div>
-                </div>
-                <div class="route-inputs">
-                  <div class="route-input-wrapper">
-                    <label
-                      class="route-label-float"
-                      :class="{ 'route-label-float--active': startHub }"
-                      >From</label
-                    >
-                    <select v-model="startHub" class="route-select-clean">
-                      <option disabled value=""></option>
-                      <option v-for="h in hubs" :key="h.id" :value="h.id">
-                        {{ h.name }}
-                      </option>
-                    </select>
+              <!-- Route planning -->
+              <div class="sidebar-route-planning">
+                <div class="route-clean">
+                  <div class="route-connector">
+                    <div class="route-line"></div>
+                    <div class="route-marker route-marker-start"></div>
+                    <div class="route-marker route-marker-end"></div>
                   </div>
-                  <div class="route-input-wrapper">
-                    <label
-                      class="route-label-float"
-                      :class="{ 'route-label-float--active': endHub }"
-                      >To</label
-                    >
-                    <select v-model="endHub" class="route-select-clean">
-                      <option disabled value=""></option>
-                      <option v-for="h in hubs" :key="h.id" :value="h.id">
-                        {{ h.name }}
-                      </option>
-                    </select>
+                  <div class="route-inputs">
+                    <div class="route-input-wrapper">
+                      <label
+                        class="route-label-float"
+                        :class="{ 'route-label-float--active': startHub }"
+                        >From</label
+                      >
+                      <select v-model="startHub" class="route-select-clean">
+                        <option disabled value=""></option>
+                        <option v-for="h in hubs" :key="h.id" :value="h.id">
+                          {{ h.name }}
+                        </option>
+                      </select>
+                    </div>
+                    <div class="route-input-wrapper">
+                      <label
+                        class="route-label-float"
+                        :class="{ 'route-label-float--active': endHub }"
+                        >To</label
+                      >
+                      <select v-model="endHub" class="route-select-clean">
+                        <option disabled value=""></option>
+                        <option v-for="h in hubs" :key="h.id" :value="h.id">
+                          {{ h.name }}
+                        </option>
+                      </select>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Layers -->
-        <div 
-          v-show="activeSidebarTab === 'layers'"
-          class="group sidebar-content"
-        >
-          <div class="section-content">
-            <button
-              :class="{ active: lightingVisible }"
-              @click="selectLayer('lighting')"
-            >
-              <span class="button-icon">
-                <img src="/lighting.svg" alt="Lighting layer icon" />
-              </span>
-              Lighting
-            </button>
-            <button
-              :class="{ active: vibrancyVisible }"
-              @click="selectLayer('vibrancy')"
-            >
-              <span class="button-icon">
-                <img src="/vibrancy.svg" alt="Vibrancy layer icon" />
-              </span>
-              Vibrancy
-            </button>
-            <button
-              :class="{ active: combinedVisible }"
-              @click="selectLayer('combined')"
-            >
-              <span class="button-icon">
-                <img src="/combined.svg" alt="Combined layer icon" />
-              </span>
-              Combined
-            </button>
+          <!-- Layers -->
+          <div
+            v-show="activeSidebarTab === 'layers'"
+            class="group sidebar-content"
+          >
+            <div class="section-content">
+              <button
+                :class="{ active: lightingVisible }"
+                @click="selectLayer('lighting')"
+              >
+                <span class="button-icon">
+                  <img src="/lighting.svg" alt="Lighting layer icon" />
+                </span>
+                Lighting
+              </button>
+              <button
+                :class="{ active: vibrancyVisible }"
+                @click="selectLayer('vibrancy')"
+              >
+                <span class="button-icon">
+                  <img src="/vibrancy.svg" alt="Vibrancy layer icon" />
+                </span>
+                Vibrancy
+              </button>
+              <button
+                :class="{ active: combinedVisible }"
+                @click="selectLayer('combined')"
+              >
+                <span class="button-icon">
+                  <img src="/combined.svg" alt="Combined layer icon" />
+                </span>
+                Combined
+              </button>
+            </div>
           </div>
-        </div>
 
-        <!-- Statistics (formerly Color Legend) -->
-        <div 
-          v-show="activeSidebarTab === 'statistics'"
-          class="group sidebar-legend sidebar-content"
-        >
-          <div class="section-content">
-            <div 
-              class="legend-box-new"
-              :class="{ 
-                'legend-box-new--highlight': legendOverBox 
-              }"
-              ref="legendBoxRef"
-            >
-              <Legend
-                v-if="!legendDraggedOut"
-                :mode="mode"
-                :in-box="true"
-                :dragged-out="false"
-                :position="legendPosition"
-                @take-out="handleLegendDragOut"
-                @drag-back="handleLegendDragBack"
-                @drag-start="() => {}"
-                @drag-end="() => {}"
-                @position-update="handleLegendPositionUpdate"
-              />
-              <div v-else class="legend-box-empty">
-                <svg
-                  width="32"
-                  height="32"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path
-                    d="M12 2L2 7L12 12L22 7L12 2Z"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                  <path
-                    d="M2 17L12 22L22 17"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                  <path
-                    d="M2 12L12 17L22 12"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-                <span class="legend-box-empty-text">Legend is outside</span>
+          <!-- Statistics (formerly Color Legend) -->
+          <div
+            v-show="activeSidebarTab === 'statistics'"
+            class="group sidebar-legend sidebar-content"
+          >
+            <div class="section-content">
+              <div
+                class="legend-box-new"
+                :class="{
+                  'legend-box-new--highlight': legendOverBox,
+                }"
+                ref="legendBoxRef"
+              >
+                <Legend
+                  v-if="!legendDraggedOut"
+                  :mode="mode"
+                  :in-box="true"
+                  :dragged-out="false"
+                  :position="legendPosition"
+                  @take-out="handleLegendDragOut"
+                  @drag-back="handleLegendDragBack"
+                  @drag-start="() => {}"
+                  @drag-end="() => {}"
+                  @position-update="handleLegendPositionUpdate"
+                />
+                <div v-else class="legend-box-empty">
+                  <svg
+                    width="32"
+                    height="32"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path
+                      d="M12 2L2 7L12 12L22 7L12 2Z"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                    <path
+                      d="M2 17L12 22L22 17"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                    <path
+                      d="M2 12L12 17L22 12"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                  <span class="legend-box-empty-text">Legend is outside</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
         <!-- Profile section (stays visible, text hides when collapsed) -->
         <div class="profile">
@@ -386,9 +393,7 @@
           stroke-linecap="round"
           stroke-linejoin="round"
         >
-          <path
-            d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"
-          />
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
         </svg>
         <span class="time-text" v-if="zurichTime">
           {{ zurichTime.split(":")[0] }}<span class="time-colon">:</span
@@ -513,7 +518,7 @@ function handleLegendClose() {
 
 function handleLegendPositionUpdate(position) {
   legendPosition.value = position;
-  
+
   // Check if legend is over the box (only when dragged out and being moved)
   if (legendBoxRef.value && legendDraggedOut.value) {
     const boxRect = legendBoxRef.value.getBoundingClientRect();
@@ -521,13 +526,13 @@ function handleLegendPositionUpdate(position) {
     const legendHeight = legendSize.value.height;
     const legendCenterX = position.x + legendWidth / 2;
     const legendCenterY = position.y + legendHeight / 2;
-    
-    const isOverBox = 
+
+    const isOverBox =
       legendCenterX >= boxRect.left &&
       legendCenterX <= boxRect.right &&
       legendCenterY >= boxRect.top &&
       legendCenterY <= boxRect.bottom;
-    
+
     legendOverBox.value = isOverBox;
   } else {
     legendOverBox.value = false;
@@ -558,7 +563,7 @@ const isDaylight = ref(false);
 // Update Zürich time
 function updateZurichTime() {
   const now = new Date();
-  
+
   // Determine if it's daylight hours (6 AM - 8 PM)
   const hour = now.getHours();
   isDaylight.value = hour >= 6 && hour < 20;
@@ -758,7 +763,7 @@ function handleToggleSidebar() {
     clearTimeout(hoverTimer);
     hoverTimer = null;
   }
-  
+
   // Toggle sidebar (transition will handle the smooth animation)
   sidebarCollapsed.value = !sidebarCollapsed.value;
 }
@@ -766,14 +771,14 @@ function handleToggleSidebar() {
 // Handle sidebar mouse enter - start hover timer if collapsed
 function handleSidebarMouseEnter() {
   isHovering.value = true;
-  
+
   // If sidebar is collapsed, start timer to open it
   if (sidebarCollapsed.value) {
     // Clear any existing timer
     if (hoverTimer) {
       clearTimeout(hoverTimer);
     }
-    
+
     // Start new timer
     hoverTimer = setTimeout(() => {
       if (sidebarCollapsed.value && isHovering.value) {
@@ -787,7 +792,7 @@ function handleSidebarMouseEnter() {
 // Handle sidebar mouse leave - clear hover timer
 function handleMouseLeave() {
   isHovering.value = false;
-  
+
   // Clear hover timer if it exists
   if (hoverTimer) {
     clearTimeout(hoverTimer);
@@ -799,22 +804,22 @@ function handleMouseLeave() {
 function handleSidebarClick(e) {
   // Only open if collapsed
   if (!sidebarCollapsed.value) return;
-  
+
   // Don't open if clicking on the toggle button (let button handle its own click)
-  if (e.target.closest('.sidebar-toggle')) return;
-  
+  if (e.target.closest(".sidebar-toggle")) return;
+
   // Don't open if clicking on the resize handle
-  if (e.target.closest('.sidebar-resize-handle')) return;
-  
+  if (e.target.closest(".sidebar-resize-handle")) return;
+
   // Don't open if clicking on icon bar buttons
-  if (e.target.closest('.sidebar-icon-bar')) return;
-  
+  if (e.target.closest(".sidebar-icon-bar")) return;
+
   // Clear hover timer since we're opening via click
   if (hoverTimer) {
     clearTimeout(hoverTimer);
     hoverTimer = null;
   }
-  
+
   // Open the sidebar
   sidebarCollapsed.value = false;
 }
@@ -904,11 +909,12 @@ textarea:focus-visible {
   display: flex;
   flex-direction: row; /* Changed to row to accommodate icon bar */
   justify-content: flex-start;
-  
-  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
-              padding 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-              background 0.3s ease,
-              box-shadow 0.3s ease;
+
+  transition:
+    width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    padding 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    background 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 /* Sidebar main content wrapper */
@@ -975,7 +981,7 @@ textarea:focus-visible {
   flex: 1;
   justify-content: flex-start; /* Align buttons at top */
   width: 100%;
-  padding-top: 56px; /* Align with section content start (20px sidebar-main padding + ~36px header height) */
+  padding-top: 90px; /* Match collapsed sidebar exactly: collapsed routing button at 8px + 12px + 40px + 4px + 34px = 98px, so opened needs 8px + 90px = 98px */
 }
 
 .sidebar-icon-btn {
@@ -1006,7 +1012,7 @@ textarea:focus-visible {
 }
 
 .sidebar-icon-btn.active::before {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   top: 50%;
@@ -1083,7 +1089,7 @@ textarea:focus-visible {
   gap: 4px;
   justify-content: flex-start; /* Position buttons at the top */
   flex: 0 0 auto; /* Don't take all space, keep buttons at top */
-  padding-top: 8px; /* Add some top padding - override the expanded padding */
+  padding-top: 12px; /* Align with close button in opened sidebar (8px icon-bar padding + 12px = 20px total) */
 }
 
 .sidebar--collapsed .sidebar-icon-btn {
@@ -1099,6 +1105,23 @@ textarea:focus-visible {
 .sidebar--collapsed .sidebar-icon-btn svg {
   width: 20px;
   height: 20px;
+}
+
+/* Make other buttons transparent in collapsed sidebar (except the toggle button) */
+.sidebar--collapsed .sidebar-icon-btn:not(.sidebar-toggle-icon-btn) {
+  opacity: 0.3;
+}
+
+.sidebar--collapsed .sidebar-icon-btn:not(.sidebar-toggle-icon-btn):hover {
+  opacity: 0.5;
+}
+
+/* Push routing, layers, and statistics buttons down to align with Routing Hubs button */
+.sidebar--collapsed
+  .sidebar-icon-bar-top
+  .sidebar-icon-btn.sidebar-toggle-icon-btn
+  + .sidebar-icon-btn {
+  margin-top: 34px !important; /* Align routing button with Routing Hubs button: 98px (Routing Hubs) - 64px (current position) = 34px */
 }
 
 /* Scrollable content area */
@@ -1377,10 +1400,11 @@ textarea:focus-visible {
   cursor: pointer;
   /* Inherit smooth transitions from .sidebar for width and padding */
   /* Additional transitions for background and box-shadow */
-  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-              padding 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-              background 0.3s ease,
-              box-shadow 0.3s ease;
+  transition:
+    width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    padding 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    background 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .sidebar--collapsed:hover {
@@ -1642,9 +1666,9 @@ textarea:focus-visible {
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  padding: 8px 0 0 0;
+  padding: 8px 0 14px 0; /* Match bottom spacing with opened sidebar: 16px (sidebar-main bottom) + 6px (profile bottom) = 22px, icon-bar has 8px, so need 14px padding-bottom */
   margin-top: auto;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: none; /* Remove the line above profile */
   width: 100%;
   flex-shrink: 0;
 }
@@ -1654,9 +1678,9 @@ textarea:focus-visible {
 }
 
 .sidebar-icon-bar .profile .avatar {
-  width: 24px;
-  height: 24px;
-  font-size: 12px;
+  width: 30px; /* Same size as in opened sidebar */
+  height: 30px; /* Same size as in opened sidebar */
+  font-size: 14px; /* Same size as in opened sidebar */
 }
 
 /* Hide profile in main content when collapsed */
@@ -1882,7 +1906,9 @@ textarea:focus-visible {
   align-items: center;
   justify-content: center;
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .legend-box-new--highlight {
