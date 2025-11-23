@@ -1073,10 +1073,7 @@ textarea:focus-visible {
 
 /* Divider line between icon bar and content */
 .sidebar-divider {
-  width: 1px;
-  background: rgba(255, 255, 255, 0.1);
-  flex-shrink: 0;
-  margin: 0;
+  display: none; /* Hide the vertical divider line */
 }
 
 /* Collapsed sidebar icon bar - width is set in .sidebar--collapsed .sidebar-icon-bar below */
