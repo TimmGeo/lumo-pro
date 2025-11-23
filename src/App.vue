@@ -155,42 +155,82 @@
           >
             <div class="section-content">
               <!-- Route planning -->
-              <div class="sidebar-route-planning">
-                <div class="route-clean">
-                  <div class="route-connector">
-                    <div class="route-line"></div>
-                    <div class="route-marker route-marker-start"></div>
-                    <div class="route-marker route-marker-end"></div>
-                  </div>
-                  <div class="route-inputs">
-                    <div class="route-input-wrapper">
-                      <label
-                        class="route-label-float"
-                        :class="{ 'route-label-float--active': startHub }"
-                        >From</label
-                      >
-                      <select v-model="startHub" class="route-select-clean">
-                        <option disabled value=""></option>
-                        <option v-for="h in hubs" :key="h.id" :value="h.id">
-                          {{ h.name }}
-                        </option>
-                      </select>
+              <div class="route-planning-container">
+                <div class="route-inputs-clean">
+                  <!-- Input fields -->
+                  <div class="route-inputs-wrapper">
+                    <!-- Connector line spanning both groups -->
+                    <div class="route-connector-line"></div>
+                    <div class="route-input-group">
+                      <!-- Left graphics -->
+                      <div class="route-input-graphics">
+                        <div class="route-icon route-icon--start">
+                          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="5" cy="5" r="4.5" stroke="currentColor" stroke-width="0.8" fill="none"/>
+                            <circle cx="5" cy="5" r="2.5" stroke="currentColor" stroke-width="0.8" fill="none"/>
+                          </svg>
+                        </div>
+                      </div>
+                      <div class="route-input-content">
+                        <label
+                          class="route-label-float"
+                          :class="{ 'route-label-float--active': startHub }"
+                        >From</label>
+                        <select v-model="startHub" class="route-select">
+                          <option disabled value=""></option>
+                          <option v-for="h in hubs" :key="h.id" :value="h.id">
+                            {{ h.name }}
+                          </option>
+                        </select>
+                      </div>
                     </div>
-                    <div class="route-input-wrapper">
-                      <label
-                        class="route-label-float"
-                        :class="{ 'route-label-float--active': endHub }"
-                        >To</label
-                      >
-                      <select v-model="endHub" class="route-select-clean">
-                        <option disabled value=""></option>
-                        <option v-for="h in hubs" :key="h.id" :value="h.id">
-                          {{ h.name }}
-                        </option>
-                      </select>
+                    
+                    <div class="route-input-group">
+                      <!-- Left graphics -->
+                      <div class="route-input-graphics">
+                        <div class="route-icon route-icon--end">
+                          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="5" cy="5" r="4.5" stroke="currentColor" stroke-width="0.8" fill="none"/>
+                            <circle cx="5" cy="5" r="2.5" stroke="currentColor" stroke-width="0.8" fill="none"/>
+                          </svg>
+                        </div>
+                      </div>
+                      <div class="route-input-content">
+                        <label
+                          class="route-label-float"
+                          :class="{ 'route-label-float--active': endHub }"
+                        >To</label>
+                        <select v-model="endHub" class="route-select">
+                          <option disabled value=""></option>
+                          <option v-for="h in hubs" :key="h.id" :value="h.id">
+                            {{ h.name }}
+                          </option>
+                        </select>
+                      </div>
                     </div>
                   </div>
                 </div>
+                
+                <button
+                  class="route-plan-btn"
+                  :class="{ 'route-plan-btn--disabled': !canPlanRoute }"
+                  :disabled="!canPlanRoute"
+                  @click="route"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                  </svg>
+                  Plan Route
+                </button>
               </div>
             </div>
           </div>
@@ -201,42 +241,79 @@
             class="group sidebar-content"
           >
             <div class="section-content">
-              <button
-                :class="{ active: lightingVisible }"
-                @click="selectLayer('lighting')"
-              >
-                <span class="button-icon">
-                  <img src="/lighting.svg" alt="Lighting layer icon" />
-                </span>
-                Lighting
-              </button>
-              <button
-                :class="{ active: vibrancyVisible }"
-                @click="selectLayer('vibrancy')"
-              >
-                <span class="button-icon">
-                  <img src="/vibrancy.svg" alt="Vibrancy layer icon" />
-                </span>
-                Vibrancy
-              </button>
-              <button
-                :class="{ active: combinedVisible }"
-                @click="selectLayer('combined')"
-              >
-                <span class="button-icon">
-                  <img src="/combined.svg" alt="Combined layer icon" />
-                </span>
-                Combined
-              </button>
-              <button
-                :class="{ active: routingHubsVisible }"
-                @click="toggleRoutingHubs"
-              >
-                <span class="button-icon">
-                  <img src="/routing_hubs.svg" alt="Routing hubs icon" />
-                </span>
-                Routing Hubs
-              </button>
+              <!-- Layer Types Category -->
+              <div class="layers-category">
+                <div
+                  class="title-collapsible"
+                  @click="layersCategoryExpanded = !layersCategoryExpanded"
+                >
+                  <span class="title">Layer Types</span>
+                  <span
+                    class="chevron chevron-category"
+                    :class="{ 'chevron--expanded': layersCategoryExpanded }"
+                  >›</span>
+                </div>
+                <div
+                  class="category-content"
+                  :class="{ 'category-content--collapsed': !layersCategoryExpanded }"
+                >
+                  <button
+                    :class="{ active: lightingVisible }"
+                    @click="selectLayer('lighting')"
+                  >
+                    <span class="button-icon">
+                      <img src="/lighting.svg" alt="Lighting layer icon" />
+                    </span>
+                    Lighting
+                  </button>
+                  <button
+                    :class="{ active: vibrancyVisible }"
+                    @click="selectLayer('vibrancy')"
+                  >
+                    <span class="button-icon">
+                      <img src="/vibrancy.svg" alt="Vibrancy layer icon" />
+                    </span>
+                    Vibrancy
+                  </button>
+                  <button
+                    :class="{ active: combinedVisible }"
+                    @click="selectLayer('combined')"
+                  >
+                    <span class="button-icon">
+                      <img src="/combined.svg" alt="Combined layer icon" />
+                    </span>
+                    Combined
+                  </button>
+                </div>
+              </div>
+
+              <!-- Routing Hubs Category -->
+              <div class="layers-category">
+                <div
+                  class="title-collapsible"
+                  @click="routingHubsCategoryExpanded = !routingHubsCategoryExpanded"
+                >
+                  <span class="title">Routing</span>
+                  <span
+                    class="chevron chevron-category"
+                    :class="{ 'chevron--expanded': routingHubsCategoryExpanded }"
+                  >›</span>
+                </div>
+                <div
+                  class="category-content"
+                  :class="{ 'category-content--collapsed': !routingHubsCategoryExpanded }"
+                >
+                  <button
+                    :class="{ active: routingHubsVisible }"
+                    @click="toggleRoutingHubs"
+                  >
+                    <span class="button-icon">
+                      <img src="/routing_hubs.svg" alt="Routing hubs icon" />
+                    </span>
+                    Routing Hubs
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -528,6 +605,10 @@ const routingCollapsed = ref(false);
 const layersCollapsed = ref(false);
 const legendCollapsed = ref(false);
 
+// Layers section category expand/collapse states
+const layersCategoryExpanded = ref(true);
+const routingHubsCategoryExpanded = ref(true);
+
 // Legend drag state
 const legendDraggedOut = ref(false);
 const legendPosition = ref({ x: 100, y: 100 });
@@ -741,15 +822,19 @@ function onViewerReady(exposed) {
   }
 }
 
+// Computed property to check if route can be planned
+const canPlanRoute = computed(() => {
+  return (
+    api &&
+    startHub.value &&
+    endHub.value &&
+    startHub.value !== endHub.value
+  );
+});
+
 // Trigger routing between hubs
 async function route() {
-  if (
-    !api ||
-    !startHub.value ||
-    !endHub.value ||
-    startHub.value === endHub.value
-  )
-    return;
+  if (!canPlanRoute.value) return;
 
   if (api.drawRoute) {
     await api.drawRoute(startHub.value, endHub.value);
@@ -1354,12 +1439,40 @@ textarea:focus-visible {
   opacity: 0;
 }
 
+.chevron-category {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.5);
+  transform: rotate(0deg);
+  opacity: 0;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  margin-left: 2px;
+  display: inline-block;
+  line-height: 1;
+  vertical-align: baseline;
+  position: relative;
+  top: 1px;
+}
+
+/* Only show chevron when its specific category is hovered */
+.layers-category:hover > .title-collapsible .chevron-category {
+  opacity: 1;
+}
+
+/* Ensure chevrons in non-hovered categories stay hidden */
+.layers-category:not(:hover) > .title-collapsible .chevron-category {
+  opacity: 0 !important;
+}
+
 .group:hover .chevron {
   opacity: 1;
 }
 
 .chevron--expanded {
   transform: scaleX(1.3) rotate(90deg);
+}
+
+.chevron-category.chevron--expanded {
+  transform: rotate(90deg);
 }
 
 .section-content {
@@ -1376,6 +1489,49 @@ textarea:focus-visible {
   opacity: 0;
   margin-bottom: 0;
 }
+
+/* Layers category styling */
+.layers-category {
+  margin-bottom: 16px;
+}
+
+.layers-category:last-child {
+  margin-bottom: 0;
+}
+
+.layers-category .title-collapsible {
+  margin-bottom: 8px;
+  align-items: baseline;
+}
+
+.layers-category .title {
+  color: #b8bcc0;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.category-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+  max-height: 500px;
+  opacity: 1;
+  transition:
+    max-height 0.3s ease,
+    opacity 0.2s ease,
+    margin-bottom 0.3s ease;
+  margin-bottom: 0;
+}
+
+.category-content--collapsed {
+  max-height: 0;
+  opacity: 0;
+  margin-bottom: 0;
+}
+
 .sidebar .hint {
   color: #eaeaea;
   font-size: 13px;
@@ -1611,98 +1767,123 @@ textarea:focus-visible {
 }
 
 /* -------- ROUTE PLANNING -------- */
-.sidebar-route-planning {
-  margin-top: 16px;
-}
-
-.route-clean {
-  position: relative;
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 2px 0;
-}
-
-.route-connector {
-  position: relative;
-  width: 16px;
-  flex-shrink: 0;
+.route-planning-container {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding-top: 6px;
-  padding-bottom: 6px;
+  gap: 12px;
 }
 
-.route-line {
-  position: absolute;
-  left: 50%;
-  top: 12px;
-  bottom: 12px;
-  width: 1px;
-  background: rgba(255, 255, 255, 0.3);
-  transform: translateX(-50%);
+.route-inputs-clean {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
-.route-marker {
+
+.route-input-group {
   position: relative;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #151517;
-  border: 2px solid rgba(255, 255, 255, 0.4);
-  z-index: 1;
+  width: 100%;
+  min-height: 56px; /* Increased height for better spacing */
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
 }
 
-.route-marker-start {
-  margin-bottom: 18px;
-}
 
-.route-marker-end {
-  margin-top: 18px;
-}
-
-.route-inputs {
+.route-inputs-wrapper {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
+  position: relative;
 }
 
-.route-input-wrapper {
+.route-connector-line {
+  position: absolute;
+  left: 10px;
+  top: 34px;
+  height: 48px;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.35);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.route-input-graphics {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  padding-top: 14px;
   position: relative;
+  z-index: 1;
+}
+
+.route-icon {
+  width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: rgba(255, 255, 255, 0.6);
+  transition: color 0.2s ease;
+}
+
+.route-icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.route-icon--start {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.route-icon--end {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+
+.route-input-content {
+  flex: 1;
+  position: relative;
+  min-width: 0;
 }
 
 .route-label-float {
   position: absolute;
-  left: 0;
+  left: 12px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.5);
   font-weight: 400;
   pointer-events: none;
   transition: all 0.2s ease;
   z-index: 1;
+  background: transparent;
 }
 
 .route-label-float--active {
-  top: 0;
+  top: 10px;
   transform: translateY(0);
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.4);
 }
 
-.route-select-clean {
-  flex: 1;
-  padding: 8px 24px 8px 0;
-  border: none;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-  background: transparent;
+.route-select {
+  width: 100%;
+  padding: 14px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
   color: #eaeaea;
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: 400;
   outline: none;
   cursor: pointer;
   appearance: none;
@@ -1710,38 +1891,123 @@ textarea:focus-visible {
     linear-gradient(45deg, transparent 50%, rgba(255, 255, 255, 0.5) 50%),
     linear-gradient(135deg, rgba(255, 255, 255, 0.5) 50%, transparent 50%);
   background-position:
-    calc(100% - 8px) calc(50% - 1px),
-    calc(100% - 2px) calc(50% + 1px);
+    calc(100% - 12px) calc(50% - 1px),
+    calc(100% - 6px) calc(50% + 1px);
   background-size:
-    4px 4px,
-    4px 4px;
+    5px 5px,
+    5px 5px;
   background-repeat: no-repeat;
-  transition:
-    border-color 0.2s ease,
-    padding-top 0.2s ease;
+  transition: all 0.2s ease;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  min-height: 48px;
+  box-sizing: border-box;
 }
 
-.route-input-wrapper:has(.route-label-float--active) .route-select-clean,
-.route-input-wrapper:has(.route-select-clean:focus) .route-select-clean {
-  padding-top: 16px;
-  padding-bottom: 4px;
+.route-input-content:has(.route-label-float--active) .route-select,
+.route-input-content:has(.route-select:focus) .route-select {
+  padding-top: 22px;
+  padding-bottom: 6px;
 }
 
-.route-input-wrapper:has(.route-select-clean:focus) .route-label-float {
-  top: 0;
+.route-input-content:has(.route-select:focus) .route-label-float {
+  top: 10px;
   transform: translateY(0);
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.4);
 }
 
-.route-select-clean:hover {
-  border-bottom-color: rgba(255, 255, 255, 0.25);
+.route-select:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
-.route-select-clean:focus {
-  border-bottom-color: rgba(255, 255, 255, 0.25);
+.route-select:focus {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
   outline: none;
-  box-shadow: none;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+}
+
+.route-swap-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.route-swap-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: rgba(255, 255, 255, 0.9);
+  transform: scale(1.05);
+}
+
+.route-swap-btn:active {
+  transform: scale(0.95);
+}
+
+.route-swap-btn svg {
+  flex-shrink: 0;
+}
+
+.route-plan-btn {
+  width: 100%;
+  padding: 12px 16px;
+  background: #ffffff;
+  color: #151517;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+}
+
+.route-plan-btn:hover:not(.route-plan-btn--disabled) {
+  background: #f0f0f0;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.route-plan-btn:active:not(.route-plan-btn--disabled) {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.route-plan-btn--disabled {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.3);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.route-plan-btn svg {
+  flex-shrink: 0;
 }
 
 .route-swap-clean {
