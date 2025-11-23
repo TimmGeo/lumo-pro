@@ -2,6 +2,54 @@
   <div ref="sceneEl" class="scene">
     <div ref="mapEl" class="map"></div>
     <button
+      class="tilt-btn"
+      @click="toggleTilt"
+      :class="{ active: isTilted }"
+      aria-label="Toggle map tilt"
+    >
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <!-- Flat view icon (2D square) -->
+        <path
+          v-if="!isTilted"
+          d="M3 3H21V21H3V3Z"
+          stroke="currentColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+        <!-- Tilted view icon (3D perspective) -->
+        <g v-else>
+          <path
+            d="M3 3L12 8L21 3"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+          <path
+            d="M3 21L12 16L21 21"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+          <path
+            d="M3 3V21M21 3V21"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </g>
+      </svg>
+    </button>
+    <button
       class="fullscreen-btn"
       @click="toggleFullscreen"
       :class="{ active: isFullscreen }"
@@ -72,6 +120,7 @@ const emit = defineEmits(["zurichZoomComplete", "zoom", "move"]);
 const sceneEl = ref(null);
 const mapEl = ref(null);
 const isFullscreen = ref(false);
+const isTilted = ref(false);
 let map = null;
 let hubsData = null;
 let hexData = null;
@@ -83,9 +132,32 @@ let pendingZurichFocusKey = 0;
 const BASE = import.meta.env.BASE_URL || "/";
 const hubsUrl = `${BASE}data/routing_hubs.geojson`.replace(/\/{2,}/g, "/");
 const hexUrl = `${BASE}data/hex_light_100m.geojson`.replace(/\/{2,}/g, "/");
-const hexVibrancyUrl = `${BASE}data/hex_vibrancy_100m.geojson`.replace(/\/{2,}/g, "/");
+const hexVibrancyUrl = `${BASE}data/hex_vibrancy_100m.geojson`.replace(
+  /\/{2,}/g,
+  "/"
+);
+const vibrancyPointsUrl = `${BASE}data/vibrancy_points.geojson`.replace(
+  /\/{2,}/g,
+  "/"
+);
 
 // NavigationControl handles zoom and rotation
+
+// Tilt function - toggle between flat (0°) and tilted (45°) view
+function toggleTilt() {
+  if (!map || !map.isStyleLoaded()) return;
+
+  const targetPitch = isTilted.value ? 0 : 45;
+  isTilted.value = !isTilted.value;
+
+  map.easeTo({
+    pitch: targetPitch,
+    duration: 800,
+    easing(t) {
+      return t * (2 - t); // ease-out
+    },
+  });
+}
 
 // Fullscreen function - enter fullscreen on the app container (keeps sidebar and routing dock visible)
 function toggleFullscreen() {
@@ -182,7 +254,7 @@ onMounted(async () => {
 
       // Add zoom and rotation controls to the map
       map.addControl(new mapboxgl.NavigationControl());
-      
+
       // Emit initial zoom/center
       emit("zoom", { zoom: map.getZoom(), center: map.getCenter() });
 
@@ -277,7 +349,18 @@ onMounted(async () => {
             filter: [">", ["get", "NUMPOINTS"], 0], // Only show hexagons with NUMPOINTS > 0
             paint: {
               "fill-extrusion-color": "#9ca3af",
-              "fill-extrusion-opacity": 0.4,
+              // Fade out hexagons as zoom increases (more drastic transition from zoom 15 to 15.3)
+              "fill-extrusion-opacity": [
+                "interpolate",
+                ["linear"],
+                ["zoom"],
+                15,
+                0.4, // At zoom 15, opacity 0.4
+                15.15,
+                0.1, // At zoom 15.15, opacity 0.1 (more drastic drop)
+                15.3,
+                0, // At zoom 15.3+, opacity 0 (fully transparent)
+              ],
               "fill-extrusion-height": [
                 "*",
                 ["get", "NUMPOINTS"],
@@ -293,6 +376,89 @@ onMounted(async () => {
             "visibility",
             props.vibrancyVisible ? "visible" : "none"
           );
+
+          // --- Load and add Vibrancy POI Points (visible when zoomed in) ---
+          try {
+            const vibrancyPointsResponse = await fetch(vibrancyPointsUrl);
+            const vibrancyPointsData = await vibrancyPointsResponse.json();
+
+            map.addSource("vibrancy-points", {
+              type: "geojson",
+              data: vibrancyPointsData,
+            });
+
+            // Color mapping for different POI types (bright, shining colors)
+            const typeColors = {
+              BarOrPub: "#ff4444", // Bright red
+              CafeOrCoffeeShop: "#ffaa00", // Bright amber/orange
+              Restaurant: "#00ff88", // Bright green
+              MusicVenue: "#aa44ff", // Bright purple
+              NightClub: "#ff44aa", // Bright pink/magenta
+            };
+
+            // Add circle layer for POI points
+            map.addLayer({
+              id: "vibrancy-points-layer",
+              type: "circle",
+              source: "vibrancy-points",
+              minzoom: 15, // Only show when zoomed in
+              paint: {
+                "circle-radius": [
+                  "interpolate",
+                  ["linear"],
+                  ["zoom"],
+                  15,
+                  5, // At zoom 15, radius 5 (bigger)
+                  16,
+                  6, // At zoom 16, radius 6
+                  17,
+                  7, // At zoom 17, radius 7
+                  18,
+                  8, // At zoom 18, radius 8
+                ],
+                "circle-color": [
+                  "match",
+                  ["get", "Type"],
+                  "BarOrPub",
+                  typeColors.BarOrPub,
+                  "CafeOrCoffeeShop",
+                  typeColors.CafeOrCoffeeShop,
+                  "Restaurant",
+                  typeColors.Restaurant,
+                  "MusicVenue",
+                  typeColors.MusicVenue,
+                  "NightClub",
+                  typeColors.NightClub,
+                  "#9ca3af", // Default grey if type not found
+                ],
+                // Fade in points as zoom increases, then slightly decrease shininess when zooming in more
+                "circle-opacity": [
+                  "interpolate",
+                  ["linear"],
+                  ["zoom"],
+                  15,
+                  0, // At zoom 15, opacity 0 (invisible)
+                  15.15,
+                  0.8, // At zoom 15.15, opacity 0.8 (more drastic jump)
+                  15.3,
+                  1, // At zoom 15.3, opacity 1 (fully visible and shining)
+                  17,
+                  0.85, // At zoom 17, opacity 0.85 (slightly less shiny)
+                  19,
+                  0.8, // At zoom 19+, opacity 0.8 (less shiny when very zoomed in)
+                ],
+              },
+            });
+
+            // Initial visibility - only show POI points when vibrancy layer is selected
+            map.setLayoutProperty(
+              "vibrancy-points-layer",
+              "visibility",
+              props.vibrancyVisible ? "visible" : "none"
+            );
+          } catch (error) {
+            console.error("Error loading vibrancy POI points:", error);
+          }
 
           // Create combined layer: vibrancy 3D hexagons with lighting colors
           // Create a color lookup map from lighting data
@@ -312,8 +478,7 @@ onMounted(async () => {
           const combinedData = {
             type: "FeatureCollection",
             features: hexVibrancyData.features.map((feature) => {
-              const color =
-                colorLookup.get(feature.properties.id) || "#969696";
+              const color = colorLookup.get(feature.properties.id) || "#969696";
               return {
                 ...feature,
                 properties: {
@@ -413,7 +578,15 @@ watch(
   () => props.lightingVisible,
   (isVisible) => {
     if (!map) return;
-    
+
+    // Immediately hide vibrancy points when switching to lighting (no delay)
+    if (isVisible && map.isStyleLoaded()) {
+      const pointsLayer = map.getLayer("vibrancy-points-layer");
+      if (pointsLayer) {
+        map.setLayoutProperty("vibrancy-points-layer", "visibility", "none");
+      }
+    }
+
     // Use nextTick to ensure DOM and map are ready
     nextTick(() => {
       const updateVisibility = () => {
@@ -424,14 +597,15 @@ watch(
 
         // Show/hide hex layer only when lighting layer is selected
         updateLayerVisibility("hex-layer", isVisible);
-        
+
         // Ensure other layers are hidden when lighting is selected
         if (isVisible) {
           updateLayerVisibility("hex-vibrancy-layer", false);
           updateLayerVisibility("hex-combined-layer", false);
+          updateLayerVisibility("vibrancy-points-layer", false);
         }
       };
-      
+
       updateVisibility();
     });
   },
@@ -442,7 +616,7 @@ watch(
   () => props.vibrancyVisible,
   (isVisible) => {
     if (!map) return;
-    
+
     // Use nextTick to ensure DOM and map are ready
     nextTick(() => {
       const updateVisibility = () => {
@@ -452,15 +626,29 @@ watch(
         }
 
         // Show/hide 3D vibrancy layer when vibrancy layer is selected
-        updateLayerVisibility("hex-vibrancy-layer", isVisible);
-        
+        const vibrancyLayerUpdated = updateLayerVisibility(
+          "hex-vibrancy-layer",
+          isVisible
+        );
+        // Show/hide POI points layer when vibrancy layer is selected
+        const pointsLayerUpdated = updateLayerVisibility(
+          "vibrancy-points-layer",
+          isVisible
+        );
+
+        // If layers don't exist yet, retry after a short delay
+        if (!vibrancyLayerUpdated || !pointsLayerUpdated) {
+          setTimeout(updateVisibility, 100);
+          return;
+        }
+
         // Ensure other layers are hidden when vibrancy is selected
         if (isVisible) {
           updateLayerVisibility("hex-layer", false);
           updateLayerVisibility("hex-combined-layer", false);
         }
       };
-      
+
       updateVisibility();
     });
   },
@@ -471,7 +659,15 @@ watch(
   () => props.combinedVisible,
   (isVisible) => {
     if (!map) return;
-    
+
+    // Immediately hide vibrancy points when switching to combined (no delay)
+    if (isVisible && map.isStyleLoaded()) {
+      const pointsLayer = map.getLayer("vibrancy-points-layer");
+      if (pointsLayer) {
+        map.setLayoutProperty("vibrancy-points-layer", "visibility", "none");
+      }
+    }
+
     // Use nextTick to ensure DOM and map are ready
     nextTick(() => {
       const updateVisibility = () => {
@@ -482,14 +678,15 @@ watch(
 
         // Show/hide 3D combined layer when combined layer is selected
         updateLayerVisibility("hex-combined-layer", isVisible);
-        
+
         // Ensure other layers are hidden when combined is selected
         if (isVisible) {
           updateLayerVisibility("hex-layer", false);
           updateLayerVisibility("hex-vibrancy-layer", false);
+          updateLayerVisibility("vibrancy-points-layer", false);
         }
       };
-      
+
       updateVisibility();
     });
   },
@@ -611,6 +808,50 @@ onBeforeUnmount(() => {
 
 :deep(.mapboxgl-ctrl-logo) {
   display: none !important;
+}
+
+/* Tilt button */
+.tilt-btn {
+  position: fixed;
+  bottom: 255px;
+  right: 20px;
+  width: 29px;
+  height: 29px;
+  min-width: 29px;
+  min-height: 29px;
+  border: none;
+  background: rgba(255, 255, 255, 0.9);
+  color: #333;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 15;
+  transition: background 0.15s ease;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  backdrop-filter: blur(10px);
+  box-sizing: border-box;
+  padding: 0;
+}
+
+.tilt-btn:hover {
+  background: rgba(255, 255, 255, 1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.tilt-btn:active {
+  background: rgba(245, 245, 245, 1);
+}
+
+.tilt-btn.active {
+  background: rgba(240, 240, 240, 1);
+}
+
+.tilt-btn svg {
+  display: block;
+  margin: 0 auto;
+  stroke-width: 2.5;
 }
 
 /* Fullscreen button */
