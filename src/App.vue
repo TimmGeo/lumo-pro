@@ -18,7 +18,7 @@
     <aside
       :class="['sidebar', { 'sidebar--collapsed': sidebarCollapsed }]"
       :style="!sidebarCollapsed ? { width: sidebarWidth + 'px' } : {}"
-      @mouseenter="isHovering = true"
+      @mouseenter="handleSidebarMouseEnter"
       @mouseleave="handleMouseLeave"
       @click="handleSidebarClick"
     >
@@ -36,7 +36,7 @@
         <button
           class="sidebar-toggle"
           :class="{ 'sidebar-toggle--will-close': !sidebarCollapsed }"
-          @click="sidebarCollapsed = !sidebarCollapsed"
+          @click="handleToggleSidebar"
           :aria-expanded="!sidebarCollapsed"
           :aria-label="sidebarCollapsed ? 'Open sidebar' : 'Close sidebar'"
         >
@@ -438,11 +438,16 @@ let api = null;
 const sidebarCollapsed = ref(false);
 const sidebarWidth = ref(320);
 const isResizing = ref(false);
+const isHovering = ref(false);
 const showWalkthrough = ref(true);
 const routingHubsVisible = ref(true);
 const showGuidedTour = ref(false);
 const zurichFocusKey = ref(0);
 const pendingTourAfterZoom = ref(false);
+
+// Hover timer for opening collapsed sidebar
+let hoverTimer = null;
+const HOVER_DELAY = 800; // 800ms delay before opening
 
 // Section collapse states
 const routingCollapsed = ref(false);
@@ -638,6 +643,9 @@ onBeforeUnmount(() => {
   if (scrollTimeout) {
     clearTimeout(scrollTimeout);
   }
+  if (hoverTimer) {
+    clearTimeout(hoverTimer);
+  }
   if (scrollableRef.value) {
     scrollableRef.value.removeEventListener("scroll", handleScroll);
     scrollableRef.value.removeEventListener("wheel", handleScroll);
@@ -704,6 +712,50 @@ function handleZurichZoomComplete() {
   pendingTourAfterZoom.value = false;
 }
 
+// Handle toggle button click - toggle sidebar with smooth transition
+function handleToggleSidebar() {
+  // Clear any hover timer
+  if (hoverTimer) {
+    clearTimeout(hoverTimer);
+    hoverTimer = null;
+  }
+  
+  // Toggle sidebar (transition will handle the smooth animation)
+  sidebarCollapsed.value = !sidebarCollapsed.value;
+}
+
+// Handle sidebar mouse enter - start hover timer if collapsed
+function handleSidebarMouseEnter() {
+  isHovering.value = true;
+  
+  // If sidebar is collapsed, start timer to open it
+  if (sidebarCollapsed.value) {
+    // Clear any existing timer
+    if (hoverTimer) {
+      clearTimeout(hoverTimer);
+    }
+    
+    // Start new timer
+    hoverTimer = setTimeout(() => {
+      if (sidebarCollapsed.value && isHovering.value) {
+        sidebarCollapsed.value = false;
+      }
+      hoverTimer = null;
+    }, HOVER_DELAY);
+  }
+}
+
+// Handle sidebar mouse leave - clear hover timer
+function handleMouseLeave() {
+  isHovering.value = false;
+  
+  // Clear hover timer if it exists
+  if (hoverTimer) {
+    clearTimeout(hoverTimer);
+    hoverTimer = null;
+  }
+}
+
 // Handle sidebar click - open if collapsed (unless clicking on button or resize handle)
 function handleSidebarClick(e) {
   // Only open if collapsed
@@ -714,6 +766,12 @@ function handleSidebarClick(e) {
   
   // Don't open if clicking on the resize handle
   if (e.target.closest('.sidebar-resize-handle')) return;
+  
+  // Clear hover timer since we're opening via click
+  if (hoverTimer) {
+    clearTimeout(hoverTimer);
+    hoverTimer = null;
+  }
   
   // Open the sidebar
   sidebarCollapsed.value = false;
@@ -804,6 +862,11 @@ textarea:focus-visible {
   display: flex;
   flex-direction: column;
   justify-content: space-between; /* keep profile pinned */
+  
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+              padding 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              background 0.3s ease,
+              box-shadow 0.3s ease;
 }
 
 /* Resize handle */
@@ -1111,8 +1174,13 @@ textarea:focus-visible {
   border-radius: 16px;
   background: rgba(21, 21, 23, 0.3);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  transition: background 0.3s ease, box-shadow 0.3s ease;
   cursor: pointer;
+  /* Inherit smooth transitions from .sidebar for width and padding */
+  /* Additional transitions for background and box-shadow */
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              padding 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              background 0.3s ease,
+              box-shadow 0.3s ease;
 }
 
 .sidebar--collapsed:hover {
@@ -1127,8 +1195,9 @@ textarea:focus-visible {
 /* hide layer / legend content */
 .sidebar-content {
   transition:
-    opacity 200ms ease,
-    transform 200ms ease;
+    opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .sidebar--collapsed .sidebar-content {
   opacity: 0;
