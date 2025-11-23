@@ -924,7 +924,7 @@ textarea:focus-visible {
   flex-direction: column;
   padding: 20px 16px 16px 20px;
   min-width: 0; /* Allow flex shrinking */
-  overflow: hidden;
+  overflow: visible; /* Allow profile avatar to extend beyond bounds */
 }
 
 /* Resize handle */
@@ -988,7 +988,8 @@ textarea:focus-visible {
   width: 40px;
   height: 40px;
   border: none;
-  background: transparent; /* No button background, only SVG visible */
+  background: transparent !important; /* Transparent to adapt to bar color - override global button style */
+  background-color: transparent !important; /* Ensure background-color is also transparent */
   color: rgba(255, 255, 255, 0.4); /* Darker grey for SVG */
   border-radius: 6px;
   cursor: pointer;
@@ -1002,12 +1003,14 @@ textarea:focus-visible {
 }
 
 .sidebar-icon-btn:hover {
-  background: transparent; /* No background change on hover */
+  background: transparent !important; /* Transparent to adapt to bar color */
+  background-color: transparent !important;
   color: #ffffff; /* SVG turns white on hover */
 }
 
 .sidebar-icon-btn.active {
-  background: transparent; /* No background for active state */
+  background: transparent !important; /* Transparent to adapt to bar color */
+  background-color: transparent !important;
   color: #ffffff; /* White when active */
 }
 
@@ -1111,6 +1114,52 @@ textarea:focus-visible {
 
 .sidebar--collapsed .sidebar-icon-btn:not(.sidebar-toggle-icon-btn):hover {
   opacity: 0.5;
+}
+
+/* Style the open sidebar button in collapsed sidebar to match close button exactly */
+.sidebar--collapsed .sidebar-toggle-icon-btn {
+  width: 30px !important;
+  height: 30px !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  border-radius: 8px;
+  cursor: e-resize !important; /* Arrow pointing right */
+  display: grid !important;
+  place-items: center !important;
+  box-sizing: border-box !important;
+  padding: 0 !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  color: #e6e6e8 !important;
+}
+
+.sidebar--collapsed .sidebar-toggle-icon-btn:hover {
+  background: #2a2f34 !important;
+  background-color: #2a2f34 !important;
+}
+
+.sidebar--collapsed .sidebar-toggle-icon-btn:active {
+  background: #1c1e21 !important;
+  background-color: #1c1e21 !important;
+}
+
+/* Make the icon in collapsed sidebar toggle button same size as close button */
+.sidebar--collapsed .sidebar-toggle-icon-btn .sidebar-toggle-icon {
+  width: 18px !important;
+  height: 18px !important;
+}
+
+/* Position tooltip below the toggle button in collapsed sidebar (like close button) */
+.sidebar--collapsed .sidebar-toggle-icon-btn .sidebar-icon-tooltip {
+  left: 50%;
+  top: calc(100% + 8px);
+  transform: translateX(-50%);
+}
+
+/* Make all SVG icons white when hovering on collapsed sidebar */
+.sidebar--collapsed:hover .sidebar-icon-btn {
+  color: #ffffff !important;
 }
 
 /* Push routing, layers, and statistics buttons down to align with Routing Hubs button */
@@ -1392,7 +1441,12 @@ textarea:focus-visible {
   padding: 0;
   overflow: visible;
   border-radius: 16px;
-  background: rgba(21, 21, 23, 0.3);
+  background: rgba(
+    26,
+    27,
+    30,
+    0.3
+  ); /* Match icon bar color (#1a1b1e) with transparency */
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   /* Inherit smooth transitions from .sidebar for width and padding */
@@ -1405,7 +1459,7 @@ textarea:focus-visible {
 }
 
 .sidebar--collapsed:hover {
-  background: #151517;
+  background: #1a1b1e; /* Solid icon bar color on hover */
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
 }
 
@@ -1426,7 +1480,7 @@ textarea:focus-visible {
 }
 
 .sidebar--collapsed:hover {
-  background: #151517;
+  background: #1a1b1e; /* Solid icon bar color on hover */
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
 }
 
@@ -1627,6 +1681,42 @@ textarea:focus-visible {
   margin-top: auto;
   border-top: 1px solid #1f2125;
   padding-bottom: 6px;
+  position: relative; /* Ensure stable positioning */
+}
+
+/* Position profile in opened sidebar so JD avatar aligns with icon bar (same position as collapsed sidebar) */
+.sidebar-main .profile {
+  position: relative;
+}
+
+.sidebar-main .profile .avatar {
+  position: absolute; /* Position relative to profile container */
+  left: -67px; /* Position avatar left edge at 17px from sidebar left: sidebar-main starts at 64px, has 20px padding = 84px content start, avatar center at 32px means left edge at 17px, so 84px - 17px = 67px shift left */
+  bottom: 6px; /* Match profile padding-bottom to align with collapsed sidebar (6px padding + 16px sidebar-main padding = 22px total, same as collapsed: 14px + 8px = 22px) */
+  z-index: 11; /* Bring avatar above the icon bar (sidebar has z-index 10) */
+  transition:
+    left 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    bottom 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* Smooth transition matching sidebar */
+}
+
+/* When sidebar is collapsed, position avatar at exact same visual spot using same calculation */
+.sidebar--collapsed .sidebar-icon-bar .profile {
+  position: relative;
+}
+
+.sidebar--collapsed .sidebar-icon-bar .profile .avatar {
+  position: absolute; /* Position relative to profile container */
+  left: 17px; /* Avatar left edge at 17px from sidebar left (center at 32px, avatar is 30px wide, so 32px - 15px = 17px) */
+  bottom: 14px; /* Match profile padding-bottom (14px padding + 8px icon-bar padding = 22px total from sidebar bottom) */
+  z-index: 11;
+  transition:
+    left 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    bottom 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* Smooth transition matching sidebar */
+}
+
+/* Allow sidebar-main to show overflow for profile section */
+.sidebar-main {
+  overflow: visible; /* Change from hidden to visible to show avatar */
 }
 
 .profile .avatar {
@@ -1640,6 +1730,9 @@ textarea:focus-visible {
   display: flex;
   align-items: center;
   justify-content: center;
+  transition:
+    left 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* Smooth transition when sidebar opens/closes */
 }
 
 .profile .info {
@@ -1668,6 +1761,7 @@ textarea:focus-visible {
   border-top: none; /* Remove the line above profile */
   width: 100%;
   flex-shrink: 0;
+  position: relative; /* Allow avatar to be positioned relative to this */
 }
 
 .sidebar-icon-bar .profile .info {
@@ -1678,6 +1772,8 @@ textarea:focus-visible {
   width: 30px; /* Same size as in opened sidebar */
   height: 30px; /* Same size as in opened sidebar */
   font-size: 14px; /* Same size as in opened sidebar */
+  position: relative; /* Maintain position for smooth transition */
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* Smooth transition matching sidebar */
 }
 
 /* Hide profile in main content when collapsed */
