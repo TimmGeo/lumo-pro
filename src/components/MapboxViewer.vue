@@ -945,7 +945,6 @@ onBeforeUnmount(() => {
   border-radius: 6px !important;
   margin: 0 !important;
   transition: background 0.15s ease !important;
-  grid-column: span 1; /* Each button takes one grid cell */
 }
 
 :deep(.mapboxgl-ctrl-top-right button:hover) {
@@ -987,7 +986,7 @@ onBeforeUnmount(() => {
 /* Map Controls Bar - Sidebar Style */
 .map-controls-bar {
   position: fixed;
-  bottom: 120px; /* Higher up, above the scale */
+  bottom: 20px;
   right: 20px;
   z-index: 15;
   background: #151517;
@@ -995,9 +994,9 @@ onBeforeUnmount(() => {
   padding: 8px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 70px; /* Width for 2 columns: (28px + 6px gap) * 2 + 16px padding */
+  flex-direction: row;
+  gap: 0;
+  min-width: 44px;
   transition:
     width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     padding 0.3s cubic-bezier(0.4, 0, 0.2, 1),
@@ -1018,8 +1017,9 @@ onBeforeUnmount(() => {
 .map-controls-header {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  margin-bottom: 2px;
+  justify-content: center;
+  margin-right: 8px;
+  margin-bottom: 0;
 }
 
 .map-controls-toggle {
@@ -1029,7 +1029,7 @@ onBeforeUnmount(() => {
   background: #1c1e21;
   color: #ffffff;
   border-radius: 6px;
-  cursor: n-resize; /* Default: pointing up (will open/expand) */
+  cursor: w-resize; /* Default: pointing left (will expand to left) */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1043,7 +1043,7 @@ onBeforeUnmount(() => {
 }
 
 .map-controls-toggle--will-close {
-  cursor: s-resize; /* Pointing down (will close/fold) */
+  cursor: e-resize; /* Pointing right (will collapse to right) */
 }
 
 .map-controls-toggle:hover {
@@ -1105,26 +1105,28 @@ onBeforeUnmount(() => {
 
 .map-controls-content {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
   opacity: 1;
-  max-height: 500px;
+  max-width: 500px;
   overflow: hidden;
   transition:
     opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .map-controls-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 6px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
   width: 100%;
 }
 
 .map-controls-bar--collapsed .map-controls-content {
   opacity: 0;
-  max-height: 0;
+  max-width: 0;
   pointer-events: none;
 }
 

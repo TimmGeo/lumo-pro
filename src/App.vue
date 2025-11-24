@@ -2213,7 +2213,7 @@ textarea:focus-visible {
 /* -------- MAP SCALE -------- */
 .map-scale {
   position: fixed;
-  bottom: 20px;
+  bottom: 80px;
   right: 20px;
   z-index: 12;
   display: flex;
