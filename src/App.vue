@@ -1676,7 +1676,7 @@ textarea:focus-visible {
   box-sizing: border-box;
 }
 
-/* Opened sidebar: make icons more transparent */
+/* Opened sidebar: make icons more transparent - no transition to prevent flash */
 .sidebar:not(.sidebar--collapsed) .sidebar-icon-btn:not(.active) {
   color: rgba(
     255,
@@ -1684,6 +1684,7 @@ textarea:focus-visible {
     255,
     0.25
   ) !important; /* More transparent for opened sidebar */
+  transition: none !important; /* No transition to prevent flash */
 }
 
 /* Opened sidebar: hover state more transparent (but not for active) */
@@ -1702,6 +1703,11 @@ textarea:focus-visible {
   background: transparent !important; /* Transparent to adapt to bar color */
   background-color: transparent !important;
   color: #ffffff; /* SVG turns white on hover */
+}
+
+/* Override hover for opened sidebar non-active icons */
+.sidebar:not(.sidebar--collapsed) .sidebar-icon-btn:not(.active):hover {
+  color: rgba(255, 255, 255, 0.5) !important; /* Override general hover rule */
 }
 
 .sidebar-icon-btn.active {
@@ -1744,6 +1750,7 @@ textarea:focus-visible {
 /* Opened sidebar: make img icons more transparent (for routing, layers) */
 .sidebar:not(.sidebar--collapsed) .sidebar-icon-btn:not(.active) img {
   opacity: 0.25 !important; /* Match the transparency of SVG icons */
+  transition: none !important; /* No transition to prevent flash */
 }
 
 /* Opened sidebar: hover state for img icons */
