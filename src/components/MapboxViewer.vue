@@ -177,6 +177,10 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
+  fromButton: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const emit = defineEmits(["zurichZoomComplete", "zoom", "move", "mapReady"]);
@@ -906,17 +910,58 @@ function requestZurichFocus(key) {
 function performZurichFocus() {
   if (!map || !map.isStyleLoaded()) return;
   
-  // Start from higher zoom level (more zoomed in) with bird's eye view, end closer to city
-  const currentZoom = map.getZoom();
+  const zurichCenter = [8.55, 47.37];
   const startZoom = 11.5; // Higher zoom level - more zoomed in
-  const endZoom = 14; // Even closer to city level
+  const endZoom = 14; // City level zoom
+  
+  // If triggered from button click, always zoom from current location
+  if (props.fromButton) {
+    const currentCenter = map.getCenter();
+    const currentZoom = map.getZoom();
+    
+    // Calculate distance to determine animation duration
+    const distance = Math.sqrt(
+      Math.pow(currentCenter.lng - zurichCenter[0], 2) +
+      Math.pow(currentCenter.lat - zurichCenter[1], 2)
+    );
+    
+    // Adjust duration based on distance and zoom difference
+    const zoomDiff = Math.abs(currentZoom - endZoom);
+    const baseDuration = 3000;
+    const distanceMultiplier = Math.min(distance * 500, 2000);
+    const zoomMultiplier = zoomDiff * 100;
+    const duration = Math.min(baseDuration + distanceMultiplier + zoomMultiplier, 5000);
+    
+    // Smoothly fly from current position to Zurich
+    map.flyTo({
+      center: zurichCenter,
+      zoom: endZoom,
+      pitch: 45,
+      bearing: -5,
+      duration: duration,
+      speed: 0.25,
+      curve: 1.2,
+      easing(t) {
+        return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+      },
+      essential: true,
+    });
+    
+    map.once("moveend", () => {
+      emit("zurichZoomComplete");
+    });
+    return;
+  }
+  
+  // Original behavior for walkthrough entry
+  const currentZoom = map.getZoom();
   
   // If we're at global level, immediately jump to higher zoom level (no animation)
   // Then smoothly zoom in to city level
   if (currentZoom < 5) {
     // Jump immediately to higher zoom level with bird's eye view (pitch 0)
     map.jumpTo({
-      center: [8.55, 47.37],
+      center: zurichCenter,
       zoom: startZoom,
       pitch: 0, // Bird's eye view
       bearing: 0,
@@ -925,7 +970,7 @@ function performZurichFocus() {
     // Small delay to ensure jump is complete, then smoothly zoom to city
     setTimeout(() => {
       map.flyTo({
-        center: [8.55, 47.37],
+        center: zurichCenter,
         zoom: endZoom,
         pitch: 45,
         bearing: -5,
@@ -944,7 +989,7 @@ function performZurichFocus() {
   } else {
     // Already closer to zoom level, do smooth two-step animation
     map.flyTo({
-      center: [8.55, 47.37],
+      center: zurichCenter,
       zoom: startZoom,
       pitch: 0, // Bird's eye view
       bearing: 0,
@@ -960,7 +1005,7 @@ function performZurichFocus() {
     // Then zoom in to city level
     map.once("moveend", () => {
       map.flyTo({
-        center: [8.55, 47.37],
+        center: zurichCenter,
         zoom: endZoom,
         pitch: 45,
         bearing: -5,

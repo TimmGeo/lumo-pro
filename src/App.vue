@@ -9,6 +9,7 @@
       :showHubs="routingHubsVisible"
       @ready="onViewerReady"
       :focusZurichKey="zurichFocusKey"
+      :fromButton="zurichFromButton"
       @zurichZoomComplete="handleZurichZoomComplete"
       @zoom="handleMapZoom"
       @move="handleMapMove"
@@ -858,7 +859,7 @@
     <button
       class="map-city-button"
       :class="{ 'map-city-button--visible': mapZoom < 11 }"
-      @click="focusZurich"
+      @click="focusZurich(true)"
       aria-label="Zoom to Zurich"
     >
       <svg
@@ -1009,6 +1010,7 @@ const showWalkthrough = ref(true);
 const routingHubsVisible = ref(true);
 const showGuidedTour = ref(false);
 const zurichFocusKey = ref(0);
+const zurichFromButton = ref(false); // Flag to distinguish button click from walkthrough
 const pendingTourAfterZoom = ref(false);
 const mapReady = ref(false);
 
@@ -1364,11 +1366,12 @@ function finishTour() {
   showGuidedTour.value = false;
 }
 
-function focusZurich() {
+function focusZurich(fromButton = false) {
   // Enable vibrancy layer by default when entering map from walkthrough
   vibrancyVisible.value = true;
   lightingVisible.value = false;
   combinedVisible.value = false;
+  zurichFromButton.value = fromButton; // Set flag before triggering zoom
   zurichFocusKey.value = Date.now();
 }
 
@@ -1723,9 +1726,10 @@ textarea:focus-visible {
   top: 50%;
   transform: translateY(-50%);
   width: 3px;
-  height: 20px;
+  height: 28px;
   background: #ffffff;
-  border-radius: 0 2px 2px 0;
+  border-radius: 0;
+  opacity: 1;
 }
 
 /* Sidebar icon bar bottom section (for settings above profile) */
