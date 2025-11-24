@@ -69,7 +69,19 @@
             @click.stop="activeSidebarTab = 'routing'"
             aria-label="Routing"
           >
-            <img src="/routing_hubs.svg" alt="Routing" />
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
             <span class="sidebar-icon-tooltip">Routing</span>
           </button>
           <button
@@ -78,7 +90,20 @@
             @click.stop="activeSidebarTab = 'layers'"
             aria-label="Layers"
           >
-            <img src="/lighting.svg" alt="Layers" />
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M12 2L2 7l10 5 10-5-10-5z" />
+              <path d="M2 17l10 5 10-5" />
+              <path d="M2 12l10 5 10-5" />
+            </svg>
             <span class="sidebar-icon-tooltip">Layers</span>
           </button>
           <button
@@ -94,9 +119,12 @@
               fill="none"
               stroke="currentColor"
               stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
             >
-              <rect x="3" y="3" width="18" height="18" rx="2" />
-              <path d="M3 9h18M9 21V9" />
+              <line x1="18" y1="20" x2="18" y2="10" />
+              <line x1="12" y1="20" x2="12" y2="4" />
+              <line x1="6" y1="20" x2="6" y2="14" />
             </svg>
             <span class="sidebar-icon-tooltip">Statistics</span>
           </button>
