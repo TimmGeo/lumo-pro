@@ -12,6 +12,7 @@
       @zurichZoomComplete="handleZurichZoomComplete"
       @zoom="handleMapZoom"
       @move="handleMapMove"
+      @mapReady="handleMapReady"
     />
 
     <!-- Sidebar controls -->
@@ -407,6 +408,7 @@
       @close="showWalkthrough = false"
       @takeTour="startTour"
       @enterMap="focusZurich"
+      :mapReady="mapReady"
     />
     <GuidedTour v-if="showGuidedTour" @close="finishTour" />
 
@@ -572,6 +574,7 @@ const routingHubsVisible = ref(true);
 const showGuidedTour = ref(false);
 const zurichFocusKey = ref(0);
 const pendingTourAfterZoom = ref(false);
+const mapReady = ref(false);
 
 // Hover timer for opening collapsed sidebar
 let hoverTimer = null;
@@ -862,7 +865,15 @@ function finishTour() {
 }
 
 function focusZurich() {
+  // Enable vibrancy layer by default when entering map from walkthrough
+  vibrancyVisible.value = true;
+  lightingVisible.value = false;
+  combinedVisible.value = false;
   zurichFocusKey.value = Date.now();
+}
+
+function handleMapReady() {
+  mapReady.value = true;
 }
 
 function handleZurichZoomComplete() {
@@ -2213,7 +2224,7 @@ textarea:focus-visible {
 /* -------- MAP SCALE -------- */
 .map-scale {
   position: fixed;
-  bottom: 80px;
+  bottom: 20px;
   right: 20px;
   z-index: 12;
   display: flex;
@@ -2262,10 +2273,10 @@ textarea:focus-visible {
   top: 20px;
   right: 20px;
   z-index: 12;
-  width: 44px;
-  height: 44px;
+  width: 56px;
+  height: 56px;
   border-radius: 8px;
-  background: #151517;
+  background: rgba(21, 21, 23, 0.3);
   border: none;
   padding: 0;
   margin: 0;
@@ -2279,8 +2290,13 @@ textarea:focus-visible {
   transition:
     opacity 0.4s cubic-bezier(0.16, 0.84, 0.24, 1),
     transform 0.4s cubic-bezier(0.16, 0.84, 0.24, 1),
-    visibility 0ms 0.4s;
+    visibility 0ms 0.4s,
+    background 0.15s ease;
   pointer-events: none;
+}
+
+.map-city-button svg {
+  opacity: 1;
 }
 .map-city-button--visible {
   opacity: 1;
@@ -2293,7 +2309,7 @@ textarea:focus-visible {
   pointer-events: auto;
 }
 .map-city-button--visible:hover {
-  background: #2a2f34;
+  background: #151517;
 }
 .map-city-button--visible:active {
   background: #1c1e21;

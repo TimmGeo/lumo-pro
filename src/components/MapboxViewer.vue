@@ -20,7 +20,23 @@
           :aria-expanded="!controlsCollapsed"
           aria-label="Toggle map controls"
         >
+          <!-- Controls icon when collapsed -->
           <svg
+            v-if="controlsCollapsed"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <rect x="3" y="8" width="18" height="2" rx="1" fill="currentColor"/>
+            <circle cx="7" cy="9" r="2" fill="currentColor"/>
+            <rect x="3" y="14" width="18" height="2" rx="1" fill="currentColor"/>
+            <circle cx="17" cy="15" r="2" fill="currentColor"/>
+          </svg>
+          <!-- Chevron arrow only when expanded (to collapse) -->
+          <svg
+            v-else
             width="14"
             height="14"
             viewBox="0 0 24 24"
@@ -28,15 +44,6 @@
             xmlns="http://www.w3.org/2000/svg"
           >
             <path
-              v-if="controlsCollapsed"
-              d="M9 18L15 12L9 6"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-            <path
-              v-else
               d="M15 18L9 12L15 6"
               stroke="currentColor"
               stroke-width="2"
@@ -170,7 +177,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["zurichZoomComplete", "zoom", "move"]);
+const emit = defineEmits(["zurichZoomComplete", "zoom", "move", "mapReady"]);
 
 const sceneEl = ref(null);
 const mapEl = ref(null);
@@ -360,6 +367,11 @@ onMounted(async () => {
       // Add zoom and rotation controls to the map
       const navControl = new mapboxgl.NavigationControl();
       map.addControl(navControl);
+      
+      // Wait for map to be idle (tiles loaded) before emitting ready
+      map.once("idle", () => {
+        emit("mapReady");
+      });
 
       // Move NavigationControl into the controls bar after a short delay
       nextTick(() => {
@@ -860,22 +872,78 @@ function requestZurichFocus(key) {
 
 function performZurichFocus() {
   if (!map || !map.isStyleLoaded()) return;
-  map.flyTo({
-    center: [8.55, 47.37],
-    zoom: 12.4,
-    pitch: 45,
-    bearing: -5,
-    duration: 5200,
-    speed: 0.25,
-    curve: 1.1,
-    easing(t) {
-      return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-    },
-    essential: true,
-  });
-  map.once("moveend", () => {
-    emit("zurichZoomComplete");
-  });
+  
+  // Start from higher zoom level (more zoomed in) with bird's eye view, end closer to city
+  const currentZoom = map.getZoom();
+  const startZoom = 11.5; // Higher zoom level - more zoomed in
+  const endZoom = 14; // Even closer to city level
+  
+  // If we're at global level, immediately jump to higher zoom level (no animation)
+  // Then smoothly zoom in to city level
+  if (currentZoom < 5) {
+    // Jump immediately to higher zoom level with bird's eye view (pitch 0)
+    map.jumpTo({
+      center: [8.55, 47.37],
+      zoom: startZoom,
+      pitch: 0, // Bird's eye view
+      bearing: 0,
+    });
+    
+    // Small delay to ensure jump is complete, then smoothly zoom to city
+    setTimeout(() => {
+      map.flyTo({
+        center: [8.55, 47.37],
+        zoom: endZoom,
+        pitch: 45,
+        bearing: -5,
+        duration: 4000,
+        speed: 0.25,
+        curve: 1.1,
+        easing(t) {
+          return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+        },
+        essential: true,
+      });
+      map.once("moveend", () => {
+        emit("zurichZoomComplete");
+      });
+    }, 100);
+  } else {
+    // Already closer to zoom level, do smooth two-step animation
+    map.flyTo({
+      center: [8.55, 47.37],
+      zoom: startZoom,
+      pitch: 0, // Bird's eye view
+      bearing: 0,
+      duration: 2000,
+      speed: 0.4,
+      curve: 1.2,
+      easing(t) {
+        return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+      },
+      essential: true,
+    });
+    
+    // Then zoom in to city level
+    map.once("moveend", () => {
+      map.flyTo({
+        center: [8.55, 47.37],
+        zoom: endZoom,
+        pitch: 45,
+        bearing: -5,
+        duration: 4000,
+        speed: 0.25,
+        curve: 1.1,
+        easing(t) {
+          return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+        },
+        essential: true,
+      });
+      map.once("moveend", () => {
+        emit("zurichZoomComplete");
+      });
+    });
+  }
 }
 
 onBeforeUnmount(() => {
@@ -937,8 +1005,8 @@ onBeforeUnmount(() => {
 }
 
 :deep(.mapboxgl-ctrl-top-right button) {
-  width: 28px !important;
-  height: 28px !important;
+  width: 40px !important;
+  height: 40px !important;
   background: #1c1e21 !important;
   color: #ffffff !important;
   border: none !important;
@@ -986,7 +1054,7 @@ onBeforeUnmount(() => {
 /* Map Controls Bar - Sidebar Style */
 .map-controls-bar {
   position: fixed;
-  bottom: 20px;
+  top: 100px;
   right: 20px;
   z-index: 15;
   background: #151517;
@@ -994,42 +1062,67 @@ onBeforeUnmount(() => {
   padding: 8px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   gap: 0;
-  min-width: 44px;
+  width: 56px;
+  min-height: 56px;
+  box-sizing: border-box;
   transition:
-    width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    padding 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    padding 0.4s cubic-bezier(0.4, 0, 0.2, 1),
     background 0.3s ease,
     box-shadow 0.3s ease;
 }
 
 .map-controls-bar--collapsed {
-  background: rgba(21, 21, 23, 0.3);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  background: transparent;
+  box-shadow: none;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
 }
 
 .map-controls-bar--collapsed:hover {
-  background: #151517;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  background: transparent;
+  box-shadow: none;
+}
+
+.map-controls-bar--collapsed .map-controls-toggle {
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  background: rgba(28, 30, 33, 0.3);
+  transition: background 0.15s ease;
+}
+
+.map-controls-bar--collapsed .map-controls-toggle:hover {
+  background: #1c1e21;
+}
+
+.map-controls-bar--collapsed .map-controls-toggle svg {
+  opacity: 1;
 }
 
 .map-controls-header {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 8px;
-  margin-bottom: 0;
+  margin-bottom: 8px;
+  margin-right: 0;
 }
 
 .map-controls-toggle {
-  width: 28px;
-  height: 28px;
+  width: 40px;
+  height: 40px;
   border: none;
-  background: #1c1e21;
+  background: transparent;
   color: #ffffff;
   border-radius: 6px;
-  cursor: w-resize; /* Default: pointing left (will expand to left) */
+  cursor: s-resize; /* Default: pointing down (will expand downward) */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1043,7 +1136,7 @@ onBeforeUnmount(() => {
 }
 
 .map-controls-toggle--will-close {
-  cursor: e-resize; /* Pointing right (will collapse to right) */
+  cursor: n-resize; /* Pointing up (will collapse upward) */
 }
 
 .map-controls-toggle:hover {
@@ -1105,20 +1198,22 @@ onBeforeUnmount(() => {
 
 .map-controls-content {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
   gap: 8px;
   opacity: 1;
-  max-width: 500px;
+  max-height: 500px;
   overflow: hidden;
+  transform: translateY(0);
   transition:
-    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.1s,
+    max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.1s;
 }
 
 .map-controls-grid {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
   gap: 8px;
   width: 100%;
@@ -1126,14 +1221,24 @@ onBeforeUnmount(() => {
 
 .map-controls-bar--collapsed .map-controls-content {
   opacity: 0;
-  max-width: 0;
+  max-height: 0;
+  transform: translateY(-10px);
   pointer-events: none;
+  transition:
+    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.map-controls-bar--collapsed .map-controls-header {
+  margin-right: 0;
+  margin-bottom: 0;
 }
 
 /* Map Control Buttons - Sidebar Style */
 .map-control-btn {
-  width: 28px;
-  height: 28px;
+  width: 40px;
+  height: 40px;
   border: none;
   background: #1c1e21;
   color: #e6e6e8;

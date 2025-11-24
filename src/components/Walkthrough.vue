@@ -82,7 +82,14 @@
 </template>
 
 <script setup>
-import { ref, defineEmits, onMounted, onBeforeUnmount } from "vue";
+import { ref, defineEmits, defineProps, watch, onMounted, onBeforeUnmount } from "vue";
+
+const props = defineProps({
+  mapReady: {
+    type: Boolean,
+    default: false,
+  },
+});
 
 const emit = defineEmits(["close", "takeTour", "enterMap"]);
 
@@ -152,19 +159,57 @@ function skip() {
   emit("close");
 }
 
+const pendingClose = ref(false);
+const pendingTour = ref(false);
+
 function skipToMap() {
   clearTimer();
   lightsHover.value = false;
   blackout.value = true;
   emit("enterMap");
-  emit("close");
+  
+  // Wait for map to be ready before closing
+  if (props.mapReady) {
+    // Map is already ready, close after a small delay to ensure tiles are rendered
+    setTimeout(() => {
+      emit("close");
+    }, 300);
+  } else {
+    pendingClose.value = true;
+  }
 }
 
 function takeTour() {
   clearTimer();
   emit("enterMap");
-  emit("takeTour");
+  
+  // Wait for map to be ready before starting tour
+  if (props.mapReady) {
+    // Map is already ready, start tour after a small delay to ensure tiles are rendered
+    setTimeout(() => {
+      emit("takeTour");
+    }, 300);
+  } else {
+    pendingTour.value = true;
+  }
 }
+
+// Watch for map ready and close/start tour when ready
+watch(() => props.mapReady, (ready) => {
+  if (ready) {
+    // Small delay to ensure map tiles are fully rendered
+    setTimeout(() => {
+      if (pendingClose.value) {
+        pendingClose.value = false;
+        emit("close");
+      }
+      if (pendingTour.value) {
+        pendingTour.value = false;
+        emit("takeTour");
+      }
+    }, 300);
+  }
+});
 
 function onKey(e) {
   if (e.key === "Escape") skip();
