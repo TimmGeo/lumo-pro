@@ -55,7 +55,11 @@
 
           <!-- Lumo logo when opened (at same position as collapsed toggle button) -->
           <div v-if="!sidebarCollapsed" class="sidebar-logo">
-            <img src="/Lumo_icon_grey.svg" alt="Lumo" class="sidebar-logo-icon" />
+            <img
+              src="/Lumo_icon_grey.svg"
+              alt="Lumo"
+              class="sidebar-logo-icon"
+            />
           </div>
 
           <button
@@ -95,6 +99,29 @@
             </svg>
             <span class="sidebar-icon-tooltip">Statistics</span>
           </button>
+          <button
+            class="sidebar-icon-btn"
+            :class="{ active: activeSidebarTab === 'settings' }"
+            @click.stop="activeSidebarTab = 'settings'"
+            aria-label="Settings"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"
+              />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+            <span class="sidebar-icon-tooltip">Settings</span>
+          </button>
         </div>
 
         <!-- Profile in icon bar when collapsed -->
@@ -110,7 +137,10 @@
       <div v-if="!sidebarCollapsed" class="sidebar-divider"></div>
 
       <!-- Avatar positioned outside sidebar-main to avoid fade-in - always visible -->
-      <div class="profile-avatar-fixed" :class="{ 'profile-avatar-fixed--collapsed': sidebarCollapsed }">
+      <div
+        class="profile-avatar-fixed"
+        :class="{ 'profile-avatar-fixed--collapsed': sidebarCollapsed }"
+      >
         <div class="avatar">JD</div>
       </div>
 
@@ -128,6 +158,8 @@
             class="sidebar-toggle"
             :class="{ 'sidebar-toggle--will-close': !sidebarCollapsed }"
             @click="handleToggleSidebar"
+            @mouseenter="handleSidebarToggleHover"
+            @mouseleave="handleSidebarToggleLeave"
             :aria-expanded="!sidebarCollapsed"
             :aria-label="sidebarCollapsed ? 'Open sidebar' : 'Close sidebar'"
           >
@@ -166,9 +198,29 @@
                       <!-- Left graphics -->
                       <div class="route-input-graphics">
                         <div class="route-icon route-icon--start">
-                          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <circle cx="5" cy="5" r="4.5" stroke="currentColor" stroke-width="0.8" fill="none"/>
-                            <circle cx="5" cy="5" r="2.5" stroke="currentColor" stroke-width="0.8" fill="none"/>
+                          <svg
+                            width="10"
+                            height="10"
+                            viewBox="0 0 10 10"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <circle
+                              cx="5"
+                              cy="5"
+                              r="4.5"
+                              stroke="currentColor"
+                              stroke-width="0.8"
+                              fill="none"
+                            />
+                            <circle
+                              cx="5"
+                              cy="5"
+                              r="2.5"
+                              stroke="currentColor"
+                              stroke-width="0.8"
+                              fill="none"
+                            />
                           </svg>
                         </div>
                       </div>
@@ -176,7 +228,8 @@
                         <label
                           class="route-label-float"
                           :class="{ 'route-label-float--active': startHub }"
-                        >From</label>
+                          >From</label
+                        >
                         <select v-model="startHub" class="route-select">
                           <option disabled value=""></option>
                           <option v-for="h in hubs" :key="h.id" :value="h.id">
@@ -185,14 +238,34 @@
                         </select>
                       </div>
                     </div>
-                    
+
                     <div class="route-input-group">
                       <!-- Left graphics -->
                       <div class="route-input-graphics">
                         <div class="route-icon route-icon--end">
-                          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <circle cx="5" cy="5" r="4.5" stroke="currentColor" stroke-width="0.8" fill="none"/>
-                            <circle cx="5" cy="5" r="2.5" stroke="currentColor" stroke-width="0.8" fill="none"/>
+                          <svg
+                            width="10"
+                            height="10"
+                            viewBox="0 0 10 10"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <circle
+                              cx="5"
+                              cy="5"
+                              r="4.5"
+                              stroke="currentColor"
+                              stroke-width="0.8"
+                              fill="none"
+                            />
+                            <circle
+                              cx="5"
+                              cy="5"
+                              r="2.5"
+                              stroke="currentColor"
+                              stroke-width="0.8"
+                              fill="none"
+                            />
                           </svg>
                         </div>
                       </div>
@@ -200,7 +273,8 @@
                         <label
                           class="route-label-float"
                           :class="{ 'route-label-float--active': endHub }"
-                        >To</label>
+                          >To</label
+                        >
                         <select v-model="endHub" class="route-select">
                           <option disabled value=""></option>
                           <option v-for="h in hubs" :key="h.id" :value="h.id">
@@ -211,7 +285,7 @@
                     </div>
                   </div>
                 </div>
-                
+
                 <button
                   class="route-plan-btn"
                   :class="{ 'route-plan-btn--disabled': !canPlanRoute }"
@@ -252,37 +326,31 @@
                   <span
                     class="chevron chevron-category"
                     :class="{ 'chevron--expanded': layersCategoryExpanded }"
-                  >›</span>
+                    >›</span
+                  >
                 </div>
                 <div
                   class="category-content"
-                  :class="{ 'category-content--collapsed': !layersCategoryExpanded }"
+                  :class="{
+                    'category-content--collapsed': !layersCategoryExpanded,
+                  }"
                 >
                   <button
                     :class="{ active: lightingVisible }"
                     @click="selectLayer('lighting')"
                   >
-                    <span class="button-icon">
-                      <img src="/lighting.svg" alt="Lighting layer icon" />
-                    </span>
                     Lighting
                   </button>
                   <button
                     :class="{ active: vibrancyVisible }"
                     @click="selectLayer('vibrancy')"
                   >
-                    <span class="button-icon">
-                      <img src="/vibrancy.svg" alt="Vibrancy layer icon" />
-                    </span>
                     Vibrancy
                   </button>
                   <button
                     :class="{ active: combinedVisible }"
                     @click="selectLayer('combined')"
                   >
-                    <span class="button-icon">
-                      <img src="/combined.svg" alt="Combined layer icon" />
-                    </span>
                     Combined
                   </button>
                 </div>
@@ -292,25 +360,29 @@
               <div class="layers-category">
                 <div
                   class="title-collapsible"
-                  @click="routingHubsCategoryExpanded = !routingHubsCategoryExpanded"
+                  @click="
+                    routingHubsCategoryExpanded = !routingHubsCategoryExpanded
+                  "
                 >
                   <span class="title">Routing</span>
                   <span
                     class="chevron chevron-category"
-                    :class="{ 'chevron--expanded': routingHubsCategoryExpanded }"
-                  >›</span>
+                    :class="{
+                      'chevron--expanded': routingHubsCategoryExpanded,
+                    }"
+                    >›</span
+                  >
                 </div>
                 <div
                   class="category-content"
-                  :class="{ 'category-content--collapsed': !routingHubsCategoryExpanded }"
+                  :class="{
+                    'category-content--collapsed': !routingHubsCategoryExpanded,
+                  }"
                 >
                   <button
                     :class="{ active: routingHubsVisible }"
                     @click="toggleRoutingHubs"
                   >
-                    <span class="button-icon">
-                      <img src="/routing_hubs.svg" alt="Routing hubs icon" />
-                    </span>
                     Routing Hubs
                   </button>
                 </div>
@@ -371,6 +443,19 @@
                   <span class="legend-box-empty-text">Legend is outside</span>
                 </div>
               </div>
+            </div>
+          </div>
+
+          <!-- Settings -->
+          <div
+            v-show="activeSidebarTab === 'settings'"
+            class="group sidebar-content"
+          >
+            <div class="section-content">
+              <!-- Settings content will go here -->
+              <p style="color: rgba(255, 255, 255, 0.6); font-size: 14px">
+                Settings content
+              </p>
             </div>
           </div>
         </div>
@@ -579,9 +664,12 @@ const mapReady = ref(false);
 // Hover timer for opening collapsed sidebar
 let hoverTimer = null;
 const HOVER_DELAY = 800; // 800ms delay before opening
+// Hover timer for closing expanded sidebar
+let sidebarCloseTimer = null;
+const SIDEBAR_CLOSE_DELAY = 800; // 800ms delay before closing
 
 // Sidebar tab state - which section is currently active
-const activeSidebarTab = ref("routing"); // "routing", "layers", or "statistics"
+const activeSidebarTab = ref("routing"); // "routing", "layers", "statistics", or "settings"
 
 // Computed section title based on active tab
 const sectionTitle = computed(() => {
@@ -589,6 +677,7 @@ const sectionTitle = computed(() => {
     routing: "Routing",
     layers: "Layers",
     statistics: "Stats",
+    settings: "Settings",
   };
   return titles[activeSidebarTab.value] || "Lumo Pro";
 });
@@ -599,6 +688,7 @@ const sectionHint = computed(() => {
     routing: "Select hubs to plan your route",
     layers: "Choose a layer to visualize on the map",
     statistics: "View statistics and legend information",
+    settings: "Configure application settings",
   };
   return hints[activeSidebarTab.value] || "";
 });
@@ -804,6 +894,9 @@ onBeforeUnmount(() => {
   if (hoverTimer) {
     clearTimeout(hoverTimer);
   }
+  if (sidebarCloseTimer) {
+    clearTimeout(sidebarCloseTimer);
+  }
   if (scrollableRef.value) {
     scrollableRef.value.removeEventListener("scroll", handleScroll);
     scrollableRef.value.removeEventListener("wheel", handleScroll);
@@ -828,10 +921,7 @@ function onViewerReady(exposed) {
 // Computed property to check if route can be planned
 const canPlanRoute = computed(() => {
   return (
-    api &&
-    startHub.value &&
-    endHub.value &&
-    startHub.value !== endHub.value
+    api && startHub.value && endHub.value && startHub.value !== endHub.value
   );
 });
 
@@ -923,6 +1013,33 @@ function handleMouseLeave() {
   if (hoverTimer) {
     clearTimeout(hoverTimer);
     hoverTimer = null;
+  }
+}
+
+// Handle sidebar toggle button hover - close if expanded
+function handleSidebarToggleHover() {
+  // Only close if sidebar is expanded (not collapsed)
+  if (!sidebarCollapsed.value) {
+    // Clear any existing timer
+    if (sidebarCloseTimer) {
+      clearTimeout(sidebarCloseTimer);
+    }
+
+    // Start timer to close
+    sidebarCloseTimer = setTimeout(() => {
+      if (!sidebarCollapsed.value) {
+        sidebarCollapsed.value = true;
+      }
+      sidebarCloseTimer = null;
+    }, SIDEBAR_CLOSE_DELAY);
+  }
+}
+
+// Handle sidebar toggle button leave - clear close timer
+function handleSidebarToggleLeave() {
+  if (sidebarCloseTimer) {
+    clearTimeout(sidebarCloseTimer);
+    sidebarCloseTimer = null;
   }
 }
 
@@ -1455,7 +1572,9 @@ textarea:focus-visible {
   color: rgba(255, 255, 255, 0.5);
   transform: rotate(0deg);
   opacity: 0;
-  transition: transform 0.2s ease, opacity 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
   margin-left: 2px;
   display: inline-block;
   line-height: 1;
@@ -1793,7 +1912,6 @@ textarea:focus-visible {
   gap: 0;
 }
 
-
 .route-input-group {
   position: relative;
   width: 100%;
@@ -1802,7 +1920,6 @@ textarea:focus-visible {
   gap: 12px;
   align-items: flex-start;
 }
-
 
 .route-inputs-wrapper {
   flex: 1;
@@ -1857,7 +1974,6 @@ textarea:focus-visible {
 .route-icon--end {
   color: rgba(255, 255, 255, 0.6);
 }
-
 
 .route-input-content {
   flex: 1;
@@ -2177,9 +2293,6 @@ textarea:focus-visible {
 }
 
 /* When collapsed, avatar stays in same position (no change needed) */
-.profile-avatar-fixed--collapsed {
-  /* Position stays the same - avatar doesn't move */
-}
 
 .profile-avatar-fixed .avatar {
   width: 30px;

@@ -17,6 +17,8 @@
           class="map-controls-toggle"
           :class="{ 'map-controls-toggle--will-close': !controlsCollapsed }"
           @click="handleToggleControls"
+          @mouseenter="handleControlsToggleHover"
+          @mouseleave="handleControlsToggleLeave"
           :aria-expanded="!controlsCollapsed"
           aria-label="Toggle map controls"
         >
@@ -190,6 +192,9 @@ let map = null;
 // Hover timer for opening collapsed controls bar
 let controlsHoverTimer = null;
 const CONTROLS_HOVER_DELAY = 800; // 800ms delay before opening
+// Hover timer for closing expanded controls bar
+let controlsCloseTimer = null;
+const CONTROLS_CLOSE_DELAY = 800; // 800ms delay before closing
 let hubsData = null;
 let hexData = null;
 let hexVibrancyData = null;
@@ -300,6 +305,33 @@ function handleControlsBarMouseLeave() {
   if (controlsHoverTimer) {
     clearTimeout(controlsHoverTimer);
     controlsHoverTimer = null;
+  }
+}
+
+// Handle controls toggle button hover - close if expanded
+function handleControlsToggleHover() {
+  // Only close if controls are expanded (not collapsed)
+  if (!controlsCollapsed.value) {
+    // Clear any existing timer
+    if (controlsCloseTimer) {
+      clearTimeout(controlsCloseTimer);
+    }
+    
+    // Start timer to close
+    controlsCloseTimer = setTimeout(() => {
+      if (!controlsCollapsed.value) {
+        controlsCollapsed.value = true;
+      }
+      controlsCloseTimer = null;
+    }, CONTROLS_CLOSE_DELAY);
+  }
+}
+
+// Handle controls toggle button leave - clear close timer
+function handleControlsToggleLeave() {
+  if (controlsCloseTimer) {
+    clearTimeout(controlsCloseTimer);
+    controlsCloseTimer = null;
   }
 }
 
@@ -420,6 +452,7 @@ onMounted(async () => {
           id: "hubs-labels",
           type: "symbol",
           source: "hubs",
+          minzoom: 15, // Only show labels at very high zoom level
           layout: {
             "text-field": ["get", "CHSTNAME"],
             "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
@@ -955,9 +988,12 @@ onBeforeUnmount(() => {
   );
   document.removeEventListener("msfullscreenchange", handleFullscreenChange);
 
-  // Clear hover timer
+  // Clear hover timers
   if (controlsHoverTimer) {
     clearTimeout(controlsHoverTimer);
+  }
+  if (controlsCloseTimer) {
+    clearTimeout(controlsCloseTimer);
   }
 
   if (map) {
@@ -1084,6 +1120,11 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: center;
   min-height: 56px;
+  transition:
+    height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    padding 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    background 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .map-controls-bar--collapsed:hover {
@@ -1225,9 +1266,9 @@ onBeforeUnmount(() => {
   transform: translateY(-10px);
   pointer-events: none;
   transition:
-    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.1s,
+    max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.1s;
 }
 
 .map-controls-bar--collapsed .map-controls-header {
