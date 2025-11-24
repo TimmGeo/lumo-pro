@@ -452,10 +452,357 @@
             class="group sidebar-content"
           >
             <div class="section-content">
-              <!-- Settings content will go here -->
-              <p style="color: rgba(255, 255, 255, 0.6); font-size: 14px">
-                Settings content
-              </p>
+              <!-- Settings Navigation - Compact Category List -->
+              <div class="settings-nav-compact">
+                <div
+                  v-for="category in settingsCategories"
+                  :key="category.id"
+                  class="settings-nav-item"
+                  :class="{
+                    'settings-nav-item--active': getCategoryExpanded(
+                      category.id
+                    ),
+                  }"
+                  @click="toggleAndScrollToCategory(category.id)"
+                >
+                  <span class="settings-nav-item-icon">
+                    {{ getCategoryExpanded(category.id) ? "▼" : "▶" }}
+                  </span>
+                  <span class="settings-nav-item-label">{{
+                    category.label
+                  }}</span>
+                </div>
+              </div>
+
+              <!-- Imprint Category -->
+              <div
+                id="settings-imprint"
+                class="layers-category settings-category"
+              >
+                <div
+                  class="title-collapsible"
+                  @click="imprintExpanded = !imprintExpanded"
+                >
+                  <span class="title">Imprint</span>
+                  <span
+                    class="chevron chevron-category"
+                    :class="{ 'chevron--expanded': imprintExpanded }"
+                    >›</span
+                  >
+                </div>
+                <div
+                  class="category-content"
+                  :class="{ 'category-content--collapsed': !imprintExpanded }"
+                >
+                  <div class="settings-content">
+                    <div class="settings-section">
+                      <h4 class="settings-section-title">
+                        Company Information
+                      </h4>
+                      <p class="settings-text">Your Company Name</p>
+                      <p class="settings-text">Address Line 1</p>
+                      <p class="settings-text">Address Line 2</p>
+                      <p class="settings-text">City, Postal Code</p>
+                      <p class="settings-text">Country</p>
+                    </div>
+                    <div class="settings-section">
+                      <h4 class="settings-section-title">Contact</h4>
+                      <p class="settings-text">Email: contact@example.com</p>
+                      <p class="settings-text">Phone: +41 XX XXX XX XX</p>
+                    </div>
+                    <div class="settings-section">
+                      <h4 class="settings-section-title">Legal Information</h4>
+                      <p class="settings-text">VAT ID: XX-XXX-XXX</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Privacy Policy Category -->
+              <div
+                id="settings-privacy"
+                class="layers-category settings-category"
+              >
+                <div
+                  class="title-collapsible"
+                  @click="privacyExpanded = !privacyExpanded"
+                >
+                  <span class="title">Privacy Policy</span>
+                  <span
+                    class="chevron chevron-category"
+                    :class="{ 'chevron--expanded': privacyExpanded }"
+                    >›</span
+                  >
+                </div>
+                <div
+                  class="category-content"
+                  :class="{ 'category-content--collapsed': !privacyExpanded }"
+                >
+                  <div class="settings-content">
+                    <p class="settings-text settings-meta">
+                      Last updated: [Date]
+                    </p>
+                    <div class="settings-section">
+                      <p class="settings-text">
+                        We respect your privacy and are committed to protecting
+                        your personal data. This privacy policy explains how we
+                        collect, use, and safeguard your information when you
+                        use our application.
+                      </p>
+                    </div>
+                    <div class="settings-section">
+                      <h4 class="settings-section-title">Data Collection</h4>
+                      <p class="settings-text">
+                        We collect information that you provide directly to us,
+                        including route planning data and preferences.
+                      </p>
+                    </div>
+                    <div class="settings-section">
+                      <h4 class="settings-section-title">Data Usage</h4>
+                      <p class="settings-text">
+                        Your data is used to provide and improve our services,
+                        including route planning and map visualization features.
+                      </p>
+                    </div>
+                    <div class="settings-section">
+                      <h4 class="settings-section-title">Data Protection</h4>
+                      <p class="settings-text">
+                        We implement appropriate technical and organizational
+                        measures to protect your personal data.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Terms of Service Category -->
+              <div
+                id="settings-terms"
+                class="layers-category settings-category"
+              >
+                <div
+                  class="title-collapsible"
+                  @click="termsExpanded = !termsExpanded"
+                >
+                  <span class="title">Terms of Service</span>
+                  <span
+                    class="chevron chevron-category"
+                    :class="{ 'chevron--expanded': termsExpanded }"
+                    >›</span
+                  >
+                </div>
+                <div
+                  class="category-content"
+                  :class="{ 'category-content--collapsed': !termsExpanded }"
+                >
+                  <div class="settings-content">
+                    <p class="settings-text settings-meta">
+                      Last updated: [Date]
+                    </p>
+                    <div class="settings-section">
+                      <p class="settings-text">
+                        By using this application, you agree to be bound by
+                        these Terms of Service.
+                      </p>
+                    </div>
+                    <div class="settings-section">
+                      <h4 class="settings-section-title">Use of Service</h4>
+                      <p class="settings-text">
+                        You may use this service for lawful purposes only. You
+                        agree not to misuse the service or attempt to gain
+                        unauthorized access.
+                      </p>
+                    </div>
+                    <div class="settings-section">
+                      <h4 class="settings-section-title">
+                        Intellectual Property
+                      </h4>
+                      <p class="settings-text">
+                        All content, features, and functionality of this
+                        application are owned by us and are protected by
+                        copyright and other intellectual property laws.
+                      </p>
+                    </div>
+                    <div class="settings-section">
+                      <h4 class="settings-section-title">
+                        Limitation of Liability
+                      </h4>
+                      <p class="settings-text">
+                        We are not liable for any indirect, incidental, or
+                        consequential damages arising from your use of this
+                        service.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- About Category -->
+              <div
+                id="settings-about"
+                class="layers-category settings-category"
+              >
+                <div
+                  class="title-collapsible"
+                  @click="aboutExpanded = !aboutExpanded"
+                >
+                  <span class="title">About</span>
+                  <span
+                    class="chevron chevron-category"
+                    :class="{ 'chevron--expanded': aboutExpanded }"
+                    >›</span
+                  >
+                </div>
+                <div
+                  class="category-content"
+                  :class="{ 'category-content--collapsed': !aboutExpanded }"
+                >
+                  <div class="settings-content">
+                    <div class="settings-section">
+                      <h4 class="settings-section-title">About Lumo Pro</h4>
+                      <p class="settings-text">
+                        Lumo Pro is an advanced mapping and routing application
+                        designed to help you explore and navigate urban
+                        environments.
+                      </p>
+                    </div>
+                    <div class="settings-section">
+                      <h4 class="settings-section-title">Features</h4>
+                      <ul class="settings-list-items">
+                        <li>Interactive map visualization</li>
+                        <li>Route planning between hubs</li>
+                        <li>
+                          Multiple data layers (Lighting, Vibrancy, Combined)
+                        </li>
+                        <li>Real-time statistics and analytics</li>
+                      </ul>
+                    </div>
+                    <div class="settings-section">
+                      <h4 class="settings-section-title">Version</h4>
+                      <p class="settings-text">Version 1.0.0</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Contact Category -->
+              <div
+                id="settings-contact"
+                class="layers-category settings-category"
+              >
+                <div
+                  class="title-collapsible"
+                  @click="contactExpanded = !contactExpanded"
+                >
+                  <span class="title">Contact</span>
+                  <span
+                    class="chevron chevron-category"
+                    :class="{ 'chevron--expanded': contactExpanded }"
+                    >›</span
+                  >
+                </div>
+                <div
+                  class="category-content"
+                  :class="{ 'category-content--collapsed': !contactExpanded }"
+                >
+                  <div class="settings-content">
+                    <div class="settings-section">
+                      <p class="settings-text">
+                        We'd love to hear from you! Get in touch with us through
+                        any of the following channels:
+                      </p>
+                    </div>
+                    <div class="settings-section">
+                      <h4 class="settings-section-title">Email</h4>
+                      <p class="settings-text">contact@example.com</p>
+                      <p class="settings-text">support@example.com</p>
+                    </div>
+                    <div class="settings-section">
+                      <h4 class="settings-section-title">Phone</h4>
+                      <p class="settings-text">+41 XX XXX XX XX</p>
+                    </div>
+                    <div class="settings-section">
+                      <h4 class="settings-section-title">Address</h4>
+                      <p class="settings-text">Your Company Name</p>
+                      <p class="settings-text">Address Line 1</p>
+                      <p class="settings-text">City, Postal Code</p>
+                      <p class="settings-text">Country</p>
+                    </div>
+                    <div class="settings-section">
+                      <h4 class="settings-section-title">Business Hours</h4>
+                      <p class="settings-text">
+                        Monday - Friday: 9:00 AM - 6:00 PM
+                      </p>
+                      <p class="settings-text">Saturday - Sunday: Closed</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Help / FAQ Category -->
+              <div id="settings-help" class="layers-category settings-category">
+                <div
+                  class="title-collapsible"
+                  @click="helpExpanded = !helpExpanded"
+                >
+                  <span class="title">Help / FAQ</span>
+                  <span
+                    class="chevron chevron-category"
+                    :class="{ 'chevron--expanded': helpExpanded }"
+                    >›</span
+                  >
+                </div>
+                <div
+                  class="category-content"
+                  :class="{ 'category-content--collapsed': !helpExpanded }"
+                >
+                  <div class="settings-content">
+                    <div class="settings-section">
+                      <h4 class="settings-section-title">
+                        How do I plan a route?
+                      </h4>
+                      <p class="settings-text">
+                        Select a starting hub and destination hub from the
+                        Routing section, then click "Plan Route".
+                      </p>
+                    </div>
+                    <div class="settings-section">
+                      <h4 class="settings-section-title">
+                        How do I change map layers?
+                      </h4>
+                      <p class="settings-text">
+                        Go to the Layers section and select from Lighting,
+                        Vibrancy, or Combined layers.
+                      </p>
+                    </div>
+                    <div class="settings-section">
+                      <h4 class="settings-section-title">
+                        How do I view statistics?
+                      </h4>
+                      <p class="settings-text">
+                        Click on the Statistics icon in the sidebar to view
+                        detailed statistics and legend information.
+                      </p>
+                    </div>
+                    <div class="settings-section">
+                      <h4 class="settings-section-title">
+                        Can I customize the map view?
+                      </h4>
+                      <p class="settings-text">
+                        Yes! Use the map controls to zoom, rotate, and tilt the
+                        map view.
+                      </p>
+                    </div>
+                    <div class="settings-section">
+                      <h4 class="settings-section-title">Need more help?</h4>
+                      <p class="settings-text">
+                        Contact us through the Contact section for additional
+                        support.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -701,6 +1048,65 @@ const legendCollapsed = ref(false);
 // Layers section category expand/collapse states
 const layersCategoryExpanded = ref(true);
 const routingHubsCategoryExpanded = ref(true);
+
+// Settings section category expand/collapse states
+const imprintExpanded = ref(false);
+const privacyExpanded = ref(false);
+const termsExpanded = ref(false);
+const aboutExpanded = ref(false);
+const contactExpanded = ref(false);
+const helpExpanded = ref(false);
+
+// Settings categories configuration
+const settingsCategories = [
+  { id: "imprint", label: "Imprint" },
+  { id: "privacy", label: "Privacy Policy" },
+  { id: "terms", label: "Terms of Service" },
+  { id: "about", label: "About" },
+  { id: "contact", label: "Contact" },
+  { id: "help", label: "Help / FAQ" },
+];
+
+// Get expanded state for a category
+function getCategoryExpanded(categoryId) {
+  const states = {
+    imprint: imprintExpanded,
+    privacy: privacyExpanded,
+    terms: termsExpanded,
+    about: aboutExpanded,
+    contact: contactExpanded,
+    help: helpExpanded,
+  };
+  return states[categoryId]?.value || false;
+}
+
+// Toggle category and scroll to it
+function toggleAndScrollToCategory(categoryId) {
+  const states = {
+    imprint: imprintExpanded,
+    privacy: privacyExpanded,
+    terms: termsExpanded,
+    about: aboutExpanded,
+    contact: contactExpanded,
+    help: helpExpanded,
+  };
+
+  const stateRef = states[categoryId];
+  if (stateRef) {
+    // Toggle the state
+    stateRef.value = !stateRef.value;
+
+    // If expanding, scroll to it after a short delay
+    if (stateRef.value) {
+      setTimeout(() => {
+        const element = document.getElementById(`settings-${categoryId}`);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }, 150);
+    }
+  }
+}
 
 // Legend drag state
 const legendDraggedOut = ref(false);
@@ -1606,17 +2012,129 @@ textarea:focus-visible {
 }
 
 .section-content {
-  overflow: hidden;
-  max-height: 1000px;
-  transition:
-    max-height 0.3s ease,
-    opacity 0.2s ease;
+  overflow: visible;
+  max-height: none;
+  transition: opacity 0.2s ease;
   opacity: 1;
 }
 
 .section-content--collapsed {
   max-height: 0;
   opacity: 0;
+  margin-bottom: 0;
+}
+
+/* Settings navigation - Compact category list */
+.settings-nav-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 20px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: none;
+  border-radius: 8px;
+}
+
+.settings-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 13px;
+  user-select: none;
+}
+
+.settings-nav-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.settings-nav-item--active {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.settings-nav-item-icon {
+  font-size: 10px;
+  width: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  transition: transform 0.2s ease;
+}
+
+.settings-nav-item--active .settings-nav-item-icon {
+  opacity: 1;
+}
+
+.settings-nav-item-label {
+  flex: 1;
+}
+
+.settings-category {
+  scroll-margin-top: 20px;
+}
+
+/* Settings content styles */
+.settings-content {
+  padding: 4px 0;
+}
+
+.settings-section {
+  margin-bottom: 20px;
+}
+
+.settings-section:last-child {
+  margin-bottom: 0;
+}
+
+.settings-section-title {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  line-height: 1.4;
+}
+
+.settings-text {
+  margin: 0 0 6px 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.5;
+}
+
+.settings-text:last-child {
+  margin-bottom: 0;
+}
+
+.settings-meta {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 12px;
+  font-style: italic;
+  margin-bottom: 12px;
+}
+
+.settings-list-items {
+  margin: 8px 0;
+  padding-left: 20px;
+  list-style-type: disc;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.settings-list-items li {
+  margin-bottom: 6px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.settings-list-items li:last-child {
   margin-bottom: 0;
 }
 
@@ -1647,7 +2165,7 @@ textarea:focus-visible {
   flex-direction: column;
   gap: 8px;
   overflow: hidden;
-  max-height: 500px;
+  max-height: 5000px; /* Large enough to accommodate all content */
   opacity: 1;
   transition:
     max-height 0.3s ease,
