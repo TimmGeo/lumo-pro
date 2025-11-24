@@ -99,8 +99,12 @@
             </svg>
             <span class="sidebar-icon-tooltip">Statistics</span>
           </button>
+        </div>
+
+        <!-- Settings icon above profile -->
+        <div class="sidebar-icon-bar-bottom">
           <button
-            class="sidebar-icon-btn"
+            class="sidebar-icon-btn sidebar-icon-btn--settings"
             :class="{ active: activeSidebarTab === 'settings' }"
             @click.stop="activeSidebarTab = 'settings'"
             aria-label="Settings"
@@ -1035,7 +1039,7 @@ const sectionHint = computed(() => {
     routing: "Select hubs to plan your route",
     layers: "Choose a layer to visualize on the map",
     statistics: "View statistics and legend information",
-    settings: "Configure application settings",
+    settings: "Legal information, contact details, and help resources",
   };
   return hints[activeSidebarTab.value] || "";
 });
@@ -1638,7 +1642,7 @@ textarea:focus-visible {
   background: #1a1b1e;
   border-radius: 16px 0 0 16px;
   flex-shrink: 0;
-  justify-content: flex-start;
+  justify-content: space-between;
   position: relative; /* Ensure it stays in place */
 }
 
@@ -1660,7 +1664,7 @@ textarea:focus-visible {
   border: none;
   background: transparent !important; /* Transparent to adapt to bar color - override global button style */
   background-color: transparent !important; /* Ensure background-color is also transparent */
-  color: rgba(255, 255, 255, 0.4); /* Darker grey for SVG */
+  color: rgba(255, 255, 255, 0.4); /* Default color */
   border-radius: 6px;
   cursor: pointer;
   display: flex;
@@ -1672,6 +1676,28 @@ textarea:focus-visible {
   box-sizing: border-box;
 }
 
+/* Opened sidebar: make icons more transparent */
+.sidebar:not(.sidebar--collapsed) .sidebar-icon-btn:not(.active) {
+  color: rgba(
+    255,
+    255,
+    255,
+    0.25
+  ) !important; /* More transparent for opened sidebar */
+}
+
+/* Opened sidebar: hover state more transparent (but not for active) */
+.sidebar:not(.sidebar--collapsed) .sidebar-icon-btn:not(.active):hover {
+  background: transparent !important; /* Transparent to adapt to bar color */
+  background-color: transparent !important;
+  color: rgba(
+    255,
+    255,
+    255,
+    0.5
+  ) !important; /* Slightly more visible on hover, but still transparent */
+}
+
 .sidebar-icon-btn:hover {
   background: transparent !important; /* Transparent to adapt to bar color */
   background-color: transparent !important;
@@ -1681,7 +1707,7 @@ textarea:focus-visible {
 .sidebar-icon-btn.active {
   background: transparent !important; /* Transparent to adapt to bar color */
   background-color: transparent !important;
-  color: #ffffff; /* White when active */
+  color: #ffffff !important; /* True white when active - always full white */
 }
 
 .sidebar-icon-btn.active::before {
@@ -1696,11 +1722,38 @@ textarea:focus-visible {
   border-radius: 0 2px 2px 0;
 }
 
+/* Sidebar icon bar bottom section (for settings above profile) */
+.sidebar-icon-bar-bottom {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: absolute;
+  bottom: 82px; /* Avatar is at bottom: 22px, avatar height 30px, so 22px + 30px + 30px spacing = 82px */
+  left: 0;
+  right: 0;
+  z-index: 12; /* Above the avatar (z-index: 11) */
+}
+
 .sidebar-icon-btn img,
 .sidebar-icon-btn svg {
   width: 20px;
   height: 20px;
   display: block;
+}
+
+/* Opened sidebar: make img icons more transparent (for routing, layers) */
+.sidebar:not(.sidebar--collapsed) .sidebar-icon-btn:not(.active) img {
+  opacity: 0.25 !important; /* Match the transparency of SVG icons */
+}
+
+/* Opened sidebar: hover state for img icons */
+.sidebar:not(.sidebar--collapsed) .sidebar-icon-btn:not(.active):hover img {
+  opacity: 0.5 !important; /* Match the hover transparency of SVG icons */
+}
+
+/* Active img icons should be fully opaque */
+.sidebar-icon-btn.active img {
+  opacity: 1 !important;
 }
 
 .sidebar-icon-btn svg {
