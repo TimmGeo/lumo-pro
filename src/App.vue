@@ -2447,7 +2447,7 @@ textarea:focus-visible {
     26,
     27,
     30,
-    0.3
+    0.5
   ); /* Match icon bar color (#1a1b1e) with transparency */
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   cursor: pointer;
@@ -2743,6 +2743,12 @@ textarea:focus-visible {
   opacity: 0.5;
 }
 
+.route-plan-btn--disabled:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
 .route-plan-btn svg {
   flex-shrink: 0;
 }
@@ -2920,6 +2926,10 @@ textarea:focus-visible {
   visibility: visible !important;
 }
 
+.profile-avatar-fixed--collapsed .avatar {
+  opacity: 0.5 !important;
+}
+
 /* -------- POPUP -------- */
 .popup {
   position: absolute;
@@ -2999,7 +3009,7 @@ textarea:focus-visible {
   width: 56px;
   height: 56px;
   border-radius: 8px;
-  background: rgba(21, 21, 23, 0.3);
+  background: rgba(21, 21, 23, 0.5);
   border: none;
   padding: 0;
   margin: 0;

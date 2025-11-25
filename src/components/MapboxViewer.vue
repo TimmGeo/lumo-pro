@@ -29,12 +29,12 @@
             height="16"
             viewBox="0 0 24 24"
             fill="none"
-            xmlns="http://www.w3.org/2000/svg"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
           >
-            <rect x="3" y="8" width="18" height="2" rx="1" fill="currentColor"/>
-            <circle cx="7" cy="9" r="2" fill="currentColor"/>
-            <rect x="3" y="14" width="18" height="2" rx="1" fill="currentColor"/>
-            <circle cx="17" cy="15" r="2" fill="currentColor"/>
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
           </svg>
           <!-- Chevron arrow only when expanded (to collapse) -->
           <svg
@@ -1181,7 +1181,7 @@ onBeforeUnmount(() => {
   width: 56px;
   height: 56px;
   border-radius: 8px;
-  background: rgba(28, 30, 33, 0.3);
+  background: rgba(28, 30, 33, 0.5);
   transition: background 0.15s ease;
 }
 
