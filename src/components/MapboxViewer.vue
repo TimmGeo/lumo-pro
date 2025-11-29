@@ -148,7 +148,7 @@
 </template>
 
 <script setup>
-import { onMounted, onBeforeUnmount, ref, watch, nextTick } from "vue";
+import { onMounted, onBeforeUnmount, ref, watch, nextTick, defineExpose } from "vue";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
@@ -183,7 +183,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["zurichZoomComplete", "zoom", "move", "mapReady"]);
+const emit = defineEmits(["zurichZoomComplete", "zoom", "move", "mapReady", "hubsUpdated"]);
 
 const sceneEl = ref(null);
 const mapEl = ref(null);
@@ -437,13 +437,16 @@ onMounted(async () => {
         const hubsResponse = await fetch(hubsUrl);
         hubsData = await hubsResponse.json();
 
-        // Fetch locality names for each hub using reverse geocoding
-        await fetchLocalityNamesForHubs();
-
         map.addSource("hubs", {
           type: "geojson",
           data: hubsData,
         });
+        
+        // Emit hubs ready event immediately (before locality names are fetched)
+        emit("hubsUpdated");
+        
+        // Fetch locality names for each hub using reverse geocoding (async, in background)
+        fetchLocalityNamesForHubs();
 
         // Add circles for hubs (matching Cesium styling)
         map.addLayer({
@@ -539,6 +542,9 @@ onMounted(async () => {
         
         // Initialize hub colors
         updateHubColors();
+        
+        // Emit hubs ready event immediately (before locality names are fetched)
+        emit("hubsUpdated");
 
         // --- Load and add Vibrancy Hexagons (3D extruded) ---
         try {
@@ -940,9 +946,12 @@ function setHubsVisibility(visible) {
 // Handle hub click - select first hub, then second hub to show route
 function handleHubClick(hubId) {
   if (!map || !map.isStyleLoaded()) return;
+  
+  // Convert to number for consistency
+  const id = typeof hubId === 'string' ? parseInt(hubId, 10) : hubId;
 
   // If clicking the same hub that's already selected, deselect it
-  if (selectedHubId1 === hubId) {
+  if (selectedHubId1 === id) {
     selectedHubId1 = null;
     selectedHubId2 = null;
     clearRoute();
@@ -951,7 +960,7 @@ function handleHubClick(hubId) {
   }
 
   // If clicking the second selected hub, deselect it
-  if (selectedHubId2 === hubId) {
+  if (selectedHubId2 === id) {
     selectedHubId2 = null;
     clearRoute();
     updateHubColors();
@@ -960,7 +969,7 @@ function handleHubClick(hubId) {
 
   // If no hub is selected, select this one as first
   if (selectedHubId1 === null) {
-    selectedHubId1 = hubId;
+    selectedHubId1 = id;
     selectedHubId2 = null;
     clearRoute();
     updateHubColors();
@@ -969,14 +978,14 @@ function handleHubClick(hubId) {
 
   // If first hub is selected, select this one as second and show route
   if (selectedHubId1 !== null && selectedHubId2 === null) {
-    selectedHubId2 = hubId;
+    selectedHubId2 = id;
     loadAndDisplayRoute(selectedHubId1, selectedHubId2);
     updateHubColors();
     return;
   }
 
   // If both hubs are selected, replace first with this one
-  selectedHubId1 = hubId;
+  selectedHubId1 = id;
   selectedHubId2 = null;
   clearRoute();
   updateHubColors();
@@ -1027,13 +1036,33 @@ function updateHubColors() {
 
 // Load and display route between two hubs
 async function loadAndDisplayRoute(fromId, toId) {
-  if (!map || !map.isStyleLoaded()) return;
+  console.log("loadAndDisplayRoute called with", { fromId, toId, mapReady: !!map, styleLoaded: map?.isStyleLoaded() });
+  
+  if (!map) {
+    console.error("Map not initialized");
+    return;
+  }
+  
+  if (!map.isStyleLoaded()) {
+    console.warn("Map style not loaded yet, waiting...");
+    // Wait for style to load
+    await new Promise((resolve) => {
+      if (map.isStyleLoaded()) {
+        resolve();
+      } else {
+        map.once("style.load", resolve);
+      }
+    });
+    console.log("Map style loaded, proceeding with route");
+  }
 
   // Determine route filename (always use smaller ID first for consistency)
   const routeId1 = Math.min(fromId, toId);
   const routeId2 = Math.max(fromId, toId);
   const routeFileName = `${routeId1}_${routeId2}.geojson`;
   const routeUrl = `${BASE}data/routes/${routeFileName}`.replace(/\/{2,}/g, "/");
+
+  console.log(`Loading route: ${routeFileName} from ${routeUrl}`);
 
   try {
     // Clear existing route first
@@ -1042,24 +1071,40 @@ async function loadAndDisplayRoute(fromId, toId) {
     // Load route data
     const routeResponse = await fetch(routeUrl);
     if (!routeResponse.ok) {
-      console.warn(`Route not found: ${routeFileName}`);
+      console.error(`Route not found: ${routeFileName}`, { status: routeResponse.status, statusText: routeResponse.statusText });
       return;
     }
 
     const routeData = await routeResponse.json();
+    console.log("Route data loaded:", routeData);
+    
+    // Validate route data
+    if (!routeData || !routeData.features || routeData.features.length === 0) {
+      console.error("Route data is empty or invalid:", routeData);
+      return;
+    }
+    
+    console.log(`Route has ${routeData.features.length} feature(s)`);
 
     // Add route source
     if (map.getSource("route")) {
+      console.log("Updating existing route source");
       map.getSource("route").setData(routeData);
     } else {
+      console.log("Creating new route source");
       map.addSource("route", {
         type: "geojson",
         data: routeData,
       });
     }
+    
+    // Wait a bit to ensure source is ready
+    await nextTick();
 
     // Add route layer if it doesn't exist
     if (!map.getLayer("route-line")) {
+      // Add layer before hubs-circles if it exists, otherwise just add it
+      const beforeLayer = map.getLayer("hubs-circles") ? "hubs-circles" : undefined;
       map.addLayer({
         id: "route-line",
         type: "line",
@@ -1073,20 +1118,40 @@ async function loadAndDisplayRoute(fromId, toId) {
           "line-join": "round",
           "line-cap": "round",
         },
-      });
+      }, beforeLayer);
+      console.log("Route layer added");
+    } else {
+      console.log("Route layer already exists");
     }
 
-    // Ensure route is visible and positioned above hex layers but below hubs
+    // Ensure route is visible
     map.setLayoutProperty("route-line", "visibility", "visible");
+    console.log("Route layer visibility set to visible");
     
-    // Move route layer to be above hex layers but below hubs
-    // First, try to move it before hubs-circles
+    // Verify the layer exists and is visible
+    const routeLayer = map.getLayer("route-line");
+    if (routeLayer) {
+      const visibility = map.getLayoutProperty("route-line", "visibility");
+      console.log("Route layer exists, visibility:", visibility);
+    } else {
+      console.error("Route layer does not exist after creation!");
+    }
+    
+    // Move route layer to be above hex layers but below hubs (if not already positioned)
     if (map.getLayer("hubs-circles")) {
-      map.moveLayer("route-line", "hubs-circles");
+      try {
+        map.moveLayer("route-line", "hubs-circles");
+        console.log("Route layer moved before hubs-circles");
+      } catch (e) {
+        console.warn("Could not move route layer:", e);
+      }
     }
 
     currentRouteSource = routeUrl;
-    console.log(`Route loaded: ${routeFileName}`);
+    console.log(`✅ Route successfully loaded: ${routeFileName}`);
+    
+    // Force a repaint to ensure route is visible
+    map.triggerRepaint();
   } catch (error) {
     console.error(`Error loading route ${routeFileName}:`, error);
   }
@@ -1193,6 +1258,9 @@ async function fetchLocalityNamesForHubs() {
     if (map && map.isStyleLoaded() && map.getSource("hubs")) {
       map.getSource("hubs").setData(hubsData);
       console.log("✅ Locality names fetched and updated for hubs");
+      
+      // Emit event to notify parent that hubs are ready
+      emit("hubsUpdated");
     } else if (map) {
       // Map not ready yet, wait a bit and try again
       setTimeout(updateSource, 100);
@@ -1201,6 +1269,59 @@ async function fetchLocalityNamesForHubs() {
   
   updateSource();
 }
+
+// Expose methods for parent component
+defineExpose({
+  selectHubs: (hubId1, hubId2, loadRoute = true) => {
+    console.log("selectHubs called", { hubId1, hubId2, loadRoute });
+    // Convert to numbers for consistency
+    const id1 = hubId1 ? (typeof hubId1 === 'string' ? parseInt(hubId1, 10) : hubId1) : null;
+    const id2 = hubId2 ? (typeof hubId2 === 'string' ? parseInt(hubId2, 10) : hubId2) : null;
+    
+    console.log("Converted IDs", { id1, id2 });
+    
+    if (id1 && id2) {
+      selectedHubId1 = id1;
+      selectedHubId2 = id2;
+      // Only load route if loadRoute is true (default true for backward compatibility)
+      if (loadRoute) {
+        console.log("Loading route between", id1, "and", id2);
+        loadAndDisplayRoute(id1, id2);
+      } else {
+        // Just update colors without loading route
+        console.log("Not loading route, just updating colors");
+        clearRoute();
+      }
+      updateHubColors();
+    } else if (id1) {
+      selectedHubId1 = id1;
+      selectedHubId2 = null;
+      clearRoute();
+      updateHubColors();
+    } else {
+      selectedHubId1 = null;
+      selectedHubId2 = null;
+      clearRoute();
+      updateHubColors();
+    }
+  },
+  getHubs: () => {
+    if (!hubsData || !hubsData.features) {
+      console.warn("getHubs: hubsData not available");
+      return [];
+    }
+    const hubList = hubsData.features.map((feature) => {
+      const id = feature.properties.id;
+      // Use locality name if available, otherwise use a fallback
+      const name = feature.properties.locality 
+        || feature.properties.neighborhood 
+        || `Hub ${id}`;
+      return { id, name };
+    });
+    console.log("getHubs returning:", hubList);
+    return hubList;
+  },
+});
 
 function requestZurichFocus(key) {
   if (!key) return;

@@ -2,6 +2,7 @@
   <div class="app">
     <!-- Main map viewer -->
     <MapboxViewer
+      ref="mapboxViewerRef"
       :lightingVisible="lightingVisible"
       :vibrancyVisible="vibrancyVisible"
       :combinedVisible="combinedVisible"
@@ -14,6 +15,7 @@
       @zoom="handleMapZoom"
       @move="handleMapMove"
       @mapReady="handleMapReady"
+      @hubsUpdated="handleHubsUpdated"
     />
 
     <!-- Sidebar controls -->
@@ -321,9 +323,9 @@
 
                 <button
                   class="route-plan-btn"
-                  :class="{ 'route-plan-btn--disabled': !canPlanRoute }"
-                  :disabled="!canPlanRoute"
                   @click="route"
+                  type="button"
+                  :disabled="!startHub || !endHub || startHub === endHub"
                 >
                   <svg
                     width="16"
@@ -913,7 +915,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, nextTick } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from "vue";
 import MapboxViewer from "./components/MapboxViewer.vue";
 import Legend from "./components/Legend.vue";
 import Walkthrough from "./components/Walkthrough.vue";
@@ -956,17 +958,13 @@ const mode = computed(() => {
 });
 const startHub = ref("");
 const endHub = ref("");
-const hubs = ref([
-  { id: "HB", name: "Zürich HB" },
-  { id: "BEL", name: "Bellevue" },
-  { id: "LS", name: "Langstrasse" },
-  { id: "EW", name: "Escher-Wyss" },
-]);
+const hubs = ref([]);
 
 // Hover popup data
 const popup = ref({ show: false, x: 0, y: 0, lights: 0, pois: 0, hub: "—" });
 
 let api = null;
+const mapboxViewerRef = ref(null);
 
 // sidebar collapse state
 const sidebarCollapsed = ref(false);
@@ -1241,23 +1239,109 @@ function onViewerReady(exposed) {
       popup.value = { show: true, ...info };
     });
   }
+  
+  // Load hubs from the map component
+  loadHubs();
+}
+
+
+// Load hubs from the map component
+function loadHubs() {
+  if (api && api.getHubs) {
+    const loadedHubs = api.getHubs();
+    console.log("Loaded hubs:", loadedHubs);
+    if (loadedHubs && loadedHubs.length > 0) {
+      hubs.value = loadedHubs;
+      console.log("Hubs set in dropdown:", hubs.value);
+    } else {
+      console.warn("No hubs loaded from map component");
+    }
+  } else {
+    console.warn("API or getHubs method not available");
+  }
+}
+
+// Handle hubs updated event (when locality names are fetched)
+function handleHubsUpdated() {
+  loadHubs();
 }
 
 // Computed property to check if route can be planned
 const canPlanRoute = computed(() => {
-  return (
-    api && startHub.value && endHub.value && startHub.value !== endHub.value
-  );
+  const canPlan = api && startHub.value && endHub.value && startHub.value !== endHub.value;
+  console.log("canPlanRoute computed:", canPlan, { api: !!api, startHub: startHub.value, endHub: endHub.value });
+  return canPlan;
 });
 
 // Trigger routing between hubs
-async function route() {
-  if (!canPlanRoute.value) return;
+function route(event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  
+  console.log("🔵🔵🔵 route() function called 🔵🔵🔵");
+  console.log("Current state:", {
+    canPlanRoute: canPlanRoute.value,
+    api: !!api,
+    startHub: startHub.value,
+    endHub: endHub.value,
+    apiMethods: api ? Object.keys(api) : []
+  });
+  
+  // Always try to plan route, even if conditions aren't perfect
+  if (!startHub.value || !endHub.value) {
+    console.warn("⚠️ No hubs selected");
+    alert("Please select both start and end hubs");
+    return;
+  }
+  
+  if (startHub.value === endHub.value) {
+    console.warn("⚠️ Same hub selected for start and end");
+    alert("Please select different hubs for start and end");
+    return;
+  }
 
-  if (api.drawRoute) {
-    await api.drawRoute(startHub.value, endHub.value);
+  console.log("✅ Planning route from", startHub.value, "to", endHub.value);
+  
+  if (api && api.selectHubs) {
+    try {
+      // Explicitly pass true to load the route
+      console.log("Calling api.selectHubs with:", startHub.value, endHub.value, true);
+      api.selectHubs(startHub.value, endHub.value, true);
+      console.log("✅ selectHubs called with loadRoute=true");
+    } catch (error) {
+      console.error("❌ Error calling selectHubs:", error);
+      alert("Error planning route: " + error.message);
+    }
+  } else {
+    console.error("❌ API or selectHubs method not available", { 
+      api: api, 
+      hasSelectHubs: api?.selectHubs,
+      apiType: typeof api
+    });
+    alert("Map not ready. Please wait a moment and try again.");
   }
 }
+
+// Watch for dropdown changes and update map selection (only highlight, don't show route)
+watch([startHub, endHub], ([newStart, newEnd]) => {
+  if (!api || !api.selectHubs) return;
+  
+  // Only highlight selected hubs, but don't show route until "Plan Route" is clicked
+  if (newStart && newEnd && newStart !== newEnd) {
+    // Just highlight both hubs, but don't load route
+    api.selectHubs(newStart, newEnd, false); // Pass false to indicate don't load route
+  } 
+  // If only start hub is selected, select it
+  else if (newStart && !newEnd) {
+    api.selectHubs(newStart, null);
+  }
+  // If start hub is cleared, clear selection
+  else if (!newStart) {
+    api.selectHubs(null, null);
+  }
+}, { immediate: false });
 
 // Swap hubs function
 function swapHubs() {
@@ -1290,6 +1374,14 @@ function focusZurich(fromButton = false) {
 
 function handleMapReady() {
   mapReady.value = true;
+  // Try to get API from ref if not already set
+  if (!api && mapboxViewerRef.value) {
+    api = mapboxViewerRef.value;
+    loadHubs();
+  } else if (api) {
+    // If API is already set, try loading hubs again
+    loadHubs();
+  }
 }
 
 function handleZurichZoomComplete() {
