@@ -1280,13 +1280,19 @@ function route(event) {
     event.stopPropagation();
   }
   
+  // Ensure API is available - try to get it from ref if not set
+  if (!api && mapboxViewerRef.value) {
+    api = mapboxViewerRef.value;
+  }
+  
   console.log("🔵🔵🔵 route() function called 🔵🔵🔵");
   console.log("Current state:", {
     canPlanRoute: canPlanRoute.value,
     api: !!api,
     startHub: startHub.value,
     endHub: endHub.value,
-    apiMethods: api ? Object.keys(api) : []
+    apiMethods: api ? Object.keys(api) : [],
+    mapboxViewerRef: !!mapboxViewerRef.value
   });
   
   // Always try to plan route, even if conditions aren't perfect
@@ -1304,12 +1310,19 @@ function route(event) {
 
   console.log("✅ Planning route from", startHub.value, "to", endHub.value);
   
-  if (api && api.selectHubs) {
+  // Try to get API from ref if still not available
+  const routeApi = api || mapboxViewerRef.value;
+  
+  if (routeApi && routeApi.selectHubs) {
     try {
       // Explicitly pass true to load the route
-      console.log("Calling api.selectHubs with:", startHub.value, endHub.value, true);
-      api.selectHubs(startHub.value, endHub.value, true);
+      console.log("Calling routeApi.selectHubs with:", startHub.value, endHub.value, true);
+      routeApi.selectHubs(startHub.value, endHub.value, true);
       console.log("✅ selectHubs called with loadRoute=true");
+      // Update api reference for future use
+      if (!api) {
+        api = routeApi;
+      }
     } catch (error) {
       console.error("❌ Error calling selectHubs:", error);
       alert("Error planning route: " + error.message);
@@ -1317,7 +1330,9 @@ function route(event) {
   } else {
     console.error("❌ API or selectHubs method not available", { 
       api: api, 
-      hasSelectHubs: api?.selectHubs,
+      routeApi: routeApi,
+      hasSelectHubs: routeApi?.selectHubs,
+      mapboxViewerRef: mapboxViewerRef.value,
       apiType: typeof api
     });
     alert("Map not ready. Please wait a moment and try again.");
@@ -1326,20 +1341,31 @@ function route(event) {
 
 // Watch for dropdown changes and update map selection (only highlight, don't show route)
 watch([startHub, endHub], ([newStart, newEnd]) => {
-  if (!api || !api.selectHubs) return;
+  // Ensure API is available - try to get it from ref if not set
+  if (!api && mapboxViewerRef.value) {
+    api = mapboxViewerRef.value;
+  }
+  
+  const routeApi = api || mapboxViewerRef.value;
+  if (!routeApi || !routeApi.selectHubs) return;
   
   // Only highlight selected hubs, but don't show route until "Plan Route" is clicked
   if (newStart && newEnd && newStart !== newEnd) {
     // Just highlight both hubs, but don't load route
-    api.selectHubs(newStart, newEnd, false); // Pass false to indicate don't load route
+    routeApi.selectHubs(newStart, newEnd, false); // Pass false to indicate don't load route
   } 
   // If only start hub is selected, select it
   else if (newStart && !newEnd) {
-    api.selectHubs(newStart, null);
+    routeApi.selectHubs(newStart, null);
   }
   // If start hub is cleared, clear selection
   else if (!newStart) {
-    api.selectHubs(null, null);
+    routeApi.selectHubs(null, null);
+  }
+  
+  // Update api reference for future use
+  if (!api && routeApi) {
+    api = routeApi;
   }
 }, { immediate: false });
 

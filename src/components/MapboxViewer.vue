@@ -698,25 +698,139 @@ onMounted(async () => {
             data: lumoScoreData,
           });
 
-          // Add 3D extruded hexagon layer for combined (height based on combined_score)
+          // Add 2D fill layer for combined (shows when zoomed in, after 3D disappears)
           map.addLayer({
-            id: "hex-combined-layer",
-            type: "fill-extrusion",
+            id: "hex-combined-fill",
+            type: "fill",
             source: "hex-combined",
             filter: [">", ["get", "combined_score"], 0], // Only show hexagons with combined_score > 0
             paint: {
-              "fill-extrusion-color": "#4a90e2", // Blue color
-              "fill-extrusion-opacity": 0.3, // Transparent
-              "fill-extrusion-height": [
-                "*",
+              "fill-color": [
+                "interpolate",
+                ["linear"],
                 ["get", "combined_score"],
-                2500, // Higher scale factor for more visible height differences
+                0,
+                "#0b0b0c", // Match dark background for low scores
+                0.1,
+                "#161718", // Slightly lighter, still blends with background
+                0.5,
+                "#2d3561", // Dark blue
+                1,
+                "#6c5ce7", // Medium purple-blue
+                2,
+                "#a29bfe", // Bright purple-blue
+                5,
+                "#e0e7ff", // Very bright light purple-blue for high scores
               ],
-              "fill-extrusion-base": 0,
+              // Fade in 2D hexagons as zoom increases (opposite of 3D layer)
+              // Colors are opaque, but layer opacity is moderate to keep map readable
+              "fill-opacity": [
+                "interpolate",
+                ["linear"],
+                ["zoom"],
+                15,
+                0, // At zoom 15, opacity 0 (invisible)
+                15.15,
+                0.4, // At zoom 15.15, opacity 0.4 (colors visible)
+                15.3,
+                0.5, // At zoom 15.3+, opacity 0.5 (colors visible but map still readable)
+              ],
+              "fill-outline-color": "transparent", // No outline on fill layer (we use separate line layer)
             },
           });
 
-          // Initial visibility - only show combined layer when combined layer is selected
+          // Add line layer for thicker, transparent white contours
+          map.addLayer({
+            id: "hex-combined-outline",
+            type: "line",
+            source: "hex-combined",
+            filter: [">", ["get", "combined_score"], 0], // Only show hexagons with combined_score > 0
+            paint: {
+              "line-color": "#ffffff", // White
+              "line-width": [
+                "interpolate",
+                ["linear"],
+                ["zoom"],
+                15,
+                2, // At zoom 15, width 2
+                15.3,
+                2.5, // At zoom 15.3+, width 2.5 (thicker)
+              ],
+              // Fade in outline as zoom increases - very transparent and discrete
+              "line-opacity": [
+                "interpolate",
+                ["linear"],
+                ["zoom"],
+                15,
+                0, // At zoom 15, opacity 0 (invisible)
+                15.15,
+                0.15, // At zoom 15.15, opacity 0.15 (very subtle)
+                15.3,
+                0.25, // At zoom 15.3+, opacity 0.25 (transparent, discrete)
+              ],
+            },
+          });
+
+          // Add 3D extruded hexagon layer for combined (height based on combined_score)
+          // Position it before hubs so it's visible
+          map.addLayer(
+            {
+              id: "hex-combined-layer",
+              type: "fill-extrusion",
+              source: "hex-combined",
+              filter: [">", ["get", "combined_score"], 0], // Only show hexagons with combined_score > 0
+              paint: {
+                "fill-extrusion-color": [
+                  "interpolate",
+                  ["linear"],
+                  ["get", "combined_score"],
+                  0,
+                  "#0b0b0c", // Match dark background for low scores
+                  0.1,
+                  "#161718", // Slightly lighter, still blends with background
+                  0.5,
+                  "#2d3561", // Dark blue
+                  1,
+                  "#6c5ce7", // Medium purple-blue
+                  2,
+                  "#a29bfe", // Bright purple-blue
+                  5,
+                  "#e0e7ff", // Very bright light purple-blue for high scores
+                ],
+                // Fade out hexagons as zoom increases (same as vibrancy layer)
+                "fill-extrusion-opacity": [
+                  "interpolate",
+                  ["linear"],
+                  ["zoom"],
+                  15,
+                  0.6, // At zoom 15, opacity 0.6
+                  15.15,
+                  0.15, // At zoom 15.15, opacity 0.15 (more drastic drop)
+                  15.3,
+                  0, // At zoom 15.3+, opacity 0 (fully transparent - hexagons disappear)
+                ],
+                "fill-extrusion-height": [
+                  "*",
+                  ["get", "combined_score"],
+                  2500, // Higher scale factor for more visible height differences
+                ],
+                "fill-extrusion-base": 0,
+              },
+            },
+            "hubs-circles" // Position before hubs so 3D hexagons are visible
+          );
+
+          // Initial visibility - only show combined layers when combined layer is selected
+          map.setLayoutProperty(
+            "hex-combined-fill",
+            "visibility",
+            props.combinedVisible ? "visible" : "none"
+          );
+          map.setLayoutProperty(
+            "hex-combined-outline",
+            "visibility",
+            props.combinedVisible ? "visible" : "none"
+          );
           map.setLayoutProperty(
             "hex-combined-layer",
             "visibility",
@@ -801,6 +915,8 @@ watch(
         // Ensure other layers are hidden when lighting is selected
         if (isVisible) {
           updateLayerVisibility("hex-vibrancy-layer", false);
+          updateLayerVisibility("hex-combined-fill", false);
+          updateLayerVisibility("hex-combined-outline", false);
           updateLayerVisibility("hex-combined-layer", false);
           updateLayerVisibility("vibrancy-points-layer", false);
         }
@@ -845,6 +961,8 @@ watch(
         // Ensure other layers are hidden when vibrancy is selected
         if (isVisible) {
           updateLayerVisibility("hex-layer", false);
+          updateLayerVisibility("hex-combined-fill", false);
+          updateLayerVisibility("hex-combined-outline", false);
           updateLayerVisibility("hex-combined-layer", false);
         }
       };
@@ -876,8 +994,29 @@ watch(
           return;
         }
 
-        // Show/hide 3D combined layer when combined layer is selected
-        updateLayerVisibility("hex-combined-layer", isVisible);
+        // Show/hide 2D, outline, and 3D combined layers when combined layer is selected
+        const fillLayerUpdated = updateLayerVisibility(
+          "hex-combined-fill",
+          isVisible
+        );
+        const outlineLayerUpdated = updateLayerVisibility(
+          "hex-combined-outline",
+          isVisible
+        );
+        const extrusionLayerUpdated = updateLayerVisibility(
+          "hex-combined-layer",
+          isVisible
+        );
+
+        // If layers don't exist yet, retry after a short delay
+        if (
+          !fillLayerUpdated ||
+          !outlineLayerUpdated ||
+          !extrusionLayerUpdated
+        ) {
+          setTimeout(updateVisibility, 100);
+          return;
+        }
 
         // Ensure other layers are hidden when combined is selected
         if (isVisible) {
