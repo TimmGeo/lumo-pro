@@ -205,6 +205,11 @@ let hexVibrancyData = null;
 let hubsLoaded = false;
 let pendingZurichFocusKey = 0;
 
+// Routing state
+let selectedHubId1 = null;
+let selectedHubId2 = null;
+let currentRouteSource = null;
+
 // Paths that work both locally and in deploy
 const BASE = import.meta.env.BASE_URL || "/";
 const hubsUrl = `${BASE}data/routing_hubs.geojson`.replace(/\/{2,}/g, "/");
@@ -432,6 +437,9 @@ onMounted(async () => {
         const hubsResponse = await fetch(hubsUrl);
         hubsData = await hubsResponse.json();
 
+        // Fetch locality names for each hub using reverse geocoding
+        await fetchLocalityNamesForHubs();
+
         map.addSource("hubs", {
           type: "geojson",
           data: hubsData,
@@ -444,11 +452,34 @@ onMounted(async () => {
           source: "hubs",
           paint: {
             "circle-radius": 6,
-            "circle-color": "#70f0c3",
+            "circle-color": [
+              "coalesce",
+              ["get", "selectedColor"],
+              "#70f0c3", // Default green
+            ],
             "circle-stroke-color": "#0b0b0c",
             "circle-stroke-width": 0,
             "circle-opacity": 1,
           },
+        });
+
+        // Add click handler for hubs
+        map.on("click", "hubs-circles", (e) => {
+          if (!e.features || e.features.length === 0) return;
+          
+          const clickedHub = e.features[0];
+          const hubId = clickedHub.properties.id;
+          
+          handleHubClick(hubId);
+        });
+
+        // Change cursor on hover
+        map.on("mouseenter", "hubs-circles", () => {
+          map.getCanvas().style.cursor = "pointer";
+        });
+
+        map.on("mouseleave", "hubs-circles", () => {
+          map.getCanvas().style.cursor = "";
         });
 
         // Add labels for hubs (matching Cesium styling)
@@ -456,9 +487,14 @@ onMounted(async () => {
           id: "hubs-labels",
           type: "symbol",
           source: "hubs",
-          minzoom: 15, // Only show labels at very high zoom level
+          minzoom: 12, // Show labels at moderate zoom level
           layout: {
-            "text-field": ["get", "CHSTNAME"],
+            "text-field": [
+              "coalesce",
+              ["get", "locality"],
+              ["get", "neighborhood"],
+              "Hub",
+            ],
             "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
             "text-size": 14,
             "text-offset": [0.7, 0],
@@ -500,6 +536,9 @@ onMounted(async () => {
         );
         setHubsVisibility(props.showHubs);
         hubsLoaded = true;
+        
+        // Initialize hub colors
+        updateHubColors();
 
         // --- Load and add Vibrancy Hexagons (3D extruded) ---
         try {
@@ -896,6 +935,271 @@ function setHubsVisibility(visible) {
   if (visible) {
     ensureHubsOnTop();
   }
+}
+
+// Handle hub click - select first hub, then second hub to show route
+function handleHubClick(hubId) {
+  if (!map || !map.isStyleLoaded()) return;
+
+  // If clicking the same hub that's already selected, deselect it
+  if (selectedHubId1 === hubId) {
+    selectedHubId1 = null;
+    selectedHubId2 = null;
+    clearRoute();
+    updateHubColors();
+    return;
+  }
+
+  // If clicking the second selected hub, deselect it
+  if (selectedHubId2 === hubId) {
+    selectedHubId2 = null;
+    clearRoute();
+    updateHubColors();
+    return;
+  }
+
+  // If no hub is selected, select this one as first
+  if (selectedHubId1 === null) {
+    selectedHubId1 = hubId;
+    selectedHubId2 = null;
+    clearRoute();
+    updateHubColors();
+    return;
+  }
+
+  // If first hub is selected, select this one as second and show route
+  if (selectedHubId1 !== null && selectedHubId2 === null) {
+    selectedHubId2 = hubId;
+    loadAndDisplayRoute(selectedHubId1, selectedHubId2);
+    updateHubColors();
+    return;
+  }
+
+  // If both hubs are selected, replace first with this one
+  selectedHubId1 = hubId;
+  selectedHubId2 = null;
+  clearRoute();
+  updateHubColors();
+}
+
+// Update hub colors based on selection
+function updateHubColors() {
+  if (!map || !map.isStyleLoaded() || !hubsData) return;
+  
+  const layer = map.getLayer("hubs-circles");
+  if (!layer) return;
+
+  // Update the source data to include selection state
+  const updatedFeatures = hubsData.features.map((feature) => {
+    const hubId = feature.properties.id;
+    let color = "#70f0c3"; // Default green
+    
+    if (hubId === selectedHubId1) {
+      color = "#ff6b6b"; // Red for first selected hub
+    } else if (hubId === selectedHubId2) {
+      color = "#4ecdc4"; // Teal for second selected hub
+    }
+    
+    return {
+      ...feature,
+      properties: {
+        ...feature.properties,
+        selectedColor: color,
+      },
+    };
+  });
+
+  // Update the source with new data
+  const updatedData = {
+    ...hubsData,
+    features: updatedFeatures,
+  };
+
+  map.getSource("hubs").setData(updatedData);
+
+  // Update paint property to use the selectedColor property
+  map.setPaintProperty("hubs-circles", "circle-color", [
+    "coalesce",
+    ["get", "selectedColor"],
+    "#70f0c3", // Fallback to default green
+  ]);
+}
+
+// Load and display route between two hubs
+async function loadAndDisplayRoute(fromId, toId) {
+  if (!map || !map.isStyleLoaded()) return;
+
+  // Determine route filename (always use smaller ID first for consistency)
+  const routeId1 = Math.min(fromId, toId);
+  const routeId2 = Math.max(fromId, toId);
+  const routeFileName = `${routeId1}_${routeId2}.geojson`;
+  const routeUrl = `${BASE}data/routes/${routeFileName}`.replace(/\/{2,}/g, "/");
+
+  try {
+    // Clear existing route first
+    clearRoute();
+
+    // Load route data
+    const routeResponse = await fetch(routeUrl);
+    if (!routeResponse.ok) {
+      console.warn(`Route not found: ${routeFileName}`);
+      return;
+    }
+
+    const routeData = await routeResponse.json();
+
+    // Add route source
+    if (map.getSource("route")) {
+      map.getSource("route").setData(routeData);
+    } else {
+      map.addSource("route", {
+        type: "geojson",
+        data: routeData,
+      });
+    }
+
+    // Add route layer if it doesn't exist
+    if (!map.getLayer("route-line")) {
+      map.addLayer({
+        id: "route-line",
+        type: "line",
+        source: "route",
+        paint: {
+          "line-color": "#ffd93d",
+          "line-width": 4,
+          "line-opacity": 0.9,
+        },
+        layout: {
+          "line-join": "round",
+          "line-cap": "round",
+        },
+      });
+    }
+
+    // Ensure route is visible and positioned above hex layers but below hubs
+    map.setLayoutProperty("route-line", "visibility", "visible");
+    
+    // Move route layer to be above hex layers but below hubs
+    // First, try to move it before hubs-circles
+    if (map.getLayer("hubs-circles")) {
+      map.moveLayer("route-line", "hubs-circles");
+    }
+
+    currentRouteSource = routeUrl;
+    console.log(`Route loaded: ${routeFileName}`);
+  } catch (error) {
+    console.error(`Error loading route ${routeFileName}:`, error);
+  }
+}
+
+// Clear the displayed route
+function clearRoute() {
+  if (!map || !map.isStyleLoaded()) return;
+
+  if (map.getLayer("route-line")) {
+    map.setLayoutProperty("route-line", "visibility", "none");
+  }
+
+  if (map.getSource("route")) {
+    map.getSource("route").setData({
+      type: "FeatureCollection",
+      features: [],
+    });
+  }
+
+  currentRouteSource = null;
+}
+
+// Fetch locality names for hubs using reverse geocoding
+async function fetchLocalityNamesForHubs() {
+  if (!hubsData || !hubsData.features) return;
+
+  const token = import.meta.env.VITE_MAPBOX_TOKEN;
+  if (!token) {
+    console.warn("Mapbox token not available, skipping locality name lookup");
+    return;
+  }
+
+  // Process hubs in parallel with rate limiting
+  const batchSize = 3; // Process 3 at a time to avoid rate limits
+  for (let i = 0; i < hubsData.features.length; i += batchSize) {
+    const batch = hubsData.features.slice(i, i + batchSize);
+    
+    await Promise.all(
+      batch.map(async (feature) => {
+        const [lng, lat] = feature.geometry.coordinates;
+        
+        try {
+          // Use Mapbox reverse geocoding API
+          const response = await fetch(
+            `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?types=locality,neighborhood,place&access_token=${token}`
+          );
+
+          if (!response.ok) {
+            console.warn(`Failed to fetch locality for hub ${feature.properties.id}`);
+            return;
+          }
+
+          const data = await response.json();
+          
+          // Extract locality name (prefer locality, then neighborhood, then place)
+          let localityName = null;
+          if (data.features && data.features.length > 0) {
+            // Look for locality first
+            const locality = data.features.find(
+              (f) => f.place_type && f.place_type.includes("locality")
+            );
+            if (locality) {
+              localityName = locality.text || locality.properties?.name;
+            } else {
+              // Fall back to neighborhood
+              const neighborhood = data.features.find(
+                (f) => f.place_type && f.place_type.includes("neighborhood")
+              );
+              if (neighborhood) {
+                localityName = neighborhood.text || neighborhood.properties?.name;
+              } else {
+                // Fall back to place
+                const place = data.features.find(
+                  (f) => f.place_type && f.place_type.includes("place")
+                );
+                if (place) {
+                  localityName = place.text || place.properties?.name;
+                }
+              }
+            }
+          }
+
+          // Update feature properties with locality name
+          if (localityName) {
+            feature.properties.locality = localityName;
+            feature.properties.neighborhood = localityName; // Also set as fallback
+          }
+        } catch (error) {
+          console.warn(`Error fetching locality for hub ${feature.properties.id}:`, error);
+        }
+      })
+    );
+
+    // Small delay between batches to respect rate limits
+    if (i + batchSize < hubsData.features.length) {
+      await new Promise((resolve) => setTimeout(resolve, 200));
+    }
+  }
+
+  // Update the map source with the new locality data
+  // Wait for map to be ready if it's not yet
+  const updateSource = () => {
+    if (map && map.isStyleLoaded() && map.getSource("hubs")) {
+      map.getSource("hubs").setData(hubsData);
+      console.log("✅ Locality names fetched and updated for hubs");
+    } else if (map) {
+      // Map not ready yet, wait a bit and try again
+      setTimeout(updateSource, 100);
+    }
+  };
+  
+  updateSource();
 }
 
 function requestZurichFocus(key) {
