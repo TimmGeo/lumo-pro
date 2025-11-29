@@ -342,6 +342,67 @@
                   Plan Route
                 </button>
               </div>
+
+              <!-- History section -->
+              <div class="route-history-container">
+                <div class="route-history-header">
+                  <h3 class="route-history-title">History</h3>
+                  <button
+                    v-if="routeHistory.length > 0"
+                    class="route-history-clear-btn"
+                    @click="clearHistory"
+                    type="button"
+                    title="Clear history"
+                  >
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                    </svg>
+                    Clear
+                  </button>
+                </div>
+                <div class="route-history-list">
+                  <div
+                    v-if="routeHistory.length === 0"
+                    class="route-history-empty"
+                  >
+                    No route history yet
+                  </div>
+                  <div
+                    v-for="(entry, index) in routeHistory"
+                    :key="index"
+                    class="route-history-item"
+                    @click="loadHistoryRoute(entry)"
+                  >
+                    <div class="route-history-route">
+                      <span class="route-history-from">{{ entry.fromName }}</span>
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="route-history-arrow"
+                      >
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                      </svg>
+                      <span class="route-history-to">{{ entry.toName }}</span>
+                    </div>
+                    <div class="route-history-date">{{ entry.date }}</div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -959,6 +1020,7 @@ const mode = computed(() => {
 const startHub = ref("");
 const endHub = ref("");
 const hubs = ref([]);
+const routeHistory = ref([]);
 
 // Hover popup data
 const popup = ref({ show: false, x: 0, y: 0, lights: 0, pois: 0, hub: "—" });
@@ -1319,6 +1381,30 @@ function route(event) {
       console.log("Calling routeApi.selectHubs with:", startHub.value, endHub.value, true);
       routeApi.selectHubs(startHub.value, endHub.value, true);
       console.log("✅ selectHubs called with loadRoute=true");
+      
+      // Add to history
+      const fromHub = hubs.value.find(h => h.id === startHub.value);
+      const toHub = hubs.value.find(h => h.id === endHub.value);
+      if (fromHub && toHub) {
+        const historyEntry = {
+          fromId: startHub.value,
+          toId: endHub.value,
+          fromName: fromHub.name,
+          toName: toHub.name,
+          date: new Date().toLocaleString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          })
+        };
+        routeHistory.value.unshift(historyEntry); // Add to beginning
+        // Limit history to last 50 entries
+        if (routeHistory.value.length > 50) {
+          routeHistory.value = routeHistory.value.slice(0, 50);
+        }
+      }
+      
       // Update api reference for future use
       if (!api) {
         api = routeApi;
@@ -1368,6 +1454,22 @@ watch([startHub, endHub], ([newStart, newEnd]) => {
     api = routeApi;
   }
 }, { immediate: false });
+
+// Clear history
+function clearHistory() {
+  routeHistory.value = [];
+}
+
+// Load route from history
+function loadHistoryRoute(entry) {
+  startHub.value = entry.fromId;
+  endHub.value = entry.toId;
+  // Trigger route loading
+  const routeApi = api || mapboxViewerRef.value;
+  if (routeApi && routeApi.selectHubs) {
+    routeApi.selectHubs(entry.fromId, entry.toId, true);
+  }
+}
 
 // Swap hubs function
 function swapHubs() {
@@ -2754,6 +2856,123 @@ textarea:focus-visible {
 
 .route-plan-btn svg {
   flex-shrink: 0;
+}
+
+/* -------- ROUTE HISTORY -------- */
+.route-history-container {
+  margin-top: 24px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.route-history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.route-history-title {
+  color: #b8bcc0;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin: 0;
+}
+
+.route-history-clear-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #b8bcc0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.route-history-clear-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+.route-history-clear-btn svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.route-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.route-history-empty {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 13px;
+  text-align: center;
+  padding: 16px 0;
+}
+
+.route-history-item {
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.route-history-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.route-history-route {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.route-history-from,
+.route-history-to {
+  color: #e9f7f2;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.route-history-arrow {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.route-history-date {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 11px;
+  white-space: nowrap;
+  margin-left: 12px;
 }
 
 .route-swap-clean {
