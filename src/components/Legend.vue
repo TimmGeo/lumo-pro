@@ -1,91 +1,5 @@
 <template>
-  <div
-    class="legend-container"
-    :class="{
-      'legend-container--dragged': draggedOut || isDraggingOut,
-      'legend-container--in-box': inBox && !draggedOut && !isDraggingOut,
-      'legend-container--dragging-out':
-        isDragging && (inBox || isDraggingOut) && !draggedOut,
-    }"
-    :style="
-      draggedOut || isDraggingOut || (isDragging && inBox && !draggedOut)
-        ? {
-            left: (position.x || 0) + 'px',
-            top: (position.y || 0) + 'px',
-            width: draggedOut && size ? size.width + 'px' : undefined,
-            height: draggedOut && size ? size.height + 'px' : undefined,
-            opacity: draggedOut || isDraggingOut ? 1 : 0.9,
-            transform: draggedOut || isDraggingOut ? 'none' : 'scale(1)',
-            transition: 'none',
-            willChange: 'transform, opacity',
-          }
-        : {}
-    "
-    @mousedown="handleMouseDown"
-    @touchstart="handleMouseDown"
-  >
-    <!-- Close button when dragged out -->
-    <button
-      v-if="draggedOut"
-      class="legend-close-btn"
-      @click="handleClose"
-      aria-label="Close legend"
-    >
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-        <path
-          d="M1 1L13 13M13 1L1 13"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-        />
-      </svg>
-    </button>
-
-    <!-- Resize handles when dragged out -->
-    <template v-if="draggedOut">
-      <!-- Corner resize handles -->
-      <div
-        class="resize-handle resize-handle--nw"
-        @mousedown.stop="handleResizeStart($event, 'nw')"
-        @touchstart.stop="handleResizeStart($event, 'nw')"
-      ></div>
-      <div
-        class="resize-handle resize-handle--ne"
-        @mousedown.stop="handleResizeStart($event, 'ne')"
-        @touchstart.stop="handleResizeStart($event, 'ne')"
-      ></div>
-      <div
-        class="resize-handle resize-handle--sw"
-        @mousedown.stop="handleResizeStart($event, 'sw')"
-        @touchstart.stop="handleResizeStart($event, 'sw')"
-      ></div>
-      <div
-        class="resize-handle resize-handle--se"
-        @mousedown.stop="handleResizeStart($event, 'se')"
-        @touchstart.stop="handleResizeStart($event, 'se')"
-      ></div>
-      <!-- Edge resize handles -->
-      <div
-        class="resize-handle resize-handle--n"
-        @mousedown.stop="handleResizeStart($event, 'n')"
-        @touchstart.stop="handleResizeStart($event, 'n')"
-      ></div>
-      <div
-        class="resize-handle resize-handle--s"
-        @mousedown.stop="handleResizeStart($event, 's')"
-        @touchstart.stop="handleResizeStart($event, 's')"
-      ></div>
-      <div
-        class="resize-handle resize-handle--e"
-        @mousedown.stop="handleResizeStart($event, 'e')"
-        @touchstart.stop="handleResizeStart($event, 'e')"
-      ></div>
-      <div
-        class="resize-handle resize-handle--w"
-        @mousedown.stop="handleResizeStart($event, 'w')"
-        @touchstart.stop="handleResizeStart($event, 'w')"
-      ></div>
-    </template>
+  <div class="legend-container">
 
     <!-- Empty state when no layer is selected -->
     <div v-if="!mode" class="legend-empty-state">
@@ -94,28 +8,37 @@
 
     <!-- Lighting Layer Legend -->
     <div v-else-if="mode === 'lighting'" class="legend-content legend-lighting">
-      <div class="legend-title">Lighting Distribution</div>
-      <div class="legend-vertical-wrapper">
-        <div class="legend-labels-vertical">
-          <span class="label-max">High</span>
-          <span class="label-min">Low</span>
-        </div>
-        <div
-          class="histogram-container-vertical"
-          v-if="colorHistogram.length > 0"
-        >
+      <div class="legend-header">
+        <div class="legend-title">Lighting Distribution</div>
+        <div class="legend-subtitle">Color intensity represents lighting levels</div>
+      </div>
+      <div class="legend-card">
+        <div class="legend-vertical-wrapper">
+          <div class="legend-labels-vertical">
+            <span class="label-max">
+              <span class="label-text">High</span>
+            </span>
+            <span class="label-min">
+              <span class="label-text">Low</span>
+            </span>
+          </div>
           <div
-            class="histogram-bar-vertical"
-            v-for="(item, index) in colorHistogram"
-            :key="index"
-            :style="{
-              width: item.height + '%',
-              backgroundColor: item.color,
-            }"
-            :title="`${item.color}: ${item.count} hexagons`"
+            class="histogram-container-vertical"
+            v-if="colorHistogram.length > 0"
           >
-            <div class="bar-label-vertical" v-if="item.height > 10">
-              {{ item.count }}
+            <div
+              class="histogram-bar-vertical"
+              v-for="(item, index) in colorHistogram"
+              :key="index"
+              :style="{
+                width: item.height + '%',
+                backgroundColor: item.color,
+              }"
+              :title="`${item.color}: ${item.count} hexagons`"
+            >
+              <div class="bar-label-vertical" v-if="item.height > 10">
+                {{ item.count }}
+              </div>
             </div>
           </div>
         </div>
@@ -124,74 +47,119 @@
 
     <!-- Vibrancy Layer Legend -->
     <div v-else-if="mode === 'vibrancy'" class="legend-content legend-vibrancy">
-      <div class="legend-title">Vibrancy (POI Density)</div>
-      <div class="legend-vertical-wrapper">
-        <div class="legend-labels-vertical">
-          <span class="label-max">High</span>
-          <span class="label-min">Low</span>
-        </div>
-        <div class="legend-bars-vertical">
-          <div
-            class="legend-bar-vertical"
-            v-for="(bar, index) in vibrancyBars"
-            :key="index"
-            :style="{ width: bar.height + '%' }"
-          >
-            <div class="bar-fill-vertical"></div>
+      <div class="legend-header">
+        <div class="legend-title">Vibrancy (POI Density)</div>
+        <div class="legend-subtitle">Height represents point of interest density</div>
+      </div>
+      <div class="legend-card">
+        <div class="legend-vertical-wrapper">
+          <div class="legend-labels-vertical">
+            <span class="label-max">
+              <span class="label-text">High</span>
+            </span>
+            <span class="label-min">
+              <span class="label-text">Low</span>
+            </span>
+          </div>
+          <div class="legend-bars-vertical">
+            <div
+              class="legend-bar-vertical"
+              v-for="(bar, index) in vibrancyBars"
+              :key="index"
+              :style="{ height: bar.height + '%' }"
+            >
+              <div class="bar-fill-vertical"></div>
+            </div>
           </div>
         </div>
       </div>
-      <div class="legend-note">Height = POI Count</div>
+      <div class="legend-note">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+        </svg>
+        Height = POI Count
+      </div>
     </div>
 
     <!-- Combined Layer Legend -->
     <div v-else-if="mode === 'combined'" class="legend-content legend-combined">
-      <div class="legend-title">Combined View</div>
+      <div class="legend-header">
+        <div class="legend-title">Combined View</div>
+        <div class="legend-subtitle">Lighting color + Vibrancy height</div>
+      </div>
       <div class="combined-legend">
         <div class="combined-section">
-          <div class="section-label">Color = Lighting</div>
-          <div class="legend-vertical-wrapper">
-            <div class="legend-labels-vertical">
-              <span class="label-max">High</span>
-              <span class="label-min">Low</span>
+          <div class="section-header">
+            <div class="section-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 6v6l4 2"/>
+              </svg>
             </div>
-            <div
-              class="histogram-container-vertical"
-              v-if="colorHistogram.length > 0"
-            >
+            <div class="section-label">Color = Lighting</div>
+          </div>
+          <div class="legend-card">
+            <div class="legend-vertical-wrapper">
+              <div class="legend-labels-vertical">
+                <span class="label-max">
+                  <span class="label-text">High</span>
+                </span>
+                <span class="label-min">
+                  <span class="label-text">Low</span>
+                </span>
+              </div>
               <div
-                class="histogram-bar-vertical"
-                v-for="(item, index) in colorHistogram"
-                :key="index"
-                :style="{
-                  width: item.height + '%',
-                  backgroundColor: item.color,
-                }"
-                :title="`${item.color}: ${item.count} hexagons`"
+                class="histogram-container-vertical"
+                v-if="colorHistogram.length > 0"
               >
-                <div class="bar-label-vertical" v-if="item.height > 10">
-                  {{ item.count }}
+                <div
+                  class="histogram-bar-vertical"
+                  v-for="(item, index) in colorHistogram"
+                  :key="index"
+                  :style="{
+                    width: item.height + '%',
+                    backgroundColor: item.color,
+                  }"
+                  :title="`${item.color}: ${item.count} hexagons`"
+                >
+                  <div class="bar-label-vertical" v-if="item.height > 10">
+                    {{ item.count }}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+        <div class="section-divider"></div>
         <div class="combined-section">
-          <div class="section-label">Height = Vibrancy</div>
-          <div class="legend-vertical-wrapper">
-            <div class="legend-labels-vertical">
-              <span class="label-max">High</span>
-              <span class="label-min">Low</span>
+          <div class="section-header">
+            <div class="section-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2v20M2 12h20"/>
+              </svg>
             </div>
+            <div class="section-label">Height = Vibrancy</div>
+          </div>
+          <div class="legend-card">
+            <div class="legend-vertical-wrapper">
+              <div class="legend-labels-vertical">
+                <span class="label-max">
+                  <span class="label-text">High</span>
+                </span>
+                <span class="label-min">
+                  <span class="label-text">Low</span>
+                </span>
+              </div>
             <div class="legend-bars-vertical">
               <div
                 class="legend-bar-vertical"
                 v-for="(bar, index) in vibrancyBars"
                 :key="index"
-                :style="{ width: bar.height + '%' }"
+                :style="{ height: bar.height + '%' }"
               >
                 <div class="bar-fill-vertical"></div>
               </div>
+            </div>
             </div>
           </div>
         </div>
@@ -207,254 +175,6 @@ const props = defineProps({
   mode: { type: String, required: false, default: null },
   draggedOut: { type: Boolean, default: false },
   inBox: { type: Boolean, default: false },
-  position: { type: Object, default: () => ({ x: 100, y: 100 }) },
-  size: { type: Object, default: () => ({ width: 280, height: 280 }) },
-});
-
-const emit = defineEmits([
-  "take-out",
-  "close",
-  "position-update",
-  "drag-back",
-  "drag-start",
-  "drag-end",
-  "size-update",
-]);
-
-const isDragging = ref(false);
-const dragStart = ref({ x: 0, y: 0 });
-const wasInBox = ref(false);
-const initialClickPos = ref({ x: 0, y: 0 });
-const hasMoved = ref(false);
-const dragThreshold = 3; // Very low threshold for immediate response
-const currentDragPos = ref({ x: 0, y: 0 });
-const offsetFromClick = ref({ x: 0, y: 0 }); // Offset from click position to legend center
-const isDraggingOut = ref(false); // Track if currently dragging out
-
-// Resize state
-const isResizing = ref(false);
-const resizeDirection = ref("");
-const resizeStart = ref({ x: 0, y: 0, width: 0, height: 0, left: 0, top: 0 });
-const minSize = { width: 200, height: 200 };
-const maxSize = { width: 800, height: 800 };
-
-function handleMouseDown(e) {
-  // Don't start drag if clicking on resize handle
-  if (e.target.classList && e.target.classList.contains("resize-handle")) {
-    return;
-  }
-
-  // If in box, prepare for potential drag
-  if (props.inBox && !props.draggedOut) {
-    wasInBox.value = true;
-    hasMoved.value = false;
-    isDraggingOut.value = false;
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    initialClickPos.value = { x: clientX, y: clientY };
-    currentDragPos.value = { x: clientX, y: clientY };
-
-    // Calculate offset from click to center of legend (140px is half of 280px)
-    offsetFromClick.value = {
-      x: 140, // Center the legend on cursor
-      y: 140,
-    };
-
-    // Set drag start immediately for smooth transition
-    dragStart.value = {
-      x: clientX - offsetFromClick.value.x,
-      y: clientY - offsetFromClick.value.y,
-    };
-
-    isDragging.value = true;
-    // Don't emit drag-start - box should only highlight when dragging back in
-
-    // Immediately show the legend following cursor (Adobe-style)
-    const newPosition = {
-      x: clientX - offsetFromClick.value.x,
-      y: clientY - offsetFromClick.value.y,
-    };
-    emit("position-update", newPosition);
-
-    e.preventDefault();
-    e.stopPropagation();
-    return;
-  }
-
-  // If already dragged out, continue dragging
-  if (props.draggedOut) {
-    isDragging.value = true;
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-
-    dragStart.value = {
-      x: clientX - props.position.x,
-      y: clientY - props.position.y,
-    };
-
-    e.preventDefault();
-  }
-}
-
-function handleMouseMove(e) {
-  if (!isDragging.value || isResizing.value) return;
-
-  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-  currentDragPos.value = { x: clientX, y: clientY };
-
-  // If in box and not yet dragged out, check if moved enough
-  if (props.inBox && !props.draggedOut && wasInBox.value) {
-    const deltaX = clientX - initialClickPos.value.x;
-    const deltaY = clientY - initialClickPos.value.y;
-    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-
-    // Always update position to follow cursor smoothly
-    const newPosition = {
-      x: clientX - offsetFromClick.value.x,
-      y: clientY - offsetFromClick.value.y,
-    };
-    emit("position-update", newPosition);
-
-    // Take out immediately when threshold is crossed
-    if (distance > dragThreshold && !hasMoved.value) {
-      hasMoved.value = true;
-      isDraggingOut.value = true;
-      emit("take-out");
-      // Update drag start to maintain smooth dragging after take-out
-      // Use the same calculation method for seamless transition
-      dragStart.value = {
-        x: clientX - newPosition.x,
-        y: clientY - newPosition.y,
-      };
-    }
-    return;
-  }
-
-  // If already dragged out OR if we've triggered take-out (smooth transition)
-  // Continue dragging with consistent calculation
-  if (props.draggedOut || isDraggingOut.value) {
-    const newPosition = {
-      x: clientX - dragStart.value.x,
-      y: clientY - dragStart.value.y,
-    };
-
-    emit("position-update", newPosition);
-  }
-}
-
-function handleMouseUp(e) {
-  if (isDragging.value) {
-    emit("drag-end"); // Notify parent to unhighlight box
-
-    // If was in box but didn't move enough, don't take it out
-    if (wasInBox.value && !hasMoved.value && !props.draggedOut) {
-      // Just a click, reset position back to box
-      emit("position-update", { x: 0, y: 0 });
-    } else if (props.draggedOut || isDraggingOut.value) {
-      // Emit drag-back event - parent will check if over box
-      emit("drag-back");
-    }
-
-    // Reset all drag state
-    wasInBox.value = false;
-    hasMoved.value = false;
-    isDraggingOut.value = false;
-  }
-  isDragging.value = false;
-}
-
-function handleClose() {
-  emit("close");
-}
-
-function handleResizeStart(e, direction) {
-  if (!props.draggedOut) return;
-
-  isResizing.value = true;
-  resizeDirection.value = direction;
-  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-
-  resizeStart.value = {
-    x: clientX,
-    y: clientY,
-    width: props.size.width,
-    height: props.size.height,
-    left: props.position.x,
-    top: props.position.y,
-  };
-
-  e.preventDefault();
-  e.stopPropagation();
-}
-
-function handleResizeMove(e) {
-  if (!isResizing.value) return;
-
-  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-
-  const deltaX = clientX - resizeStart.value.x;
-  const deltaY = clientY - resizeStart.value.y;
-
-  let newWidth = resizeStart.value.width;
-  let newHeight = resizeStart.value.height;
-  let newLeft = resizeStart.value.left;
-  let newTop = resizeStart.value.top;
-
-  // Handle resize based on direction
-  if (resizeDirection.value.includes("e")) {
-    newWidth = Math.max(
-      minSize.width,
-      Math.min(maxSize.width, resizeStart.value.width + deltaX)
-    );
-  }
-  if (resizeDirection.value.includes("w")) {
-    newWidth = Math.max(
-      minSize.width,
-      Math.min(maxSize.width, resizeStart.value.width - deltaX)
-    );
-    newLeft = resizeStart.value.left + (resizeStart.value.width - newWidth);
-  }
-  if (resizeDirection.value.includes("s")) {
-    newHeight = Math.max(
-      minSize.height,
-      Math.min(maxSize.height, resizeStart.value.height + deltaY)
-    );
-  }
-  if (resizeDirection.value.includes("n")) {
-    newHeight = Math.max(
-      minSize.height,
-      Math.min(maxSize.height, resizeStart.value.height - deltaY)
-    );
-    newTop = resizeStart.value.top + (resizeStart.value.height - newHeight);
-  }
-
-  emit("size-update", { width: newWidth, height: newHeight });
-  emit("position-update", { x: newLeft, y: newTop });
-}
-
-function handleResizeEnd() {
-  isResizing.value = false;
-  resizeDirection.value = "";
-}
-
-onMounted(() => {
-  document.addEventListener("mousemove", handleMouseMove);
-  document.addEventListener("mouseup", handleMouseUp);
-  document.addEventListener("touchmove", handleMouseMove);
-  document.addEventListener("touchend", handleMouseUp);
-
-  // Load hex data to calculate color distribution
-  loadHexData();
-});
-
-onUnmounted(() => {
-  document.removeEventListener("mousemove", handleMouseMove);
-  document.removeEventListener("mouseup", handleMouseUp);
-  document.removeEventListener("touchmove", handleMouseMove);
-  document.removeEventListener("touchend", handleMouseUp);
 });
 
 const hexData = ref(null);
@@ -498,26 +218,7 @@ async function loadHexData() {
 }
 
 onMounted(() => {
-  // Use capture phase to ensure we catch events even if they bubble
-  document.addEventListener("mousemove", handleMouseMove, { passive: false });
-  document.addEventListener("mouseup", handleMouseUp, { passive: false });
-  document.addEventListener("touchmove", handleMouseMove, { passive: false });
-  document.addEventListener("touchend", handleMouseUp, { passive: false });
-
-  // Resize handlers
-  document.addEventListener("mousemove", handleResizeMove);
-  document.addEventListener("mouseup", handleResizeEnd);
-  document.addEventListener("touchmove", handleResizeMove);
-  document.addEventListener("touchend", handleResizeEnd);
-
   loadHexData();
-});
-
-onUnmounted(() => {
-  document.removeEventListener("mousemove", handleMouseMove);
-  document.removeEventListener("mouseup", handleMouseUp);
-  document.removeEventListener("touchmove", handleMouseMove);
-  document.removeEventListener("touchend", handleMouseUp);
 });
 
 // Vibrancy bars - showing height progression
@@ -535,187 +236,55 @@ const vibrancyBars = computed(() => {
 <style scoped>
 .legend-container {
   width: 100%;
-  height: 100%;
+  min-height: 300px;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 0;
+  padding: 20px 0;
   box-sizing: border-box;
   position: relative;
-}
-
-.legend-container--in-box {
-  cursor: move;
-}
-
-.legend-container--dragging-out {
-  position: fixed;
-  width: 280px;
-  height: 280px;
-  background: linear-gradient(180deg, #1a1b1e 0%, #141517 100%);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow:
-    0 20px 60px rgba(0, 0, 0, 0.6),
-    0 0 0 1px rgba(255, 255, 255, 0.1);
-  z-index: 10000;
-  cursor: grabbing !important;
-  user-select: none;
-  transition: none;
-  pointer-events: none;
-  will-change: transform, opacity;
-  backface-visibility: hidden;
-  transform-origin: center center;
-}
-
-.legend-container--dragged {
-  position: fixed;
-  width: 280px;
-  height: 280px;
-  background: linear-gradient(180deg, #1a1b1e 0%, #141517 100%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow:
-    0 20px 60px rgba(0, 0, 0, 0.6),
-    0 0 0 1px rgba(255, 255, 255, 0.1);
-  z-index: 10000;
-  cursor: move;
-  user-select: none;
-  will-change: transform;
-  backface-visibility: hidden;
-  box-sizing: border-box;
-  resize: none;
-  overflow: hidden;
-}
-
-.legend-container--dragged:active {
-  cursor: grabbing !important;
-}
-
-/* Resize handles */
-.resize-handle {
-  position: absolute;
-  background: transparent;
-  z-index: 10001;
-}
-
-.resize-handle--nw {
-  top: 0;
-  left: 0;
-  width: 12px;
-  height: 12px;
-  cursor: nwse-resize;
-}
-
-.resize-handle--ne {
-  top: 0;
-  right: 0;
-  width: 12px;
-  height: 12px;
-  cursor: nesw-resize;
-}
-
-.resize-handle--sw {
-  bottom: 0;
-  left: 0;
-  width: 12px;
-  height: 12px;
-  cursor: nesw-resize;
-}
-
-.resize-handle--se {
-  bottom: 0;
-  right: 0;
-  width: 12px;
-  height: 12px;
-  cursor: nwse-resize;
-}
-
-.resize-handle--n {
-  top: 0;
-  left: 12px;
-  right: 12px;
-  height: 8px;
-  cursor: ns-resize;
-}
-
-.resize-handle--s {
-  bottom: 0;
-  left: 12px;
-  right: 12px;
-  height: 8px;
-  cursor: ns-resize;
-}
-
-.resize-handle--e {
-  top: 12px;
-  right: 0;
-  bottom: 12px;
-  width: 8px;
-  cursor: ew-resize;
-}
-
-.resize-handle--w {
-  top: 12px;
-  left: 0;
-  bottom: 12px;
-  width: 8px;
-  cursor: ew-resize;
-}
-
-.resize-handle:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.legend-close-btn {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 24px;
-  height: 24px;
-  border: none;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-  color: rgba(255, 255, 255, 0.8);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  z-index: 10;
-  padding: 0;
-}
-
-.legend-close-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  color: rgba(255, 255, 255, 1);
-}
-
-.legend-close-btn:active {
-  transform: scale(0.95);
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 .legend-content {
   width: 100%;
-  height: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 12px;
+  justify-content: flex-start;
+  align-items: stretch;
+  gap: 20px;
   padding: 0;
   box-sizing: border-box;
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.legend-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+  padding-bottom: 0;
 }
 
 .legend-title {
-  font-size: 11px;
+  font-size: 15px;
   font-weight: 700;
   color: rgba(255, 255, 255, 1);
-  text-align: center;
-  margin-bottom: 8px;
+  text-align: left;
+  margin: 0;
   padding: 0;
+  letter-spacing: -0.01em;
   font-family:
     "SF Pro Display",
     "SF Pro Text",
@@ -723,9 +292,35 @@ const vibrancyBars = computed(() => {
     BlinkMacSystemFont,
     system-ui,
     sans-serif;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
   width: 100%;
   box-sizing: border-box;
+}
+
+.legend-subtitle {
+  font-size: 11px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: left;
+  margin: 0;
+  padding: 0;
+  letter-spacing: 0.01em;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  line-height: 1.4;
+}
+
+.legend-card {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+  transition: none;
 }
 
 /* Vertical Legend Wrapper */
@@ -734,21 +329,21 @@ const vibrancyBars = computed(() => {
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 14px;
   width: 100%;
-  height: 100%;
+  min-height: 200px;
   max-width: 100%;
-  flex: 1;
-  padding: 4px 0;
+  padding: 12px 0;
   box-sizing: border-box;
+  transition: all 0.3s ease;
 }
 
 .legend-labels-vertical {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  font-size: 9px;
-  color: rgba(255, 255, 255, 0.8);
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.75);
   font-family:
     "SF Pro Display",
     "SF Pro Text",
@@ -756,10 +351,12 @@ const vibrancyBars = computed(() => {
     BlinkMacSystemFont,
     system-ui,
     sans-serif;
-  height: 100%;
-  padding: 4px 0;
+  min-height: 200px;
+  padding: 8px 0;
   box-sizing: border-box;
   flex-shrink: 0;
+  font-weight: 500;
+  letter-spacing: 0.02em;
 }
 
 .label-min,
@@ -767,6 +364,18 @@ const vibrancyBars = computed(() => {
   font-weight: 600;
   writing-mode: vertical-rl;
   text-orientation: mixed;
+  transition: color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.label-text {
+  display: inline-block;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
 }
 
 /* Vertical Histogram for Lighting/Combined */
@@ -776,51 +385,50 @@ const vibrancyBars = computed(() => {
   align-items: flex-start;
   justify-content: center;
   width: auto;
-  min-width: 60px;
-  gap: 2px;
+  min-width: 90px;
+  gap: 4px;
   margin: 0;
-  padding: 8px 6px;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+  border: none;
   flex: 1;
-  height: 100%;
+  min-height: 200px;
   max-height: 100%;
   box-sizing: border-box;
   overflow: hidden;
+  transition: none;
+  box-shadow: none;
 }
 
 .histogram-bar-vertical {
   flex: 1;
-  min-height: 4px;
+  min-height: 8px;
   max-height: 100%;
-  border-radius: 0 3px 3px 0;
+  border-radius: 0 4px 4px 0;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  padding-left: 3px;
-  transition: all 0.2s ease;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  min-width: 8px;
+  padding-left: 5px;
+  transition: opacity 0.2s ease;
+  border: none;
+  box-shadow: none;
+  min-width: 14px;
   box-sizing: border-box;
 }
 
 .histogram-bar-vertical:hover {
   opacity: 0.9;
-  transform: translateX(2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
-  z-index: 10;
 }
 
 .bar-label-vertical {
-  font-size: 8px;
-  color: rgba(255, 255, 255, 1);
-  font-weight: 700;
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 600;
   text-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.8),
-    0 0 2px rgba(0, 0, 0, 0.5);
+    0 1px 4px rgba(0, 0, 0, 0.9),
+    0 0 3px rgba(0, 0, 0, 0.6);
   font-family:
     "SF Pro Display",
     "SF Pro Text",
@@ -829,6 +437,7 @@ const vibrancyBars = computed(() => {
     system-ui,
     sans-serif;
   white-space: nowrap;
+  letter-spacing: 0.01em;
 }
 
 .label-min,
@@ -838,52 +447,62 @@ const vibrancyBars = computed(() => {
 
 /* Lighting Legend */
 .legend-lighting {
-  justify-content: center;
-  align-items: center;
+  justify-content: flex-start;
+  align-items: stretch;
 }
 
 /* Vibrancy Legend */
 .legend-vibrancy {
-  justify-content: center;
-  align-items: center;
+  justify-content: flex-start;
+  align-items: stretch;
 }
 
 .legend-bars-vertical {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  justify-content: center;
+  justify-content: flex-end;
   width: auto;
-  min-width: 60px;
-  gap: 3px;
+  min-width: 90px;
+  gap: 4px;
   margin: 0;
-  padding: 8px 6px;
+  padding: 0;
   flex: 1;
-  height: 100%;
+  min-height: 200px;
   max-height: 100%;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  border-radius: 0;
+  border: none;
   box-sizing: border-box;
   overflow: hidden;
+  transition: none;
+  box-shadow: none;
 }
 
 .legend-bar-vertical {
-  flex: 1;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: flex-start;
   min-height: 8px;
   width: 100%;
+  transition: opacity 0.2s ease;
+  flex-shrink: 0;
 }
 
 .bar-fill-vertical {
   height: 100%;
   width: 100%;
-  background: linear-gradient(to right, #9ca3af 0%, #6b7280 100%);
-  border-radius: 0 2px 2px 0;
-  min-width: 4px;
-  opacity: 0.8;
+  background: linear-gradient(to right, #9ca3af 0%, #6b7280 40%, #4b5563 80%, #374151 100%);
+  border-radius: 0 4px 4px 0;
+  min-width: 8px;
+  opacity: 0.85;
+  transition: opacity 0.2s ease;
+  box-shadow: none;
+  border: none;
+}
+
+.bar-fill-vertical:hover {
+  opacity: 1;
 }
 
 .legend-bar {
@@ -903,11 +522,14 @@ const vibrancyBars = computed(() => {
 }
 
 .legend-note {
-  font-size: 8px;
+  font-size: 11px;
   color: rgba(255, 255, 255, 0.6);
   text-align: center;
-  margin-top: 2px;
+  margin-top: 12px;
   padding: 0;
+  background: transparent;
+  border-radius: 0;
+  border: none;
   font-family:
     "SF Pro Display",
     "SF Pro Text",
@@ -915,46 +537,81 @@ const vibrancyBars = computed(() => {
     BlinkMacSystemFont,
     system-ui,
     sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.legend-note svg {
+  opacity: 0.6;
+  flex-shrink: 0;
 }
 
 /* Combined Legend */
 .legend-combined {
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
+  justify-content: flex-start;
+  align-items: stretch;
+  gap: 0;
 }
 
 .combined-legend {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 20px;
   flex: 1;
-  justify-content: center;
-  align-items: center;
+  justify-content: flex-start;
+  align-items: stretch;
   width: 100%;
+  padding: 8px 0;
 }
 
 .combined-section {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  align-items: center;
-  justify-content: center;
+  gap: 14px;
+  align-items: stretch;
+  justify-content: flex-start;
   width: 100%;
   max-width: 100%;
   flex: 1;
-  padding: 4px 0;
+  padding: 0;
   box-sizing: border-box;
   overflow: hidden;
 }
 
-.section-label {
-  font-size: 9px;
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding-bottom: 0;
+}
+
+.section-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
   color: rgba(255, 255, 255, 0.7);
-  text-align: center;
-  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.section-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.section-label {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.9);
+  text-align: left;
+  font-weight: 600;
   padding: 0;
-  margin-bottom: 4px;
+  margin: 0;
   font-family:
     "SF Pro Display",
     "SF Pro Text",
@@ -962,11 +619,16 @@ const vibrancyBars = computed(() => {
     BlinkMacSystemFont,
     system-ui,
     sans-serif;
-  width: 100%;
+  flex: 1;
   box-sizing: border-box;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
+
+.section-divider {
+  height: 0;
+  background: transparent;
+  margin: 16px 0;
+  flex-shrink: 0;
 }
 
 .combined-section .histogram-wrapper {
@@ -999,8 +661,8 @@ const vibrancyBars = computed(() => {
 }
 
 .empty-message {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
   text-align: center;
   font-family:
     "SF Pro Display",
@@ -1010,5 +672,7 @@ const vibrancyBars = computed(() => {
     system-ui,
     sans-serif;
   font-weight: 500;
+  letter-spacing: 0.01em;
+  padding: 40px 20px;
 }
 </style>
