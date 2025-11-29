@@ -224,6 +224,8 @@ let pendingZurichFocusKey = 0;
 let selectedHubId1 = null;
 let selectedHubId2 = null;
 let currentRouteSource = null;
+let currentRouteLumoScore = null;
+let currentRouteStats = null;
 
 // Paths that work both locally and in deploy
 const BASE = import.meta.env.BASE_URL || "/";
@@ -1208,6 +1210,33 @@ async function loadAndDisplayRoute(fromId, toId) {
     }
 
     console.log(`Route has ${routeData.features.length} feature(s)`);
+    
+    // Extract route statistics from route data
+    currentRouteLumoScore = null;
+    currentRouteStats = null;
+    if (routeData.features && routeData.features.length > 0) {
+      const firstFeature = routeData.features[0];
+      if (firstFeature.properties) {
+        const props = firstFeature.properties;
+        
+        // Extract lumo score
+        if (props.lumo_score_percentage !== undefined) {
+          currentRouteLumoScore = props.lumo_score_percentage;
+        }
+        
+        // Extract all route statistics
+        currentRouteStats = {
+          lengthMeters: props.route_length_meters || null,
+          lengthKm: props.route_length_km || null,
+          walkDurationMinutes: props.walk_duration_minutes || null,
+          walkDurationFormatted: props.walk_duration_formatted || null,
+          poiCounts: props.poi_counts || {},
+          poiFrequencies: props.poi_frequencies || {},
+        };
+        
+        console.log(`Route Stats:`, currentRouteStats);
+      }
+    }
 
     // Add route source
     if (map.getSource("route")) {
@@ -1540,6 +1569,11 @@ async function fetchLocalityNamesForHubs() {
   updateSource();
 }
 
+// Get current route lumo score
+function getCurrentRouteLumoScore() {
+  return currentRouteLumoScore;
+}
+
 // Expose methods for parent component
 defineExpose({
   selectHubs: (hubId1, hubId2, loadRoute = true) => {
@@ -1599,6 +1633,12 @@ defineExpose({
     });
     console.log("getHubs returning:", hubList);
     return hubList;
+  },
+  getCurrentRouteLumoScore: () => {
+    return currentRouteLumoScore;
+  },
+  getCurrentRouteStats: () => {
+    return currentRouteStats;
   },
 });
 

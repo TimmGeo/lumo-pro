@@ -343,6 +343,78 @@
                 </button>
               </div>
 
+              <!-- Route Statistics Display -->
+              <div
+                v-if="currentRouteStats !== null"
+                class="route-stats-container"
+              >
+                <div class="route-stats-header">
+                  <h3 class="route-stats-title">Route Statistics</h3>
+                </div>
+
+                <div class="route-stats-grid">
+                  <!-- Route Length -->
+                  <div class="route-stat-item">
+                    <div class="route-stat-value">
+                      {{
+                        currentRouteStats.lengthKm !== null
+                          ? currentRouteStats.lengthKm + " km"
+                          : "—"
+                      }}
+                    </div>
+                    <div class="route-stat-label">Distance</div>
+                  </div>
+
+                  <!-- Walk Duration -->
+                  <div class="route-stat-item">
+                    <div class="route-stat-value">
+                      {{ currentRouteStats.walkDurationFormatted || "—" }}
+                    </div>
+                    <div class="route-stat-label">Walk Duration</div>
+                  </div>
+                </div>
+
+                <!-- POI Statistics -->
+                <div
+                  v-if="
+                    currentRouteStats &&
+                    currentRouteStats.poiCounts &&
+                    Object.keys(currentRouteStats.poiCounts).length > 0
+                  "
+                  class="route-poi-section"
+                >
+                  <div class="route-poi-header">
+                    <h4 class="route-poi-title">Points of Interest</h4>
+                  </div>
+                  <div class="route-poi-list">
+                    <div
+                      v-for="(count, poiType) in currentRouteStats.poiCounts"
+                      :key="poiType"
+                      class="route-poi-item"
+                    >
+                      <div class="route-poi-count">{{ count }}</div>
+                      <div class="route-poi-info">
+                        <div class="route-poi-type">
+                          {{ formatPoiType(poiType) }}
+                        </div>
+                        <div
+                          v-if="
+                            currentRouteStats.poiFrequencies &&
+                            currentRouteStats.poiFrequencies[poiType]
+                          "
+                          class="route-poi-frequency"
+                        >
+                          {{ currentRouteStats.poiFrequencies[poiType] }}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div v-else-if="currentRouteStats" class="route-poi-empty">
+                  No points of interest along this route
+                </div>
+              </div>
+
               <!-- History section -->
               <div class="route-history-container">
                 <div class="route-history-header">
@@ -364,7 +436,9 @@
                       stroke-linecap="round"
                       stroke-linejoin="round"
                     >
-                      <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                      <path
+                        d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+                      />
                     </svg>
                     Clear
                   </button>
@@ -383,7 +457,9 @@
                     @click="loadHistoryRoute(entry)"
                   >
                     <div class="route-history-route">
-                      <span class="route-history-from">{{ entry.fromName }}</span>
+                      <span class="route-history-from">{{
+                        entry.fromName
+                      }}</span>
                       <svg
                         width="12"
                         height="12"
@@ -976,7 +1052,14 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from "vue";
+import {
+  ref,
+  computed,
+  onMounted,
+  onBeforeUnmount,
+  nextTick,
+  watch,
+} from "vue";
 import MapboxViewer from "./components/MapboxViewer.vue";
 import Legend from "./components/Legend.vue";
 import Walkthrough from "./components/Walkthrough.vue";
@@ -1021,6 +1104,7 @@ const startHub = ref("");
 const endHub = ref("");
 const hubs = ref([]);
 const routeHistory = ref([]);
+const currentRouteStats = ref(null);
 
 // Hover popup data
 const popup = ref({ show: false, x: 0, y: 0, lights: 0, pois: 0, hub: "—" });
@@ -1301,11 +1385,10 @@ function onViewerReady(exposed) {
       popup.value = { show: true, ...info };
     });
   }
-  
+
   // Load hubs from the map component
   loadHubs();
 }
-
 
 // Load hubs from the map component
 function loadHubs() {
@@ -1330,8 +1413,13 @@ function handleHubsUpdated() {
 
 // Computed property to check if route can be planned
 const canPlanRoute = computed(() => {
-  const canPlan = api && startHub.value && endHub.value && startHub.value !== endHub.value;
-  console.log("canPlanRoute computed:", canPlan, { api: !!api, startHub: startHub.value, endHub: endHub.value });
+  const canPlan =
+    api && startHub.value && endHub.value && startHub.value !== endHub.value;
+  console.log("canPlanRoute computed:", canPlan, {
+    api: !!api,
+    startHub: startHub.value,
+    endHub: endHub.value,
+  });
   return canPlan;
 });
 
@@ -1341,12 +1429,12 @@ function route(event) {
     event.preventDefault();
     event.stopPropagation();
   }
-  
+
   // Ensure API is available - try to get it from ref if not set
   if (!api && mapboxViewerRef.value) {
     api = mapboxViewerRef.value;
   }
-  
+
   console.log("🔵🔵🔵 route() function called 🔵🔵🔵");
   console.log("Current state:", {
     canPlanRoute: canPlanRoute.value,
@@ -1354,16 +1442,16 @@ function route(event) {
     startHub: startHub.value,
     endHub: endHub.value,
     apiMethods: api ? Object.keys(api) : [],
-    mapboxViewerRef: !!mapboxViewerRef.value
+    mapboxViewerRef: !!mapboxViewerRef.value,
   });
-  
+
   // Always try to plan route, even if conditions aren't perfect
   if (!startHub.value || !endHub.value) {
     console.warn("⚠️ No hubs selected");
     alert("Please select both start and end hubs");
     return;
   }
-  
+
   if (startHub.value === endHub.value) {
     console.warn("⚠️ Same hub selected for start and end");
     alert("Please select different hubs for start and end");
@@ -1371,32 +1459,45 @@ function route(event) {
   }
 
   console.log("✅ Planning route from", startHub.value, "to", endHub.value);
-  
+
   // Try to get API from ref if still not available
   const routeApi = api || mapboxViewerRef.value;
-  
+
   if (routeApi && routeApi.selectHubs) {
     try {
       // Explicitly pass true to load the route
-      console.log("Calling routeApi.selectHubs with:", startHub.value, endHub.value, true);
+      console.log(
+        "Calling routeApi.selectHubs with:",
+        startHub.value,
+        endHub.value,
+        true
+      );
       routeApi.selectHubs(startHub.value, endHub.value, true);
       console.log("✅ selectHubs called with loadRoute=true");
-      
+
+      // Update current route stats after a short delay to allow route to load
+      setTimeout(() => {
+        if (routeApi.getCurrentRouteStats) {
+          currentRouteStats.value = routeApi.getCurrentRouteStats();
+          console.log("Updated route stats:", currentRouteStats.value);
+        }
+      }, 800);
+
       // Add to history
-      const fromHub = hubs.value.find(h => h.id === startHub.value);
-      const toHub = hubs.value.find(h => h.id === endHub.value);
+      const fromHub = hubs.value.find((h) => h.id === startHub.value);
+      const toHub = hubs.value.find((h) => h.id === endHub.value);
       if (fromHub && toHub) {
         const historyEntry = {
           fromId: startHub.value,
           toId: endHub.value,
           fromName: fromHub.name,
           toName: toHub.name,
-          date: new Date().toLocaleString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-          })
+          date: new Date().toLocaleString("en-US", {
+            month: "short",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
         };
         routeHistory.value.unshift(historyEntry); // Add to beginning
         // Limit history to last 50 entries
@@ -1404,7 +1505,7 @@ function route(event) {
           routeHistory.value = routeHistory.value.slice(0, 50);
         }
       }
-      
+
       // Update api reference for future use
       if (!api) {
         api = routeApi;
@@ -1414,50 +1515,72 @@ function route(event) {
       alert("Error planning route: " + error.message);
     }
   } else {
-    console.error("❌ API or selectHubs method not available", { 
-      api: api, 
+    console.error("❌ API or selectHubs method not available", {
+      api: api,
       routeApi: routeApi,
       hasSelectHubs: routeApi?.selectHubs,
       mapboxViewerRef: mapboxViewerRef.value,
-      apiType: typeof api
+      apiType: typeof api,
     });
     alert("Map not ready. Please wait a moment and try again.");
   }
 }
 
 // Watch for dropdown changes and update map selection (only highlight, don't show route)
-watch([startHub, endHub], ([newStart, newEnd]) => {
-  // Ensure API is available - try to get it from ref if not set
-  if (!api && mapboxViewerRef.value) {
-    api = mapboxViewerRef.value;
-  }
-  
-  const routeApi = api || mapboxViewerRef.value;
-  if (!routeApi || !routeApi.selectHubs) return;
-  
-  // Only highlight selected hubs, but don't show route until "Plan Route" is clicked
-  if (newStart && newEnd && newStart !== newEnd) {
-    // Just highlight both hubs, but don't load route
-    routeApi.selectHubs(newStart, newEnd, false); // Pass false to indicate don't load route
-  } 
-  // If only start hub is selected, select it
-  else if (newStart && !newEnd) {
-    routeApi.selectHubs(newStart, null);
-  }
-  // If start hub is cleared, clear selection
-  else if (!newStart) {
-    routeApi.selectHubs(null, null);
-  }
-  
-  // Update api reference for future use
-  if (!api && routeApi) {
-    api = routeApi;
-  }
-}, { immediate: false });
+watch(
+  [startHub, endHub],
+  ([newStart, newEnd]) => {
+    // Ensure API is available - try to get it from ref if not set
+    if (!api && mapboxViewerRef.value) {
+      api = mapboxViewerRef.value;
+    }
+
+    const routeApi = api || mapboxViewerRef.value;
+    if (!routeApi || !routeApi.selectHubs) return;
+
+    // Only highlight selected hubs, but don't show route until "Plan Route" is clicked
+    if (newStart && newEnd && newStart !== newEnd) {
+      // Just highlight both hubs, but don't load route
+      routeApi.selectHubs(newStart, newEnd, false); // Pass false to indicate don't load route
+    }
+    // If only start hub is selected, select it
+    else if (newStart && !newEnd) {
+      routeApi.selectHubs(newStart, null);
+    }
+    // If start hub is cleared, clear selection
+    else if (!newStart) {
+      routeApi.selectHubs(null, null);
+      currentRouteStats.value = null; // Clear stats when route is cleared
+    }
+
+    // If both hubs are cleared, clear stats
+    if (!newStart && !newEnd) {
+      currentRouteStats.value = null;
+    }
+
+    // Update api reference for future use
+    if (!api && routeApi) {
+      api = routeApi;
+    }
+  },
+  { immediate: false }
+);
 
 // Clear history
 function clearHistory() {
   routeHistory.value = [];
+}
+
+// Format POI type for display
+function formatPoiType(poiType) {
+  const typeMap = {
+    BarOrPub: "Bars & Pubs",
+    CafeOrCoffeeShop: "Cafés",
+    Restaurant: "Restaurants",
+    NightClub: "Night Clubs",
+    MusicVenue: "Music Venues",
+  };
+  return typeMap[poiType] || poiType;
 }
 
 // Load route from history
@@ -1468,6 +1591,16 @@ function loadHistoryRoute(entry) {
   const routeApi = api || mapboxViewerRef.value;
   if (routeApi && routeApi.selectHubs) {
     routeApi.selectHubs(entry.fromId, entry.toId, true);
+    // Update current route stats after a short delay
+    setTimeout(() => {
+      if (routeApi.getCurrentRouteStats) {
+        currentRouteStats.value = routeApi.getCurrentRouteStats();
+        console.log(
+          "Updated route stats from history:",
+          currentRouteStats.value
+        );
+      }
+    }, 800);
   }
 }
 
@@ -2856,6 +2989,137 @@ textarea:focus-visible {
 
 .route-plan-btn svg {
   flex-shrink: 0;
+}
+
+/* -------- ROUTE STATISTICS DISPLAY -------- */
+.route-stats-container {
+  margin-top: 24px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.route-stats-header {
+  margin-bottom: 4px;
+}
+
+.route-stats-title {
+  color: #b8bcc0;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.route-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.route-stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.route-stat-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.route-stat-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+/* -------- POI SECTION -------- */
+.route-poi-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.route-poi-header {
+  margin-bottom: 12px;
+}
+
+.route-poi-title {
+  color: #b8bcc0;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.route-poi-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.route-poi-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+}
+
+.route-poi-count {
+  font-size: 24px;
+  font-weight: 700;
+  color: #ffffff;
+  min-width: 32px;
+  text-align: center;
+}
+
+.route-poi-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.route-poi-type {
+  font-size: 13px;
+  font-weight: 500;
+  color: #ffffff;
+}
+
+.route-poi-frequency {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  font-style: italic;
+}
+
+.route-poi-empty {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.4);
+  text-align: center;
+  font-style: italic;
 }
 
 /* -------- ROUTE HISTORY -------- */
