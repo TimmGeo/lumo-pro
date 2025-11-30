@@ -1556,7 +1556,7 @@ function showRouteStatsPopup(routeGeom) {
     </span>
   `;
   if (duration !== null) {
-    html += `<span class="route-stats-popup-duration" style="color: #000000 !important; font-weight: 800 !important;">${duration} min</span>`;
+    html += `<span class="route-stats-popup-duration" style="color: #000000 !important; font-weight: 800 !important; font-size: 22px !important;">${duration} min</span>`;
   }
   html += '</div>';
   
@@ -1569,15 +1569,20 @@ function showRouteStatsPopup(routeGeom) {
   
   popupContent.innerHTML = html;
 
-  // Create and show popup
+  // Calculate position closer to route - find a point on the route line
+  // Use a point that's slightly offset from the midpoint to position the popup better
+  const routePointIndex = Math.floor(coords.length * 0.4); // Use 40% along the route
+  const routePoint = coords[routePointIndex];
+  
+  // Create and show popup with tip pointing to route
   routePopup = new mapboxgl.Popup({
     closeButton: false,
     closeOnClick: false,
     className: 'route-stats-map-popup',
     anchor: 'bottom',
-    offset: [0, -10],
+    offset: [0, -5], // Smaller offset so tip is closer to route
   })
-    .setLngLat([midCoord[0], midCoord[1]])
+    .setLngLat([routePoint[0], routePoint[1]])
     .setDOMContent(popupContent)
     .addTo(map);
   
@@ -1613,7 +1618,21 @@ function showRouteStatsPopup(routeGeom) {
     const popupTip = document.querySelector('.route-stats-map-popup .mapboxgl-popup-tip');
     if (popupTip) {
       popupTip.style.borderTopColor = 'rgba(255, 255, 255, 0.25)';
-      popupTip.style.filter = 'blur(20px)';
+      popupTip.style.borderTopWidth = '6px';
+      popupTip.style.borderLeft = '6px solid transparent';
+      popupTip.style.borderRight = '6px solid transparent';
+      popupTip.style.borderBottom = 'none';
+      popupTip.style.width = '0';
+      popupTip.style.height = '0';
+      popupTip.style.display = 'block';
+      popupTip.style.visibility = 'visible';
+      popupTip.style.opacity = '1';
+      popupTip.style.position = 'relative';
+      popupTip.style.zIndex = '1';
+      popupTip.style.marginTop = '0';
+      popupTip.style.marginLeft = 'auto';
+      popupTip.style.marginRight = 'auto';
+      popupTip.style.boxShadow = '0 2px 8px 0 rgba(0, 0, 0, 0.1)';
     }
   }, 10);
 }
@@ -2315,7 +2334,22 @@ onBeforeUnmount(() => {
 
 .route-stats-map-popup .mapboxgl-popup-tip {
   border-top-color: rgba(255, 255, 255, 0.25) !important;
-  filter: blur(20px) !important;
+  border-top-width: 6px !important;
+  border-left: 6px solid transparent !important;
+  border-right: 6px solid transparent !important;
+  border-bottom: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  margin-top: 0 !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: relative !important;
+  z-index: 1 !important;
+  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.1) !important;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1)) !important;
 }
 
 /* Fade transitions for route popup - matching zurich time display */
@@ -2413,7 +2447,7 @@ onBeforeUnmount(() => {
 .route-stats-popup-duration,
 .route-stats-map-popup .route-stats-popup-duration,
 .route-stats-popup .route-stats-popup-duration {
-  font-size: 17px !important;
+  font-size: 22px !important;
   font-weight: 800 !important;
   color: #000000 !important;
   line-height: 1.2 !important;

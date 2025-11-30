@@ -343,107 +343,112 @@
                 </button>
               </div>
 
-              <!-- Route Statistics Display -->
+              <!-- Summary Display -->
               <div
                 v-if="currentRouteStats !== null"
                 class="route-stats-container"
               >
-                <div class="route-stats-header">
-                  <h3 class="route-stats-title">Route Statistics</h3>
-                </div>
-
-                <div class="route-stats-grid">
-                  <!-- Route Length -->
-                  <div class="route-stat-item">
-                    <div class="route-stat-value">
-                      {{
-                        currentRouteStats.lengthKm !== null
-                          ? currentRouteStats.lengthKm + " km"
-                          : "—"
-                      }}
-                    </div>
-                    <div class="route-stat-label">Distance</div>
-                  </div>
-
-                  <!-- Walk Duration -->
-                  <div class="route-stat-item">
-                    <div class="route-stat-value">
-                      {{ currentRouteStats.walkDurationFormatted || "—" }}
-                    </div>
-                    <div class="route-stat-label">Walk Duration</div>
-                  </div>
-                </div>
-
-                <!-- POI Statistics -->
                 <div
-                  v-if="
-                    currentRouteStats &&
-                    currentRouteStats.poiCounts &&
-                    Object.keys(currentRouteStats.poiCounts).length > 0
-                  "
-                  class="route-poi-section"
+                  class="route-stats-header title-collapsible"
+                  @click="summaryExpanded = !summaryExpanded"
                 >
-                  <div class="route-poi-header">
-                    <h4 class="route-poi-title">Points of Interest</h4>
+                  <span class="title">Route details</span>
+                  <span
+                    class="chevron chevron-category"
+                    :class="{ 'chevron--expanded': summaryExpanded }"
+                    >›</span
+                  >
+                </div>
+
+                <div
+                  class="category-content"
+                  :class="{ 'category-content--collapsed': !summaryExpanded }"
+                >
+                  <!-- POI Statistics with positive mantras -->
+                  <div
+                    v-if="
+                      currentRouteStats &&
+                      currentRouteStats.poiCounts &&
+                      Object.keys(currentRouteStats.poiCounts).length > 0
+                    "
+                    class="route-poi-section"
+                  >
+                  <div class="route-summary-mantra">
+                    <p class="mantra-text">You're walking through a vibrant, well-lit area:</p>
                   </div>
-                  <div class="route-poi-list">
-                    <div
-                      v-for="(count, poiType) in currentRouteStats.poiCounts"
-                      :key="poiType"
-                      class="route-poi-item"
-                    >
-                      <div class="route-poi-count">{{ count }}</div>
-                      <div class="route-poi-info">
-                        <div class="route-poi-type">
-                          {{ formatPoiType(poiType) }}
+                  <div class="route-info-section">
+                    <div class="route-info-item">
+                      <span class="route-info-label">Route:</span>
+                      <span class="route-info-value">
+                        {{ getHubName(startHub) }} → {{ getHubName(endHub) }}
+                      </span>
+                    </div>
+                    <div class="route-info-item" v-if="currentRouteStats.walkDurationFormatted">
+                      <span class="route-info-label">Duration:</span>
+                      <span class="route-info-value">{{ currentRouteStats.walkDurationFormatted }}</span>
+                    </div>
+                    <div class="route-info-item" v-if="currentRouteStats.lengthKm !== null">
+                      <span class="route-info-label">Distance:</span>
+                      <span class="route-info-value">{{ currentRouteStats.lengthKm }} km</span>
+                    </div>
+                  </div>
+                    <div class="route-poi-list-enhanced">
+                      <div
+                        v-for="(count, poiType) in currentRouteStats.poiCounts"
+                        :key="poiType"
+                        class="route-poi-item-enhanced"
+                      >
+                        <div class="route-poi-icon-wrapper">
+                          <div class="route-poi-count-large">{{ count }}</div>
                         </div>
-                        <div
-                          v-if="
-                            currentRouteStats.poiFrequencies &&
-                            currentRouteStats.poiFrequencies[poiType]
-                          "
-                          class="route-poi-frequency"
-                        >
-                          {{ currentRouteStats.poiFrequencies[poiType] }}
+                        <div class="route-poi-info-enhanced">
+                          <div class="route-poi-type-enhanced">
+                            {{ formatPoiType(poiType) }}
+                          </div>
+                          <div
+                            v-if="
+                              currentRouteStats.poiFrequencies &&
+                              currentRouteStats.poiFrequencies[poiType]
+                            "
+                            class="route-poi-frequency-enhanced"
+                          >
+                            {{ currentRouteStats.poiFrequencies[poiType] }}
+                          </div>
+                          <div class="route-poi-mantra">
+                            {{ getPoiMantra(poiType) }}
+                          </div>
                         </div>
                       </div>
                     </div>
+                  <div class="route-summary-footer">
+                    <p class="footer-text">You're safe and surrounded by life</p>
                   </div>
-                </div>
+                  </div>
                 <div v-else-if="currentRouteStats" class="route-poi-empty">
-                  No points of interest along this route
+                  <p class="empty-mantra">Your route is clear and ready for a peaceful walk</p>
+                </div>
                 </div>
               </div>
 
               <!-- History section -->
-              <div class="route-history-container">
-                <div class="route-history-header">
-                  <h3 class="route-history-title">History</h3>
-                  <button
-                    v-if="routeHistory.length > 0"
-                    class="route-history-clear-btn"
-                    @click="clearHistory"
-                    type="button"
-                    title="Clear history"
+              <div class="route-history-wrapper">
+                <div
+                  class="route-history-header title-collapsible"
+                  @click="routeHistoryExpanded = !routeHistoryExpanded"
+                >
+                  <span class="title">Route History</span>
+                  <span
+                    class="chevron chevron-category"
+                    :class="{ 'chevron--expanded': routeHistoryExpanded }"
+                    >›</span
                   >
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
-                      <path
-                        d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
-                      />
-                    </svg>
-                    Clear
-                  </button>
                 </div>
-                <div class="route-history-list">
+                <div
+                  class="category-content"
+                  :class="{ 'category-content--collapsed': !routeHistoryExpanded }"
+                >
+                  <div class="route-history-container">
+                    <div class="route-history-list">
                   <div
                     v-if="routeHistory.length === 0"
                     class="route-history-empty"
@@ -476,6 +481,33 @@
                       <span class="route-history-to">{{ entry.toName }}</span>
                     </div>
                     <div class="route-history-date">{{ entry.date }}</div>
+                  </div>
+                    </div>
+                    <div class="route-history-clear-header">
+                      <button
+                        v-if="routeHistory.length > 0"
+                        class="route-history-clear-btn"
+                        @click.stop="clearHistory"
+                        type="button"
+                        title="Clear history"
+                      >
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <path
+                            d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+                          />
+                        </svg>
+                        Clear
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1165,6 +1197,8 @@ const legendCollapsed = ref(false);
 // Layers section category expand/collapse states
 const layersCategoryExpanded = ref(true);
 const routingHubsCategoryExpanded = ref(true);
+const summaryExpanded = ref(true);
+const routeHistoryExpanded = ref(true);
 
 // Settings section category expand/collapse states
 const imprintExpanded = ref(false);
@@ -1581,6 +1615,25 @@ function formatPoiType(poiType) {
     MusicVenue: "Music Venues",
   };
   return typeMap[poiType] || poiType;
+}
+
+// Get hub name from ID
+function getHubName(hubId) {
+  if (!hubId || !hubs.value) return "";
+  const hub = hubs.value.find((h) => h.id === hubId);
+  return hub ? hub.name : "";
+}
+
+// Get positive mantra for each POI type
+function getPoiMantra(poiType) {
+  const mantras = {
+    BarOrPub: "Social hubs with constant activity - vibrant gathering places that keep the streets alive",
+    CafeOrCoffeeShop: "Busy spots with regular foot traffic - active spaces that add energy to your route",
+    Restaurant: "Well-frequented dining areas - places where people come and go, keeping the area dynamic",
+    NightClub: "Pulsing nightlife zones - streets that stay active and well-lit into the evening",
+    MusicVenue: "Cultural hotspots with regular events - lively venues that bring continuous activity",
+  };
+  return mantras[poiType] || "Active points of interest that contribute to a vibrant, well-trafficked route";
 }
 
 // Load route from history
@@ -2994,17 +3047,40 @@ textarea:focus-visible {
 /* -------- ROUTE STATISTICS DISPLAY -------- */
 .route-stats-container {
   margin-top: 24px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 20px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .route-stats-header {
   margin-bottom: 4px;
+}
+
+.route-stats-header.title-collapsible {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+  margin-bottom: 8px;
+  padding: 0;
+}
+
+.route-stats-header.title-collapsible:hover {
+  opacity: 0.8;
+}
+
+.route-stats-header.title-collapsible .title {
+  color: #b8bcc0;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  font-weight: 500;
+  line-height: 1.4;
+  margin: 0;
 }
 
 .route-stats-title {
@@ -3052,8 +3128,8 @@ textarea:focus-visible {
 /* -------- POI SECTION -------- */
 .route-poi-section {
   margin-top: 20px;
-  padding-top: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 0;
+  border-top: none;
 }
 
 .route-poi-header {
@@ -3122,9 +3198,175 @@ textarea:focus-visible {
   font-style: italic;
 }
 
+/* Enhanced POI display with mantras */
+.route-summary-mantra {
+  margin-top: 4px;
+  margin-bottom: 20px;
+  padding: 0;
+}
+
+.mantra-text {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #70f0c3;
+  line-height: 1.5;
+}
+
+.route-info-section {
+  margin: 16px 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.route-info-item {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.route-info-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.6);
+  min-width: 70px;
+}
+
+.route-info-value {
+  font-size: 13px;
+  font-weight: 500;
+  color: #ffffff;
+}
+
+.route-poi-list-enhanced {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.route-poi-item-enhanced {
+  display: flex;
+  gap: 16px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  transition: none;
+  cursor: default;
+}
+
+.route-poi-item-enhanced:hover {
+  background: transparent;
+  border: none;
+}
+
+.route-poi-icon-wrapper {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  background: rgba(112, 240, 195, 0.15);
+  border: none;
+  border-radius: 12px;
+}
+
+.route-poi-count-large {
+  font-size: 28px;
+  font-weight: 700;
+  color: #70f0c3;
+  line-height: 1;
+}
+
+.route-poi-info-enhanced {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.route-poi-type-enhanced {
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 2px;
+}
+
+.route-poi-frequency-enhanced {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  font-style: italic;
+}
+
+.route-poi-mantra {
+  margin-top: 8px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+.route-summary-footer {
+  margin-top: 20px;
+  padding: 12px 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+}
+
+.footer-text {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #70f0c3;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.empty-mantra {
+  margin: 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+  line-height: 1.6;
+  padding: 16px 0;
+}
+
 /* -------- ROUTE HISTORY -------- */
-.route-history-container {
+.route-history-wrapper {
   margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.route-history-wrapper .route-history-header.title-collapsible {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+  margin-bottom: 0;
+  padding: 0;
+}
+
+.route-history-wrapper .route-history-header.title-collapsible:hover {
+  opacity: 0.8;
+}
+
+.route-history-wrapper .route-history-header.title-collapsible .title {
+  color: #b8bcc0;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  font-weight: 500;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.route-history-container {
   background: rgba(255, 255, 255, 0.03);
   border-radius: 12px;
   padding: 16px;
@@ -3133,19 +3375,12 @@ textarea:focus-visible {
   gap: 12px;
 }
 
-.route-history-header {
+.route-history-clear-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
-  margin-bottom: 8px;
-}
-
-.route-history-title {
-  color: #b8bcc0;
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  margin: 0;
+  margin-top: 12px;
+  margin-bottom: 0;
 }
 
 .route-history-clear-btn {
