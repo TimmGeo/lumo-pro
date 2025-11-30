@@ -226,6 +226,8 @@ let selectedHubId2 = null;
 let currentRouteSource = null;
 let currentRouteLumoScore = null;
 let currentRouteStats = null;
+let routePopup = null;
+let routePopupGeom = null; // Store route geometry for recreating popup
 
 // Paths that work both locally and in deploy
 const BASE = import.meta.env.BASE_URL || "/";
@@ -413,11 +415,19 @@ onMounted(async () => {
 
     // Emit zoom and move events for scale calculation
     map.on("zoom", () => {
-      emit("zoom", { zoom: map.getZoom(), center: map.getCenter() });
+      const zoom = map.getZoom();
+      emit("zoom", { zoom: zoom, center: map.getCenter() });
+      
+      // Show/hide route popup based on zoom (same condition as zurich time display)
+      handleRoutePopupVisibility(zoom);
     });
 
     map.on("move", () => {
-      emit("move", { zoom: map.getZoom(), center: map.getCenter() });
+      const zoom = map.getZoom();
+      emit("move", { zoom: zoom, center: map.getCenter() });
+      
+      // Show/hide route popup based on zoom (same condition as zurich time display)
+      handleRoutePopupVisibility(zoom);
     });
 
     map.on("load", async () => {
@@ -1211,6 +1221,17 @@ async function loadAndDisplayRoute(fromId, toId) {
 
     console.log(`Route has ${routeData.features.length} feature(s)`);
     
+    // Extract route geometry for popup positioning
+    let route_geom = null;
+    if (routeData.features && routeData.features.length > 0) {
+      const firstFeature = routeData.features[0];
+      if (firstFeature.geometry && firstFeature.geometry.type === 'LineString') {
+        route_geom = {
+          coords: firstFeature.geometry.coordinates
+        };
+      }
+    }
+    
     // Extract route statistics from route data
     currentRouteLumoScore = null;
     currentRouteStats = null;
@@ -1441,14 +1462,175 @@ async function loadAndDisplayRoute(fromId, toId) {
 
     // Force a repaint to ensure route is visible
     map.triggerRepaint();
+    
+    // Show route statistics popup after a short delay
+    setTimeout(() => {
+      if (route_geom && currentRouteStats) {
+        showRouteStatsPopup(route_geom);
+      }
+    }, 300);
   } catch (error) {
     console.error(`Error loading route ${routeFileName}:`, error);
   }
 }
 
+// Handle route popup visibility based on zoom level
+function handleRoutePopupVisibility(zoom) {
+  if (!map) return;
+  
+  const shouldShow = zoom >= 11 && routePopupGeom && currentRouteStats;
+  
+  if (shouldShow) {
+    // Show popup if it doesn't exist
+    if (!routePopup) {
+      showRouteStatsPopup(routePopupGeom);
+    } else {
+      // Fade in existing popup
+      setTimeout(() => {
+        const popupElement = document.querySelector('.route-stats-map-popup');
+        if (popupElement) {
+          popupElement.style.opacity = '1';
+          popupElement.style.visibility = 'visible';
+          popupElement.style.pointerEvents = 'auto';
+          popupElement.style.transition = 'opacity 0.4s ease, visibility 0.4s ease';
+        }
+      }, 10);
+    }
+  } else {
+    // Fade out popup
+    if (routePopup) {
+      const popupElement = document.querySelector('.route-stats-map-popup');
+      if (popupElement) {
+        popupElement.style.opacity = '0';
+        popupElement.style.visibility = 'hidden';
+        popupElement.style.pointerEvents = 'none';
+        popupElement.style.transition = 'opacity 0.3s ease, visibility 0.3s ease';
+      }
+    }
+  }
+}
+
+// Show route statistics popup on the map
+function showRouteStatsPopup(routeGeom) {
+  if (!map || !routeGeom || !currentRouteStats) return;
+
+  // Store geometry for later recreation
+  routePopupGeom = routeGeom;
+
+  // Remove existing popup if any
+  if (routePopup) {
+    routePopup.remove();
+    routePopup = null;
+  }
+
+  // Calculate midpoint of route for popup position
+  const coords = routeGeom.coords;
+  if (!coords || coords.length === 0) return;
+
+  const midIndex = Math.floor(coords.length / 2);
+  const midCoord = coords[midIndex];
+
+  // Get route stats
+  const stats = currentRouteStats;
+  const duration = stats.walkDurationMinutes !== null ? Math.round(stats.walkDurationMinutes) : null;
+  const distance = stats.lengthKm !== null ? stats.lengthKm.toFixed(1) : null;
+
+  // Create HTML content for popup - simple style like navigation apps with walking icon
+  const popupContent = document.createElement('div');
+  popupContent.className = 'route-stats-popup';
+  
+  let html = '';
+  
+  // First row: Icon and duration on same horizontal line (inline)
+  html += '<div class="route-stats-popup-top-line">';
+  html += `
+    <span class="route-stats-popup-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="#000000">
+        <circle cx="12" cy="5.5" r="3.5"/>
+        <rect x="9.5" y="9" width="5" height="8" rx="2.5"/>
+        <rect x="6" y="10" width="4" height="5" rx="2" transform="rotate(-25 8 12.5)"/>
+        <rect x="14" y="10" width="4" height="5" rx="2" transform="rotate(25 16 12.5)"/>
+        <rect x="7" y="17" width="4" height="6" rx="2" transform="rotate(-15 9 20)"/>
+        <rect x="13" y="17" width="4" height="6" rx="2" transform="rotate(15 15 20)"/>
+      </svg>
+    </span>
+  `;
+  if (duration !== null) {
+    html += `<span class="route-stats-popup-duration" style="color: #000000 !important; font-weight: 800 !important;">${duration} min</span>`;
+  }
+  html += '</div>';
+  
+  // Second row: Distance below, aligned with duration text
+  if (distance !== null) {
+    html += `<div class="route-stats-popup-bottom-line">`;
+    html += `<span class="route-stats-popup-distance" style="color: #000000 !important;">${distance} km</span>`;
+    html += `</div>`;
+  }
+  
+  popupContent.innerHTML = html;
+
+  // Create and show popup
+  routePopup = new mapboxgl.Popup({
+    closeButton: false,
+    closeOnClick: false,
+    className: 'route-stats-map-popup',
+    anchor: 'bottom',
+    offset: [0, -10],
+  })
+    .setLngLat([midCoord[0], midCoord[1]])
+    .setDOMContent(popupContent)
+    .addTo(map);
+  
+  // Set initial visibility based on current zoom after popup is added
+  setTimeout(() => {
+    const currentZoom = map.getZoom();
+    const popupElement = document.querySelector('.route-stats-map-popup');
+    if (popupElement) {
+      if (currentZoom >= 11) {
+        popupElement.style.opacity = '1';
+        popupElement.style.visibility = 'visible';
+        popupElement.style.pointerEvents = 'auto';
+        popupElement.style.transition = 'opacity 0.4s ease, visibility 0.4s ease';
+      } else {
+        popupElement.style.opacity = '0';
+        popupElement.style.visibility = 'hidden';
+        popupElement.style.pointerEvents = 'none';
+        popupElement.style.transition = 'opacity 0.3s ease, visibility 0.3s ease';
+      }
+    }
+  }, 50);
+  
+  // Set glassmorphism effect directly on the popup element
+  setTimeout(() => {
+    const popupContentEl = document.querySelector('.route-stats-map-popup .mapboxgl-popup-content');
+    if (popupContentEl) {
+      popupContentEl.style.background = 'rgba(255, 255, 255, 0.25)';
+      popupContentEl.style.backgroundColor = 'rgba(255, 255, 255, 0.25)';
+      popupContentEl.style.backdropFilter = 'blur(20px) saturate(180%)';
+      popupContentEl.style.webkitBackdropFilter = 'blur(20px) saturate(180%)';
+      popupContentEl.style.boxShadow = '0 8px 32px 0 rgba(0, 0, 0, 0.1)';
+    }
+    const popupTip = document.querySelector('.route-stats-map-popup .mapboxgl-popup-tip');
+    if (popupTip) {
+      popupTip.style.borderTopColor = 'rgba(255, 255, 255, 0.25)';
+      popupTip.style.filter = 'blur(20px)';
+    }
+  }, 10);
+}
+
 // Clear the displayed route
 function clearRoute() {
   if (!map || !map.isStyleLoaded()) return;
+
+  // Remove popup if exists
+  if (routePopup) {
+    routePopup.remove();
+    routePopup = null;
+  }
+  
+  // Clear stored data
+  currentRouteStats = null;
+  routePopupGeom = null;
 
   // Hide all route layers
   const routeLayers = ["route-line-glow", "route-line", "route-line-highlight"];
@@ -2112,5 +2294,146 @@ onBeforeUnmount(() => {
 .fullscreen-btn svg {
   width: 16px;
   height: 16px;
+}
+
+/* Route Stats Popup - Glassmorphism style */
+.route-stats-map-popup .mapboxgl-popup-content {
+  background: rgba(255, 255, 255, 0.25) !important;
+  background-color: rgba(255, 255, 255, 0.25) !important;
+  color: #000000 !important;
+  padding: 5px 8px !important;
+  border-radius: 6px !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  min-width: auto !important;
+  max-width: none !important;
+  width: auto !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  opacity: 1 !important;
+}
+
+.route-stats-map-popup .mapboxgl-popup-tip {
+  border-top-color: rgba(255, 255, 255, 0.25) !important;
+  filter: blur(20px) !important;
+}
+
+/* Fade transitions for route popup - matching zurich time display */
+.route-stats-map-popup {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transition:
+    opacity 0.4s ease !important,
+    visibility 0.4s ease !important;
+  pointer-events: none !important;
+}
+
+.route-stats-map-popup.route-stats-popup--visible {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+.route-stats-map-popup.route-stats-popup--hidden {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transition:
+    opacity 0.3s ease !important,
+    visibility 0.3s ease !important;
+}
+
+.route-stats-map-popup .mapboxgl-popup-content * {
+  color: #000000 !important;
+}
+
+.route-stats-map-popup .mapboxgl-popup-tip {
+  border-top-color: #ffffff !important;
+}
+
+.route-stats-popup {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: #000000 !important;
+}
+
+.route-stats-popup,
+.route-stats-popup *,
+.route-stats-popup div,
+.route-stats-popup span {
+  color: #000000 !important;
+}
+
+.route-stats-popup-top-line {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  color: #000000 !important;
+  line-height: 1.2 !important;
+  white-space: nowrap !important;
+  vertical-align: top !important;
+}
+
+.route-stats-popup-bottom-line {
+  display: block !important;
+  color: #000000 !important;
+  line-height: 1.2 !important;
+  margin-top: 1px !important;
+  padding-left: 22px !important;
+}
+
+.route-stats-popup-icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: #000000 !important;
+  flex-shrink: 0 !important;
+  width: 20px !important;
+  height: 20px !important;
+  vertical-align: middle !important;
+}
+
+.route-stats-popup-icon svg {
+  width: 20px !important;
+  height: 20px !important;
+  fill: #000000 !important;
+  color: #000000 !important;
+  display: block !important;
+}
+
+.route-stats-popup-text {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  line-height: 1.2 !important;
+  color: #000000 !important;
+}
+
+.route-stats-popup-duration,
+.route-stats-map-popup .route-stats-popup-duration,
+.route-stats-popup .route-stats-popup-duration {
+  font-size: 17px !important;
+  font-weight: 800 !important;
+  color: #000000 !important;
+  line-height: 1.2 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: inline !important;
+  white-space: nowrap !important;
+  vertical-align: middle !important;
+}
+
+.route-stats-popup-distance,
+.route-stats-map-popup .route-stats-popup-distance,
+.route-stats-popup .route-stats-popup-distance {
+  font-size: 12px !important;
+  font-weight: 400 !important;
+  color: #000000 !important;
+  line-height: 1.2 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: inline !important;
+  white-space: nowrap !important;
 }
 </style>
