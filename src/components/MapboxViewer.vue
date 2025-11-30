@@ -2136,8 +2136,8 @@ onBeforeUnmount(() => {
 /* Map Controls Bar - Sidebar Style */
 .map-controls-bar {
   position: fixed;
-  bottom: 20px;
-  right: 120px; /* Position to the left of the scale (scale is ~80px wide + 20px margin) */
+  top: 20px;
+  right: 180px; /* Position to the left of the Zurich time display (time display is ~100px wide + 20px margin) */
   z-index: 15;
   background: #151517;
   border-radius: 12px;
