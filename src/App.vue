@@ -16,6 +16,7 @@
       @move="handleMapMove"
       @mapReady="handleMapReady"
       @hubsUpdated="handleHubsUpdated"
+      @routePopupClicked="handleRoutePopupClicked"
     />
 
     <!-- Sidebar controls -->
@@ -1443,6 +1444,18 @@ function loadHubs() {
 // Handle hubs updated event (when locality names are fetched)
 function handleHubsUpdated() {
   loadHubs();
+}
+
+// Handle route popup click - open sidebar and expand route details
+function handleRoutePopupClicked() {
+  // Switch to routing tab
+  activeSidebarTab.value = 'routing';
+  // Expand route details section
+  summaryExpanded.value = true;
+  // Expand sidebar if collapsed
+  if (sidebarCollapsed.value) {
+    sidebarCollapsed.value = false;
+  }
 }
 
 // Computed property to check if route can be planned

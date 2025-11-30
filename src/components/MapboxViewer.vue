@@ -12,58 +12,71 @@
       @mouseenter="handleControlsBarMouseEnter"
       @mouseleave="handleControlsBarMouseLeave"
     >
-      <div class="map-controls-header">
-        <button
-          class="map-controls-toggle"
-          :class="{ 'map-controls-toggle--will-close': !controlsCollapsed }"
-          @click="handleToggleControls"
-          @mouseenter="handleControlsToggleHover"
-          @mouseleave="handleControlsToggleLeave"
-          :aria-expanded="!controlsCollapsed"
-          aria-label="Toggle map controls"
-        >
-          <!-- Controls icon when collapsed -->
-          <svg
-            v-if="controlsCollapsed"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path
-              d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"
-            />
-          </svg>
-          <!-- Chevron arrow only when expanded (to collapse) -->
-          <svg
-            v-else
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M15 18L9 12L15 6"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
-          <span class="map-controls-toggle-tooltip">
-            {{ controlsCollapsed ? "Open Map Controls" : "Close Map Controls" }}
-          </span>
-        </button>
-      </div>
       <div class="map-controls-content">
         <div class="map-controls-grid">
-          <!-- Mapbox NavigationControl (zoom/rotation) will be positioned here -->
-          <div class="mapbox-nav-control-wrapper"></div>
+          <button
+            class="map-control-btn zoom-in-btn"
+            @click="zoomIn"
+            aria-label="Zoom in"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M12 5V19M5 12H19"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+          <button
+            class="map-control-btn zoom-out-btn"
+            @click="zoomOut"
+            aria-label="Zoom out"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M5 12H19"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+          <button
+            class="map-control-btn north-btn"
+            @click="resetNorth"
+            aria-label="Reset to north"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M12 2V22M12 2L8 6M12 2L16 6"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
           <button
             class="map-control-btn tilt-btn"
             @click="toggleTilt"
@@ -145,6 +158,55 @@
           </button>
         </div>
       </div>
+      <div class="map-controls-header">
+        <button
+          class="map-controls-toggle"
+          :class="{ 'map-controls-toggle--will-close': !controlsCollapsed }"
+          @click="handleToggleControls"
+          @mouseenter="handleControlsToggleHover"
+          @mouseleave="handleControlsToggleLeave"
+          :aria-expanded="!controlsCollapsed"
+          aria-label="Toggle map controls"
+        >
+          <!-- Controls icon when collapsed -->
+          <svg
+            v-if="controlsCollapsed"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"
+            />
+          </svg>
+          <!-- Chevron arrow only when expanded (to collapse) - pointing left -->
+          <svg
+            v-else
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M15 18L9 12L15 6"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              transform="rotate(180 12 12)"
+            />
+          </svg>
+          <span class="map-controls-toggle-tooltip">
+            {{ controlsCollapsed ? "Open Map Controls" : "Close Map Controls" }}
+          </span>
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -198,6 +260,7 @@ const emit = defineEmits([
   "move",
   "mapReady",
   "hubsUpdated",
+  "routePopupClicked",
 ]);
 
 const sceneEl = ref(null);
@@ -291,6 +354,30 @@ function toggleFullscreen() {
       document.msExitFullscreen();
     }
   }
+}
+
+// Zoom in function
+function zoomIn() {
+  if (!map || !map.isStyleLoaded()) return;
+  map.zoomIn();
+}
+
+// Zoom out function
+function zoomOut() {
+  if (!map || !map.isStyleLoaded()) return;
+  map.zoomOut();
+}
+
+// Reset to north (reset bearing to 0)
+function resetNorth() {
+  if (!map || !map.isStyleLoaded()) return;
+  map.easeTo({
+    bearing: 0,
+    duration: 500,
+    easing(t) {
+      return t * (2 - t); // ease-out
+    },
+  });
 }
 
 // Handle toggle button click - toggle controls bar with smooth transition
@@ -433,28 +520,9 @@ onMounted(async () => {
     map.on("load", async () => {
       console.log("✅ Mapbox map loaded successfully!");
 
-      // Add zoom and rotation controls to the map
-      const navControl = new mapboxgl.NavigationControl();
-      map.addControl(navControl);
-
       // Wait for map to be idle (tiles loaded) before emitting ready
       map.once("idle", () => {
         emit("mapReady");
-      });
-
-      // Move NavigationControl into the controls bar after a short delay
-      nextTick(() => {
-        setTimeout(() => {
-          const navControlEl = document.querySelector(
-            ".mapboxgl-ctrl-top-right"
-          );
-          const wrapperEl = document.querySelector(
-            ".mapbox-nav-control-wrapper"
-          );
-          if (navControlEl && wrapperEl) {
-            wrapperEl.appendChild(navControlEl);
-          }
-        }, 100);
       });
 
       // Emit initial zoom/center
@@ -1569,6 +1637,38 @@ function showRouteStatsPopup(routeGeom) {
   
   popupContent.innerHTML = html;
 
+  // Add click handler to open route details in sidebar
+  popupContent.addEventListener('click', (e) => {
+    e.stopPropagation();
+    // Add visual feedback
+    popupContent.classList.add('route-popup-clicked');
+    setTimeout(() => {
+      popupContent.classList.remove('route-popup-clicked');
+    }, 200);
+    emit('routePopupClicked');
+  });
+  popupContent.style.cursor = 'pointer';
+
+  // Add hover timer for auto-opening sidebar
+  let hoverTimer = null;
+  const HOVER_DELAY = 1500; // 1.5 seconds hover to auto-open
+  
+  popupContent.addEventListener('mouseenter', (e) => {
+    e.stopPropagation();
+    hoverTimer = setTimeout(() => {
+      emit('routePopupClicked');
+      hoverTimer = null;
+    }, HOVER_DELAY);
+  });
+  
+  popupContent.addEventListener('mouseleave', (e) => {
+    e.stopPropagation();
+    if (hoverTimer) {
+      clearTimeout(hoverTimer);
+      hoverTimer = null;
+    }
+  });
+
   // Calculate position closer to route - find a point on the route line
   // Use a point that's slightly offset from the midpoint to position the popup better
   const routePointIndex = Math.floor(coords.length * 0.4); // Use 40% along the route
@@ -1614,6 +1714,24 @@ function showRouteStatsPopup(routeGeom) {
       popupContentEl.style.backdropFilter = 'blur(20px) saturate(180%)';
       popupContentEl.style.webkitBackdropFilter = 'blur(20px) saturate(180%)';
       popupContentEl.style.boxShadow = '0 8px 32px 0 rgba(0, 0, 0, 0.1)';
+      popupContentEl.style.transition = 'transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, border-color 0.2s ease';
+      
+      // Add hover event listeners to manually change styles (since CSS hover might be overridden)
+      popupContentEl.addEventListener('mouseenter', () => {
+        popupContentEl.style.background = 'rgba(255, 255, 255, 0.5)';
+        popupContentEl.style.backgroundColor = 'rgba(255, 255, 255, 0.5)';
+        popupContentEl.style.borderColor = 'rgba(255, 255, 255, 0.5)';
+        popupContentEl.style.transform = 'scale(1.08)';
+        popupContentEl.style.boxShadow = '0 12px 40px 0 rgba(0, 0, 0, 0.2)';
+      });
+      
+      popupContentEl.addEventListener('mouseleave', () => {
+        popupContentEl.style.background = 'rgba(255, 255, 255, 0.25)';
+        popupContentEl.style.backgroundColor = 'rgba(255, 255, 255, 0.25)';
+        popupContentEl.style.borderColor = 'rgba(255, 255, 255, 0.18)';
+        popupContentEl.style.transform = 'scale(1)';
+        popupContentEl.style.boxShadow = '0 8px 32px 0 rgba(0, 0, 0, 0.1)';
+      });
     }
     const popupTip = document.querySelector('.route-stats-map-popup .mapboxgl-popup-tip');
     if (popupTip) {
@@ -2006,71 +2124,6 @@ onBeforeUnmount(() => {
   height: 100%;
 }
 
-/* Position Mapbox NavigationControl inside the controls bar */
-:deep(.mapboxgl-ctrl-top-right) {
-  position: relative !important;
-  top: auto !important;
-  bottom: auto !important;
-  right: auto !important;
-  left: auto !important;
-  margin: 0 !important;
-}
-
-.mapbox-nav-control-wrapper {
-  display: contents; /* Make it part of the grid */
-}
-
-/* Style Mapbox NavigationControl buttons to fit in grid */
-:deep(.mapboxgl-ctrl-top-right) {
-  display: contents !important; /* Make the container part of the grid */
-}
-
-:deep(.mapboxgl-ctrl-top-right .mapboxgl-ctrl-group) {
-  display: contents !important; /* Make the group part of the grid */
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  border-radius: 0 !important;
-}
-
-:deep(.mapboxgl-ctrl-top-right button) {
-  width: 40px !important;
-  height: 40px !important;
-  background: #1c1e21 !important;
-  color: #ffffff !important;
-  border: none !important;
-  border-radius: 6px !important;
-  margin: 0 !important;
-  transition: background 0.15s ease !important;
-}
-
-:deep(.mapboxgl-ctrl-top-right button:hover) {
-  background: #2a2f34 !important;
-}
-
-:deep(.mapboxgl-ctrl-top-right button:active) {
-  background: #1c1e21 !important;
-}
-
-/* Make NavigationControl icons white */
-:deep(.mapboxgl-ctrl-top-right button svg) {
-  fill: #ffffff !important;
-}
-
-:deep(.mapboxgl-ctrl-top-right button path) {
-  fill: #ffffff !important;
-  stroke: #ffffff !important;
-}
-
-:deep(.mapboxgl-ctrl-top-right .mapboxgl-ctrl-group) {
-  margin: 0 !important;
-  box-shadow: 0 0 0 0 rgba(0, 0, 0, 0) !important;
-}
-
-:deep(.mapboxgl-ctrl-top-right button) {
-  margin: 0 !important;
-}
-
 /* Hide Mapbox watermark/attribution */
 :deep(.mapboxgl-ctrl-attrib) {
   display: none !important;
@@ -2083,24 +2136,25 @@ onBeforeUnmount(() => {
 /* Map Controls Bar - Sidebar Style */
 .map-controls-bar {
   position: fixed;
-  top: 100px;
-  right: 20px;
+  bottom: 20px;
+  right: 120px; /* Position to the left of the scale (scale is ~80px wide + 20px margin) */
   z-index: 15;
   background: #151517;
   border-radius: 12px;
   padding: 8px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 0;
-  width: 56px;
-  min-height: 56px;
+  height: 56px;
+  min-width: 56px;
   box-sizing: border-box;
   transition:
-    height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
     padding 0.4s cubic-bezier(0.4, 0, 0.2, 1),
     background 0.3s ease,
     box-shadow 0.3s ease;
+  align-items: center;
 }
 
 .map-controls-bar--collapsed {
@@ -2112,9 +2166,9 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 56px;
+  min-width: 56px;
   transition:
-    height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
     padding 0.4s cubic-bezier(0.4, 0, 0.2, 1),
     background 0.3s ease,
     box-shadow 0.3s ease;
@@ -2145,8 +2199,9 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 8px;
-  margin-right: 0;
+  margin-left: 8px;
+  margin-bottom: 0;
+  flex-shrink: 0;
 }
 
 .map-controls-toggle {
@@ -2156,7 +2211,7 @@ onBeforeUnmount(() => {
   background: transparent;
   color: #ffffff;
   border-radius: 6px;
-  cursor: s-resize; /* Default: pointing down (will expand downward) */
+  cursor: e-resize; /* Default: pointing right (will expand to the left) */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2170,7 +2225,7 @@ onBeforeUnmount(() => {
 }
 
 .map-controls-toggle--will-close {
-  cursor: n-resize; /* Pointing up (will collapse upward) */
+  cursor: w-resize; /* Pointing left (will collapse to the right) */
 }
 
 .map-controls-toggle:hover {
@@ -2188,9 +2243,9 @@ onBeforeUnmount(() => {
 
 .map-controls-toggle-tooltip {
   position: absolute;
-  top: 50%;
-  right: calc(100% + 8px);
-  transform: translateY(-50%);
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
   background: rgba(0, 0, 0, 0.9);
   color: #ffffff;
   padding: 6px 10px;
@@ -2214,6 +2269,16 @@ onBeforeUnmount(() => {
   font-weight: 500;
 }
 
+.map-controls-toggle-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(0, 0, 0, 0.9);
+}
+
 .map-controls-toggle:hover .map-controls-toggle-tooltip {
   opacity: 1;
   visibility: visible;
@@ -2232,35 +2297,35 @@ onBeforeUnmount(() => {
 
 .map-controls-content {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   gap: 8px;
   opacity: 1;
-  max-height: 500px;
+  max-width: 500px;
   overflow: hidden;
-  transform: translateY(0);
+  transform: translateX(0);
   transition:
     opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.1s,
-    max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    max-width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
     transform 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.1s;
 }
 
 .map-controls-grid {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   gap: 8px;
-  width: 100%;
+  height: 100%;
 }
 
 .map-controls-bar--collapsed .map-controls-content {
   opacity: 0;
-  max-height: 0;
-  transform: translateY(-10px);
+  max-width: 0;
+  transform: translateX(-10px);
   pointer-events: none;
   transition:
     opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.1s,
-    max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    max-width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
     transform 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.1s;
 }
 
@@ -2330,6 +2395,22 @@ onBeforeUnmount(() => {
   backdrop-filter: blur(20px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
   opacity: 1 !important;
+  cursor: pointer !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, border-color 0.2s ease !important;
+}
+
+.route-stats-map-popup .mapboxgl-popup-content:hover {
+  transform: scale(1.08) !important;
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.2) !important;
+  background-color: rgba(255, 255, 255, 0.5) !important;
+  background: rgba(255, 255, 255, 0.5) !important;
+  border-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.route-stats-map-popup .mapboxgl-popup-content.route-popup-clicked {
+  transform: scale(0.95) !important;
+  background-color: rgba(255, 255, 255, 0.4) !important;
+  box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.25) !important;
 }
 
 .route-stats-map-popup .mapboxgl-popup-tip {
