@@ -5,12 +5,13 @@
     :class="{ 'controls-collapsed': controlsCollapsed }"
   >
     <div ref="mapEl" class="map"></div>
-    <!-- Map Controls Bar -->
+    <!-- Map Controls Bar (hidden - moved to top bar in App.vue) -->
     <div
       class="map-controls-bar"
       :class="{ 'map-controls-bar--collapsed': controlsCollapsed }"
       @mouseenter="handleControlsBarMouseEnter"
       @mouseleave="handleControlsBarMouseLeave"
+      style="display: none;"
     >
       <div class="map-controls-content">
         <div class="map-controls-grid">
@@ -125,37 +126,6 @@
               </g>
             </svg>
           </button>
-          <button
-            class="map-control-btn fullscreen-btn"
-            @click="toggleFullscreen"
-            :class="{ active: isFullscreen }"
-            aria-label="Toggle fullscreen"
-          >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                v-if="!isFullscreen"
-                d="M8 3H5C3.89543 3 3 3.89543 3 5V8M21 8V5C21 3.89543 20.1046 3 19 3H16M16 21H19C20.1046 21 21 20.1046 21 19V16M3 16V19C3 20.1046 3.89543 21 5 21H8"
-                stroke="currentColor"
-                stroke-width="2.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-              <path
-                v-else
-                d="M8 3V8M8 21V16M16 3V8M16 21V16M3 8H8M16 8H21M3 16H8M16 16H21"
-                stroke="currentColor"
-                stroke-width="2.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
-          </button>
         </div>
       </div>
       <div class="map-controls-header">
@@ -171,8 +141,8 @@
           <!-- Controls icon when collapsed -->
           <svg
             v-if="controlsCollapsed"
-            width="16"
-            height="16"
+            width="28"
+            height="28"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -1531,6 +1501,87 @@ async function loadAndDisplayRoute(fromId, toId) {
     // Force a repaint to ensure route is visible
     map.triggerRepaint();
     
+    // Zoom and center map on the route
+    if (route_geom && route_geom.coords && route_geom.coords.length > 0) {
+      // Calculate bounding box of the route
+      const coords = route_geom.coords;
+      let minLng = coords[0][0];
+      let maxLng = coords[0][0];
+      let minLat = coords[0][1];
+      let maxLat = coords[0][1];
+      
+      coords.forEach((coord) => {
+        const [lng, lat] = coord;
+        minLng = Math.min(minLng, lng);
+        maxLng = Math.max(maxLng, lng);
+        minLat = Math.min(minLat, lat);
+        maxLat = Math.max(maxLat, lat);
+      });
+      
+      // Add padding around the route (in degrees)
+      const padding = 0.01; // Adjust this value to control how much padding around the route
+      const bounds = [
+        [minLng - padding, minLat - padding], // Southwest corner
+        [maxLng + padding, maxLat + padding], // Northeast corner
+      ];
+      
+      // Get current pitch and bearing to preserve them
+      const currentPitch = map.getPitch();
+      const currentBearing = map.getBearing();
+      
+      // Create LngLatBounds object
+      const routeBounds = new mapboxgl.LngLatBounds(bounds[0], bounds[1]);
+      
+      // Calculate the center point
+      const center = routeBounds.getCenter();
+      
+      // Calculate zoom level manually based on bounds
+      // This is a simplified calculation - fitBounds does this more accurately
+      // but we'll use a reasonable approximation
+      const ne = routeBounds.getNorthEast();
+      const sw = routeBounds.getSouthWest();
+      const latDiff = ne.lat - sw.lat;
+      const lngDiff = ne.lng - sw.lng;
+      const maxDiff = Math.max(latDiff, lngDiff);
+      
+      // Estimate zoom level (this is approximate, fitBounds does it better)
+      // We'll use fitBounds with duration 0 to get accurate zoom, then animate
+      const originalCenter = map.getCenter();
+      const originalZoom = map.getZoom();
+      
+      // Temporarily fit bounds to calculate optimal zoom
+      map.fitBounds(routeBounds, {
+        padding: { top: 50, bottom: 50, left: 50, right: 50 },
+        duration: 0,
+        maxZoom: 16,
+      });
+      
+      const targetZoom = Math.min(map.getZoom(), 16);
+      const targetCenter = map.getCenter();
+      
+      // Restore original position
+      map.jumpTo({
+        center: originalCenter,
+        zoom: originalZoom,
+        pitch: currentPitch,
+        bearing: currentBearing,
+      });
+      
+      // Now animate to the target position while preserving pitch
+      map.easeTo({
+        center: targetCenter,
+        zoom: targetZoom,
+        pitch: currentPitch, // Preserve current pitch (inclination)
+        bearing: currentBearing, // Preserve current bearing
+        duration: 1500,
+        easing(t) {
+          return t * (2 - t); // ease-out easing
+        },
+      });
+      
+      console.log("✅ Map zoomed and centered on route");
+    }
+    
     // Show route statistics popup after a short delay
     setTimeout(() => {
       if (route_geom && currentRouteStats) {
@@ -1607,20 +1658,16 @@ function showRouteStatsPopup(routeGeom) {
   const popupContent = document.createElement('div');
   popupContent.className = 'route-stats-popup';
   
+  // Get walking icon path
+  const walkingIconUrl = `${BASE}walking.svg`.replace(/\/{2,}/g, "/");
+  
   let html = '';
   
   // First row: Icon and duration on same horizontal line (inline)
   html += '<div class="route-stats-popup-top-line">';
   html += `
     <span class="route-stats-popup-icon">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="#000000">
-        <circle cx="12" cy="5.5" r="3.5"/>
-        <rect x="9.5" y="9" width="5" height="8" rx="2.5"/>
-        <rect x="6" y="10" width="4" height="5" rx="2" transform="rotate(-25 8 12.5)"/>
-        <rect x="14" y="10" width="4" height="5" rx="2" transform="rotate(25 16 12.5)"/>
-        <rect x="7" y="17" width="4" height="6" rx="2" transform="rotate(-15 9 20)"/>
-        <rect x="13" y="17" width="4" height="6" rx="2" transform="rotate(15 15 20)"/>
-      </svg>
+      <img src="${walkingIconUrl}" alt="Walking" width="20" height="20" />
     </span>
   `;
   if (duration !== null) {
@@ -1959,6 +2006,11 @@ defineExpose({
   getCurrentRouteStats: () => {
     return currentRouteStats;
   },
+  zoomIn,
+  zoomOut,
+  resetNorth,
+  toggleTilt,
+  getIsTilted: () => isTilted.value,
 });
 
 function requestZurichFocus(key) {
@@ -2137,17 +2189,19 @@ onBeforeUnmount(() => {
 .map-controls-bar {
   position: fixed;
   top: 20px;
-  right: 180px; /* Position to the left of the Zurich time display (time display is ~100px wide + 20px margin) */
+  right: 20px; /* Aligned with route details popup */
   z-index: 15;
   background: #151517;
   border-radius: 12px;
-  padding: 8px;
+  padding: 12px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
   display: flex;
   flex-direction: row;
-  gap: 0;
-  height: 56px;
-  min-width: 56px;
+  gap: 8px;
+  width: 380px; /* Same width as route details popup */
+  height: 80px;
+  min-width: 380px;
+  max-width: 380px;
   box-sizing: border-box;
   transition:
     width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
@@ -2155,18 +2209,20 @@ onBeforeUnmount(() => {
     background 0.3s ease,
     box-shadow 0.3s ease;
   align-items: center;
+  justify-content: center;
 }
 
 .map-controls-bar--collapsed {
   background: transparent;
   box-shadow: none;
-  width: 56px;
-  height: 56px;
+  width: 80px;
+  height: 80px;
   padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 56px;
+  min-width: 80px;
+  max-width: 80px;
   transition:
     width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
     padding 0.4s cubic-bezier(0.4, 0, 0.2, 1),
@@ -2180,8 +2236,8 @@ onBeforeUnmount(() => {
 }
 
 .map-controls-bar--collapsed .map-controls-toggle {
-  width: 56px;
-  height: 56px;
+  width: 80px;
+  height: 80px;
   border-radius: 8px;
   background: rgba(28, 30, 33, 0.5);
   transition: background 0.15s ease;
@@ -2202,6 +2258,7 @@ onBeforeUnmount(() => {
   margin-left: 8px;
   margin-bottom: 0;
   flex-shrink: 0;
+  order: 2; /* Place toggle button after the controls */
 }
 
 .map-controls-toggle {
@@ -2299,9 +2356,11 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: row;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   opacity: 1;
-  max-width: 500px;
+  width: 100%;
+  height: 100%;
   overflow: hidden;
   transform: translateX(0);
   transition:
@@ -2314,7 +2373,9 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: row;
   align-items: center;
+  justify-content: center;
   gap: 8px;
+  width: 100%;
   height: 100%;
 }
 
@@ -2336,8 +2397,8 @@ onBeforeUnmount(() => {
 
 /* Map Control Buttons - Sidebar Style */
 .map-control-btn {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   border: none;
   background: #1c1e21;
   color: #e6e6e8;
@@ -2369,6 +2430,8 @@ onBeforeUnmount(() => {
   color: #ffffff;
   stroke: #ffffff;
   fill: none;
+  width: 18px;
+  height: 18px;
 }
 
 .tilt-btn svg {
@@ -2515,6 +2578,14 @@ onBeforeUnmount(() => {
   fill: #000000 !important;
   color: #000000 !important;
   display: block !important;
+}
+
+.route-stats-popup-icon img {
+  width: 20px !important;
+  height: 20px !important;
+  display: block !important;
+  object-fit: contain !important;
+  filter: brightness(0) !important; /* Make icon black */
 }
 
 .route-stats-popup-text {

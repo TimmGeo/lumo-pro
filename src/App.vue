@@ -266,12 +266,33 @@
                           :class="{ 'route-label-float--active': startHub }"
                           >From</label
                         >
-                        <select v-model="startHub" class="route-select">
-                          <option disabled value=""></option>
-                          <option v-for="h in hubs" :key="h.id" :value="h.id">
-                            {{ h.name }}
-                          </option>
-                        </select>
+                        <div class="route-select-wrapper">
+                          <select v-model="startHub" class="route-select">
+                            <option disabled value=""></option>
+                            <option v-for="h in hubs" :key="h.id" :value="h.id">
+                              {{ h.name }}
+                            </option>
+                          </select>
+                          <button
+                            v-if="startHub"
+                            class="route-select-clear"
+                            @click.stop="startHub = ''"
+                            type="button"
+                            aria-label="Clear selection"
+                          >
+                            <svg
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            >
+                              <line x1="18" y1="6" x2="6" y2="18" />
+                              <line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
+                          </button>
+                        </div>
                       </div>
                     </div>
 
@@ -311,37 +332,37 @@
                           :class="{ 'route-label-float--active': endHub }"
                           >To</label
                         >
-                        <select v-model="endHub" class="route-select">
-                          <option disabled value=""></option>
-                          <option v-for="h in hubs" :key="h.id" :value="h.id">
-                            {{ h.name }}
-                          </option>
-                        </select>
+                        <div class="route-select-wrapper">
+                          <select v-model="endHub" class="route-select">
+                            <option disabled value=""></option>
+                            <option v-for="h in hubs" :key="h.id" :value="h.id">
+                              {{ h.name }}
+                            </option>
+                          </select>
+                          <button
+                            v-if="endHub"
+                            class="route-select-clear"
+                            @click.stop="endHub = ''"
+                            type="button"
+                            aria-label="Clear selection"
+                          >
+                            <svg
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            >
+                              <line x1="18" y1="6" x2="6" y2="18" />
+                              <line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-
-                <button
-                  class="route-plan-btn"
-                  @click="route"
-                  type="button"
-                  :disabled="!startHub || !endHub || startHub === endHub"
-                >
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <path d="M5 12h14M12 5l7 7-7 7" />
-                  </svg>
-                  Plan Route
-                </button>
               </div>
 
               <!-- Summary Display -->
@@ -928,197 +949,311 @@
       <div class="scale-label">{{ scaleText }}</div>
     </div>
 
-    <!-- City button (shows when not at Zurich level) -->
-    <button
-      class="map-city-button"
-      :class="{ 'map-city-button--visible': mapZoom < 11 }"
-      @click="focusZurich(true)"
-      aria-label="Zoom to Zurich"
-    >
-      <svg
-        class="map-city-button-icon"
-        width="20"
-        height="20"
-        viewBox="0 0 32.42 39.57"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          d="M16.21,0C7.27,0,0,7.27,0,16.21c0,2.57.59,5.04,1.73,7.29,3.17,7.01,9.89,13.08,12.62,15.35.39.35,1.09.72,1.89.72.65,0,1.26-.24,1.79-.7,2.75-2.28,9.48-8.35,12.63-15.33,1.16-2.29,1.75-4.76,1.75-7.33C32.42,7.27,25.15,0,16.21,0ZM30.66,16.21c0,2.29-.53,4.5-1.57,6.55v.02c-3.02,6.68-9.53,12.53-12.19,14.75-.64.56-1.23.14-1.4-.01-2.65-2.2-9.15-8.06-12.18-14.77-1.04-2.04-1.56-4.24-1.56-6.53C1.76,8.24,8.24,1.76,16.21,1.76s14.45,6.48,14.45,14.45Z"
-          fill="#ffffff"
-        />
-      </svg>
-    </button>
+    <!-- Top Controls Bar -->
+    <div class="top-controls-bar">
+      <!-- Map Controls -->
+      <div class="top-controls-map-controls">
+        <button
+          class="map-control-btn zoom-in-btn"
+          @click="handleZoomIn"
+          aria-label="Zoom in"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M12 5V19M5 12H19"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
+        <button
+          class="map-control-btn zoom-out-btn"
+          @click="handleZoomOut"
+          aria-label="Zoom out"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M5 12H19"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
+        <button
+          class="map-control-btn north-btn"
+          @click="handleResetNorth"
+          aria-label="Reset to north"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M12 2V22M12 2L8 6M12 2L16 6"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
+        <button
+          class="map-control-btn tilt-btn"
+          :class="{ active: isTilted }"
+          @click="handleToggleTilt"
+          aria-label="Toggle map tilt"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <!-- Flat view icon (2D square) -->
+            <path
+              v-if="!isTilted"
+              d="M3 3H21V21H3V3Z"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+            <!-- Tilted view icon (3D perspective) -->
+            <g v-else>
+              <path
+                d="M3 3L12 8L21 3"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M3 21L12 16L21 21"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M3 3V21M21 3V21"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </g>
+          </svg>
+        </button>
+      </div>
 
-    <!-- Location indicator -->
-    <div
-      class="map-location"
-      :class="{ 'map-location--visible': mapZoom >= 11 && locationText }"
-    >
-      <div class="location-name">{{ locationText }}</div>
-      <div class="location-time">
-        <!-- Sun icon for daylight hours (6 AM - 8 PM) -->
-        <svg
-          v-if="isDaylight"
-          class="time-icon"
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
+      <!-- Right side container (Zurich button + Location) -->
+      <div class="top-controls-right">
+        <!-- Zoom to Zurich Button -->
+        <button
+          class="top-controls-zurich-btn"
+          :class="{ 'top-controls-zurich-btn--visible': mapZoom < 11 }"
+          @click="focusZurich(true)"
+          aria-label="Zoom to Zurich"
         >
-          <circle cx="12" cy="12" r="5" />
-          <line x1="12" y1="1" x2="12" y2="3" />
-          <line x1="12" y1="21" x2="12" y2="23" />
-          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-          <line x1="1" y1="12" x2="3" y2="12" />
-          <line x1="21" y1="12" x2="23" y2="12" />
-          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-        </svg>
-        <!-- Moon icon for nighttime hours -->
-        <svg
-          v-else
-          class="time-icon"
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
+          <svg
+            class="top-controls-zurich-icon"
+            width="20"
+            height="20"
+            viewBox="0 0 32.42 39.57"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M16.21,0C7.27,0,0,7.27,0,16.21c0,2.57.59,5.04,1.73,7.29,3.17,7.01,9.89,13.08,12.62,15.35.39.35,1.09.72,1.89.72.65,0,1.26-.24,1.79-.7,2.75-2.28,9.48-8.35,12.63-15.33,1.16-2.29,1.75-4.76,1.75-7.33C32.42,7.27,25.15,0,16.21,0ZM30.66,16.21c0,2.29-.53,4.5-1.57,6.55v.02c-3.02,6.68-9.53,12.53-12.19,14.75-.64.56-1.23.14-1.4-.01-2.65-2.2-9.15-8.06-12.18-14.77-1.04-2.04-1.56-4.24-1.56-6.53C1.76,8.24,8.24,1.76,16.21,1.76s14.45,6.48,14.45,14.45Z"
+              fill="#ffffff"
+            />
+          </svg>
+        </button>
+
+        <!-- Zurich & Time Display -->
+        <div
+          class="top-controls-location"
+          :class="{
+            'top-controls-location--visible': mapZoom >= 11 && locationText,
+          }"
         >
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-        </svg>
-        <span class="time-text" v-if="zurichTime">
-          {{ zurichTime.split(":")[0] }}<span class="time-colon">:</span
-          >{{ zurichTime.split(":")[1] }}
-        </span>
+          <div class="location-name">{{ locationText }}</div>
+          <div class="location-time">
+            <!-- Sun icon for daylight hours (6 AM - 8 PM) -->
+            <svg
+              v-if="isDaylight"
+              class="time-icon"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="12" cy="12" r="5" />
+              <line x1="12" y1="1" x2="12" y2="3" />
+              <line x1="12" y1="21" x2="12" y2="23" />
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+              <line x1="1" y1="12" x2="3" y2="12" />
+              <line x1="21" y1="12" x2="23" y2="12" />
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+            </svg>
+            <!-- Moon icon for nighttime hours -->
+            <svg
+              v-else
+              class="time-icon"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+            </svg>
+            <span class="time-text" v-if="zurichTime">
+              {{ zurichTime.split(":")[0] }}<span class="time-colon">:</span
+              >{{ zurichTime.split(":")[1] }}
+            </span>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- Route Details Popup -->
-    <div
-      v-if="routeDetailsPopupVisible && currentRouteStats"
-      class="route-details-popup-overlay"
-    >
-      <div class="route-details-popup">
-        <!-- Close button -->
-        <button
-          class="route-details-popup-close"
-          @click="closeRouteDetailsPopup"
-          aria-label="Close route details"
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
+    <transition name="route-details-slide">
+      <div
+        v-if="routeDetailsPopupVisible && currentRouteStats"
+        class="route-details-popup-overlay"
+      >
+        <div class="route-details-popup">
+          <!-- Close button -->
+          <button
+            class="route-details-popup-close"
+            @click="closeRouteDetailsPopup"
+            aria-label="Close route details"
           >
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
-        </button>
-
-        <!-- Popup header (fixed) -->
-        <div class="route-details-popup-header">
-          <h2 class="route-details-popup-title">Route Details</h2>
-        </div>
-
-        <!-- Popup content (scrollable) -->
-        <div class="route-details-popup-content">
-          <!-- Route info section -->
-          <div class="route-details-popup-info">
-            <div class="route-details-info-item">
-              <span class="route-details-info-label">Route:</span>
-              <span class="route-details-info-value">
-                {{ getHubName(startHub) }} → {{ getHubName(endHub) }}
-              </span>
-            </div>
-            <div
-              class="route-details-info-item"
-              v-if="currentRouteStats.walkDurationFormatted"
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
             >
-              <span class="route-details-info-label">Duration:</span>
-              <span class="route-details-info-value">{{
-                currentRouteStats.walkDurationFormatted
-              }}</span>
-            </div>
-            <div
-              class="route-details-info-item"
-              v-if="currentRouteStats.lengthKm !== null"
-            >
-              <span class="route-details-info-label">Distance:</span>
-              <span class="route-details-info-value"
-                >{{ currentRouteStats.lengthKm }} km</span
-              >
-            </div>
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+
+          <!-- Popup header (fixed) -->
+          <div class="route-details-popup-header">
+            <h2 class="route-details-popup-title">Route Details</h2>
           </div>
 
-          <!-- POI Statistics -->
-          <div
-            v-if="
-              currentRouteStats &&
-              currentRouteStats.poiCounts &&
-              Object.keys(currentRouteStats.poiCounts).length > 0
-            "
-            class="route-details-poi-section"
-          >
-            <div class="route-details-mantra">
-              <p class="route-details-mantra-text">
-                You're walking through a vibrant, well-lit area
-              </p>
-            </div>
-
-            <div class="route-details-poi-list">
-              <div
-                v-for="(count, poiType) in currentRouteStats.poiCounts"
-                :key="poiType"
-                class="route-details-poi-item"
-              >
-                <div class="route-details-poi-icon-wrapper">
-                  <div class="route-details-poi-count">{{ count }}</div>
-                </div>
-                <div class="route-details-poi-info">
-                  <div class="route-details-poi-type">
-                    {{ formatPoiType(poiType) }}
+          <!-- Popup content (scrollable) -->
+          <transition name="fade-content" mode="out-in">
+            <div
+              v-if="currentRouteStats"
+              :key="`${startHub}-${endHub}`"
+              class="route-details-popup-content"
+            >
+              <!-- Route info section -->
+              <div class="route-details-popup-info">
+                <div class="route-details-intro">
+                  <div class="route-details-intro-greeting">
+                    Hey John, ready for a great walk?
                   </div>
-                  <div
-                    v-if="
-                      currentRouteStats.poiFrequencies &&
-                      currentRouteStats.poiFrequencies[poiType]
-                    "
-                    class="route-details-poi-frequency"
-                  >
-                    {{ currentRouteStats.poiFrequencies[poiType] }}
-                  </div>
-                  <div class="route-details-poi-mantra">
-                    {{ getPoiMantra(poiType) }}
-                  </div>
+                  <p class="route-details-intro-text">
+                    {{ getRouteIntroText() }}
+                  </p>
                 </div>
               </div>
-            </div>
 
-            <div class="route-details-footer">
-              <p class="route-details-footer-text">
-                Safe and surrounded by life
-              </p>
+              <!-- POI Statistics -->
+              <div
+                v-if="
+                  currentRouteStats &&
+                  currentRouteStats.poiCounts &&
+                  Object.keys(currentRouteStats.poiCounts).length > 0
+                "
+                class="route-details-poi-section"
+              >
+                <div class="route-details-mantra">
+                  <p class="route-details-mantra-text">
+                    Discover what makes this route special
+                  </p>
+                </div>
+
+                <div class="route-details-poi-list">
+                  <div
+                    v-for="(count, poiType) in currentRouteStats.poiCounts"
+                    :key="poiType"
+                    class="route-details-poi-item"
+                  >
+                    <div class="route-details-poi-icon-wrapper">
+                      <div class="route-details-poi-icon" v-html="getPoiIcon(poiType)"></div>
+                    </div>
+                    <div class="route-details-poi-info">
+                      <div
+                        v-if="
+                          currentRouteStats.poiFrequencies &&
+                          currentRouteStats.poiFrequencies[poiType]
+                        "
+                        class="route-details-poi-frequency"
+                      >
+                        {{ formatPoiFrequency(poiType, currentRouteStats.poiFrequencies[poiType]) }}
+                      </div>
+                      <div class="route-details-poi-mantra">
+                        {{ getPoiMantra(poiType) }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="route-details-footer">
+                  <p class="route-details-footer-text">
+                    Safe and surrounded by life
+                  </p>
+                </div>
+              </div>
+              <div v-else-if="currentRouteStats" class="route-details-empty">
+                <p class="route-details-empty-text">
+                  Clear route, peaceful walk
+                </p>
+              </div>
             </div>
-          </div>
-          <div v-else-if="currentRouteStats" class="route-details-empty">
-            <p class="route-details-empty-text">Clear route, peaceful walk</p>
-          </div>
+          </transition>
         </div>
       </div>
-    </div>
+    </transition>
   </div>
 </template>
 
@@ -1186,7 +1321,7 @@ const mapboxViewerRef = ref(null);
 
 // sidebar collapse state
 const sidebarCollapsed = ref(false);
-const sidebarWidth = ref(320);
+const sidebarWidth = ref(380); /* Same width as route details popup */
 const isResizing = ref(false);
 const isHovering = ref(false);
 const showWalkthrough = ref(true);
@@ -1305,6 +1440,7 @@ const scaleText = ref("1 km");
 const locationText = ref("");
 const zurichTime = ref("");
 const isDaylight = ref(false);
+const isTilted = ref(false);
 
 // Update Zürich time
 function updateZurichTime() {
@@ -1484,9 +1620,14 @@ function handleHubsUpdated() {
   loadHubs();
 }
 
-// Handle route popup click - show route details popup
+// Handle route popup click - toggle route details popup
 function handleRoutePopupClicked() {
-  routeDetailsPopupVisible.value = true;
+  // If popup is open, close it elegantly; otherwise open it
+  if (routeDetailsPopupVisible.value) {
+    closeRouteDetailsPopup();
+  } else {
+    routeDetailsPopupVisible.value = true;
+  }
 }
 
 // Close route details popup
@@ -1609,10 +1750,10 @@ function route(event) {
   }
 }
 
-// Watch for dropdown changes and update map selection (only highlight, don't show route)
+// Watch for dropdown changes and automatically plan route when both are selected
 watch(
   [startHub, endHub],
-  ([newStart, newEnd]) => {
+  ([newStart, newEnd], [oldStart, oldEnd]) => {
     // Ensure API is available - try to get it from ref if not set
     if (!api && mapboxViewerRef.value) {
       api = mapboxViewerRef.value;
@@ -1621,10 +1762,10 @@ watch(
     const routeApi = api || mapboxViewerRef.value;
     if (!routeApi || !routeApi.selectHubs) return;
 
-    // Only highlight selected hubs, but don't show route until "Plan Route" is clicked
+    // Automatically plan route when both hubs are selected and different
     if (newStart && newEnd && newStart !== newEnd) {
-      // Just highlight both hubs, but don't load route
-      routeApi.selectHubs(newStart, newEnd, false); // Pass false to indicate don't load route
+      // Automatically plan the route - route() function will handle selectHubs, history, and stats
+      route();
     }
     // If only start hub is selected, select it
     else if (newStart && !newEnd) {
@@ -1652,10 +1793,14 @@ watch(
 // Watch for route stats and automatically show popup when available
 watch(
   currentRouteStats,
-  (newStats) => {
+  (newStats, oldStats) => {
     if (newStats && Object.keys(newStats).length > 0) {
       // Show popup when route stats are available
-      routeDetailsPopupVisible.value = true;
+      // If popup was already open, keep it open (elegant reload)
+      if (!routeDetailsPopupVisible.value) {
+        routeDetailsPopupVisible.value = true;
+      }
+      // Content will update automatically via reactivity
     } else {
       // Close popup when route stats are cleared
       routeDetailsPopupVisible.value = false;
@@ -1708,6 +1853,110 @@ function getPoiMantra(poiType) {
   );
 }
 
+// Get icon SVG for each POI type
+function getPoiIcon(poiType) {
+  const icons = {
+    Restaurant: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/>
+      <path d="M7 2v20"/>
+      <path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3z"/>
+      <path d="M21 15v7"/>
+      <path d="M8 22h8"/>
+    </svg>`,
+    BarOrPub: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9 2v20M15 2v20"/>
+      <path d="M2 2h20"/>
+      <path d="M2 6h20"/>
+      <path d="M2 10h20"/>
+      <path d="M2 14h20"/>
+      <path d="M2 18h20"/>
+      <path d="M2 22h20"/>
+    </svg>`,
+    CafeOrCoffeeShop: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M18 8h1a4 4 0 0 1 0 8h-1"/>
+      <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
+      <line x1="6" y1="1" x2="6" y2="4"/>
+      <line x1="10" y1="1" x2="10" y2="4"/>
+      <line x1="14" y1="1" x2="14" y2="4"/>
+      <circle cx="12" cy="12" r="1" fill="currentColor"/>
+    </svg>`,
+    MusicVenue: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="18" cy="16" r="3"/>
+      <circle cx="6" cy="16" r="3"/>
+      <path d="M18 13V7a4 4 0 0 0-4-4H10a4 4 0 0 0-4 4v6"/>
+      <path d="M6 13v3"/>
+      <path d="M18 13v3"/>
+      <path d="M9 9h6"/>
+    </svg>`,
+    NightClub: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <circle cx="12" cy="12" r="6"/>
+      <circle cx="12" cy="12" r="2"/>
+      <path d="M12 2v4M12 18v4M2 12h4M18 12h4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+    </svg>`,
+  };
+  
+  return icons[poiType] || icons.Restaurant;
+}
+
+// Format POI frequency as "A [type] every [time]"
+function formatPoiFrequency(poiType, frequency) {
+  if (!frequency) return "";
+  
+  // Get singular form of POI type
+  const singularMap = {
+    BarOrPub: "bar",
+    CafeOrCoffeeShop: "café",
+    Restaurant: "restaurant",
+    NightClub: "night club",
+    MusicVenue: "music venue",
+  };
+  
+  const singularType = singularMap[poiType] || "point of interest";
+  
+  // Format as "A restaurant every 30 seconds"
+  return `A ${singularType} every ${frequency}`;
+}
+
+// Get formatted route introduction text
+function getRouteIntroText() {
+  if (!currentRouteStats.value || !startHub.value || !endHub.value) {
+    return "";
+  }
+
+  const start = getHubName(startHub.value);
+  const destination = getHubName(endHub.value);
+
+  // Round duration to whole minutes
+  let durationText = "";
+  if (currentRouteStats.value.walkDurationMinutes !== null) {
+    const minutes = Math.round(currentRouteStats.value.walkDurationMinutes);
+    durationText = `${minutes}min`;
+  }
+
+  // Round distance to 1 decimal place
+  let distanceText = "";
+  if (currentRouteStats.value.lengthKm !== null) {
+    const distance = Math.round(currentRouteStats.value.lengthKm * 10) / 10;
+    distanceText = `${distance}km`;
+  }
+
+  // Build catchy, personal phrase
+  let phrase = `Your walk from ${start} to ${destination} leads you through a vibrant, well-lit area`;
+
+  if (durationText && distanceText) {
+    phrase += ` — just ${durationText} and ${distanceText} of safe, enjoyable walking.`;
+  } else if (durationText) {
+    phrase += ` — just ${durationText} of safe, enjoyable walking.`;
+  } else if (distanceText) {
+    phrase += ` — just ${distanceText} of safe, enjoyable walking.`;
+  } else {
+    phrase += " — safe and enjoyable walking ahead.";
+  }
+
+  return phrase;
+}
+
 // Load route from history
 function loadHistoryRoute(entry) {
   startHub.value = entry.fromId;
@@ -1748,6 +1997,45 @@ function startTour() {
 function finishTour() {
   showGuidedTour.value = false;
 }
+
+// Map control handlers
+function handleZoomIn() {
+  if (mapboxViewerRef.value && mapboxViewerRef.value.zoomIn) {
+    mapboxViewerRef.value.zoomIn();
+  }
+}
+
+function handleZoomOut() {
+  if (mapboxViewerRef.value && mapboxViewerRef.value.zoomOut) {
+    mapboxViewerRef.value.zoomOut();
+  }
+}
+
+function handleResetNorth() {
+  if (mapboxViewerRef.value && mapboxViewerRef.value.resetNorth) {
+    mapboxViewerRef.value.resetNorth();
+  }
+}
+
+function handleToggleTilt() {
+  if (mapboxViewerRef.value && mapboxViewerRef.value.toggleTilt) {
+    mapboxViewerRef.value.toggleTilt();
+    // Update isTilted state from the viewer
+    if (mapboxViewerRef.value.getIsTilted) {
+      isTilted.value = mapboxViewerRef.value.getIsTilted();
+    }
+  }
+}
+
+// Watch for tilt changes from the map
+watch(
+  () => mapboxViewerRef.value?.getIsTilted?.(),
+  (newValue) => {
+    if (newValue !== undefined) {
+      isTilted.value = newValue;
+    }
+  }
+);
 
 function focusZurich(fromButton = false) {
   // Enable vibrancy layer by default when entering map from walkthrough
@@ -1946,7 +2234,7 @@ textarea:focus-visible {
   top: 20px;
   left: 20px;
   bottom: 20px;
-  width: 320px;
+  width: 380px; /* Same width as route details popup */
   padding: 0;
   background: #151517;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
@@ -2975,9 +3263,16 @@ textarea:focus-visible {
   color: rgba(255, 255, 255, 0.4);
 }
 
+.route-select-wrapper {
+  position: relative;
+  width: 100%;
+  display: block;
+  overflow: visible;
+}
+
 .route-select {
   width: 100%;
-  padding: 14px 12px;
+  padding: 14px 36px 14px 12px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
@@ -3009,10 +3304,65 @@ textarea:focus-visible {
   box-sizing: border-box;
 }
 
+.route-select-wrapper:has(.route-select-clear) .route-select {
+  padding-right: 36px;
+  background-position:
+    calc(100% - 24px) calc(50% - 1px),
+    calc(100% - 18px) calc(50% + 1px);
+}
+
+.route-select-clear {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  max-width: 16px;
+  max-height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: none;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.35);
+  padding: 0;
+  margin: 0;
+  border-radius: 50%;
+  transition: all 0.15s ease;
+  z-index: 10;
+  pointer-events: auto;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.route-select-clear:hover {
+  color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.route-select-clear:active {
+  background: rgba(255, 255, 255, 0.18);
+  transform: translateY(-50%) scale(0.9);
+}
+
+.route-select-clear svg {
+  width: 8px;
+  height: 8px;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
 .route-input-content:has(.route-label-float--active) .route-select,
 .route-input-content:has(.route-select:focus) .route-select {
   padding-top: 22px;
   padding-bottom: 6px;
+}
+
+.route-input-content:has(.route-label-float--active) .route-select-wrapper:has(.route-select-clear) .route-select,
+.route-input-content:has(.route-select:focus) .route-select-wrapper:has(.route-select-clear) .route-select {
+  padding-right: 36px;
 }
 
 .route-input-content:has(.route-select:focus) .route-label-float {
@@ -3747,6 +4097,191 @@ textarea:focus-visible {
   z-index: 9;
 }
 
+/* -------- TOP CONTROLS BAR -------- */
+.top-controls-bar {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 15;
+  width: 280px; /* Same width as route details popup */
+  height: 64px; /* Same height as collapsed left sidebar width */
+  background: rgba(26, 27, 30, 0.5); /* Match collapsed sidebar color */
+  border-radius: 16px; /* Match collapsed sidebar border radius */
+  padding: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); /* Match collapsed sidebar shadow */
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  box-sizing: border-box;
+  transition:
+    background 0.3s ease,
+    box-shadow 0.3s ease; /* Smooth transitions */
+}
+
+.top-controls-bar:hover {
+  background: #1a1b1e; /* Solid color on hover, match collapsed sidebar */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35); /* Stronger shadow on hover */
+}
+
+.top-controls-map-controls {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto; /* Don't grow, don't shrink */
+}
+
+.top-controls-right {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.top-controls-bar .map-control-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: #1c1e21;
+  color: #e6e6e8;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.top-controls-bar .map-control-btn:hover {
+  background: #2a2f34;
+}
+
+.top-controls-bar .map-control-btn:active {
+  background: #1c1e21;
+}
+
+.top-controls-bar .map-control-btn.active {
+  background: #2a2f34;
+  color: #ffffff;
+}
+
+.top-controls-bar .map-control-btn svg {
+  display: block;
+  margin: 0 auto;
+  color: #ffffff;
+  stroke: #ffffff;
+  fill: none;
+  width: 16px;
+  height: 16px;
+}
+
+.top-controls-zurich-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: rgba(28, 30, 33, 0.5);
+  border: none;
+  padding: 0;
+  margin: 0;
+  flex-shrink: 0; /* Don't shrink */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 0.4s cubic-bezier(0.16, 0.84, 0.24, 1),
+    transform 0.4s cubic-bezier(0.16, 0.84, 0.24, 1),
+    visibility 0ms 0.4s,
+    background 0.15s ease;
+}
+
+.top-controls-zurich-btn--visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.top-controls-zurich-btn:hover {
+  background: #151517;
+}
+
+.top-controls-zurich-btn:active {
+  background: #1c1e21;
+}
+
+.top-controls-zurich-icon {
+  width: 20px;
+  height: 20px;
+  display: block;
+  flex-shrink: 0;
+}
+
+.top-controls-location {
+  display: none; /* Hidden by default, doesn't take space */
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  margin-right: 0; /* No margin, gap handled by parent */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition:
+    opacity 0.4s cubic-bezier(0.16, 0.84, 0.24, 1),
+    transform 0.4s cubic-bezier(0.16, 0.84, 0.24, 1),
+    visibility 0ms 0.4s;
+  pointer-events: none;
+  flex-shrink: 0; /* Don't shrink */
+}
+
+.top-controls-location--visible {
+  display: flex; /* Show when visible */
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.top-controls-location .location-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.top-controls-location .location-time {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #b0b0b0;
+  line-height: 1.2;
+}
+
+.top-controls-location .time-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  color: #b0b0b0;
+}
+
+.top-controls-location .time-text {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.5px;
+}
+
+.top-controls-location .time-colon {
+  animation: blink 1s infinite;
+}
+
 /* -------- MAP SCALE -------- */
 .map-scale {
   position: fixed;
@@ -3794,31 +4329,9 @@ textarea:focus-visible {
 }
 
 /* -------- MAP CITY BUTTON -------- */
+/* Old map city button - hidden (moved to top controls bar) */
 .map-city-button {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 12;
-  width: 56px;
-  height: 56px;
-  border-radius: 8px;
-  background: rgba(21, 21, 23, 0.5);
-  border: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(-10px);
-  transition:
-    opacity 0.4s cubic-bezier(0.16, 0.84, 0.24, 1),
-    transform 0.4s cubic-bezier(0.16, 0.84, 0.24, 1),
-    visibility 0ms 0.4s,
-    background 0.15s ease;
-  pointer-events: none;
+  display: none;
 }
 
 .map-city-button svg {
@@ -3841,33 +4354,16 @@ textarea:focus-visible {
   background: #1c1e21;
 }
 .map-city-button-icon {
-  width: 20px;
-  height: 20px;
+  width: 28px;
+  height: 28px;
   display: block;
   flex-shrink: 0;
 }
 
 /* -------- MAP LOCATION -------- */
+/* Old map location - hidden (moved to top controls bar) */
 .map-location {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 12;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
-  pointer-events: none;
-  opacity: 0;
-  transform: translateY(-10px);
-  transition:
-    opacity 0.4s ease,
-    transform 0.4s ease;
-}
-
-.map-location--visible {
-  opacity: 1;
-  transform: translateY(0);
+  display: none;
 }
 
 .location-name {
@@ -3934,6 +4430,25 @@ textarea:focus-visible {
 }
 
 /* -------- ROUTE DETAILS POPUP -------- */
+/* Route Details Popup Slide Transition */
+.route-details-slide-enter-active .route-details-popup {
+  transition: all 0.4s cubic-bezier(0.16, 0.84, 0.24, 1);
+}
+
+.route-details-slide-leave-active .route-details-popup {
+  transition: all 0.4s cubic-bezier(0.16, 0.84, 0.24, 1);
+}
+
+.route-details-slide-enter-from .route-details-popup {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+.route-details-slide-leave-to .route-details-popup {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
 .route-details-popup-overlay {
   position: fixed;
   top: 0;
@@ -3946,10 +4461,10 @@ textarea:focus-visible {
 
 .route-details-popup {
   position: fixed;
-  top: 120px; /* More space below the Zurich time display */
+  top: 96px; /* Aligned below top controls bar (20px top + 64px height + 12px gap) */
   right: 20px; /* Match the right position of the time display */
-  bottom: 200px; /* More space above the scale */
-  width: 320px; /* Wider width */
+  bottom: 340px; /* Much less height - more space above the scale */
+  width: 280px; /* Even slimmer width */
   max-width: calc(100vw - 40px);
   max-height: none; /* Use bottom positioning instead */
   background: rgba(255, 255, 255, 0.1);
@@ -3959,7 +4474,6 @@ textarea:focus-visible {
   border-radius: 16px; /* Match sidebar border-radius */
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
   overflow: hidden;
-  animation: slideInRight 0.4s cubic-bezier(0.16, 0.84, 0.24, 1);
   display: flex;
   flex-direction: column;
   pointer-events: auto;
@@ -3994,13 +4508,11 @@ textarea:focus-visible {
   justify-content: center;
   transition: all 0.2s ease;
   z-index: 10;
-  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .route-details-popup-close:hover {
   background: rgba(255, 255, 255, 0.25);
   transform: scale(1.05);
-  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .route-details-popup-close:active {
@@ -4016,7 +4528,7 @@ textarea:focus-visible {
 .route-details-popup-header {
   padding: 32px 32px 0 32px;
   flex-shrink: 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: none;
   z-index: 1;
 }
 
@@ -4046,7 +4558,7 @@ textarea:focus-visible {
 }
 
 .route-details-popup-title {
-  font-size: 28px;
+  font-size: 22px;
   font-weight: 700;
   color: #ffffff;
   margin: 0 0 24px 0;
@@ -4061,9 +4573,60 @@ textarea:focus-visible {
 }
 
 .route-details-popup-info {
-  margin-bottom: 32px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: none;
+}
+
+.route-details-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end; /* Align content to right for speech bubble */
+}
+
+.route-details-intro-greeting {
+  font-size: 22px;
+  line-height: 1.4;
+  color: #ffffff;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0 0 16px 0;
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-radius: 18px 18px 0 18px;
+  position: relative;
+  display: inline-block;
+  max-width: calc(100% - 20px);
+  align-self: flex-end;
+  margin-left: auto;
+  word-wrap: break-word;
+  box-shadow: none;
+}
+
+.route-details-intro-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #ffffff;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.01em;
 }
 
 .route-details-info-item {
@@ -4074,13 +4637,12 @@ textarea:focus-visible {
   padding: 12px 16px;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: none;
   transition: all 0.2s ease;
 }
 
 .route-details-info-item:hover {
   background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.15);
 }
 
 .route-details-info-item:last-child {
@@ -4149,7 +4711,7 @@ textarea:focus-visible {
   gap: 16px;
   padding: 20px;
   background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: none;
   border-radius: 16px;
   transition: all 0.2s ease;
   backdrop-filter: blur(10px);
@@ -4158,7 +4720,6 @@ textarea:focus-visible {
 
 .route-details-poi-item:hover {
   background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
   transform: translateY(-2px);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
@@ -4172,20 +4733,23 @@ textarea:focus-visible {
   justify-content: center;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: none;
 }
 
-.route-details-poi-count {
-  font-size: 24px;
-  font-weight: 700;
-  color: #ffffff;
-  font-family:
-    "SF Pro Display",
-    "SF Pro Text",
-    -apple-system,
-    BlinkMacSystemFont,
-    system-ui,
-    sans-serif;
+.route-details-poi-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #70f0c3;
+}
+
+.route-details-poi-icon svg {
+  width: 100%;
+  height: 100%;
+  stroke: currentColor;
+  fill: none;
 }
 
 .route-details-poi-info {
@@ -4209,9 +4773,9 @@ textarea:focus-visible {
 }
 
 .route-details-poi-frequency {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.7);
-  font-weight: 500;
+  font-size: 16px;
+  color: #ffffff;
+  font-weight: 600;
   font-family:
     "SF Pro Display",
     "SF Pro Text",
@@ -4219,6 +4783,7 @@ textarea:focus-visible {
     BlinkMacSystemFont,
     system-ui,
     sans-serif;
+  margin-bottom: 4px;
 }
 
 .route-details-poi-mantra {
@@ -4237,7 +4802,7 @@ textarea:focus-visible {
 .route-details-footer {
   margin-top: 24px;
   padding-top: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: none;
 }
 
 .route-details-footer-text {
@@ -4273,5 +4838,23 @@ textarea:focus-visible {
     BlinkMacSystemFont,
     system-ui,
     sans-serif;
+}
+
+/* Fade transition for route content updates */
+.fade-content-enter-active,
+.fade-content-leave-active {
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+}
+
+.fade-content-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.fade-content-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 </style>
