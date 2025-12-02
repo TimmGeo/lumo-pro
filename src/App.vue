@@ -958,11 +958,11 @@
 
     <!-- Zurich App Button (top right corner) -->
     <!-- App Basket Container (Glassmorphic) -->
-    <div class="app-basket">
-      <!-- Top Row -->
-      <div class="app-basket-row">
+    <div class="app-basket" :class="{ 'app-basket--expanded': routeDetailsPopupVisible }">
+      <!-- Apps Container -->
+      <div class="app-basket-apps-container">
         <!-- Zurich App Button -->
-        <div class="zurich-app-button" @click.stop="mapControlsExpanded = false">
+        <div class="zurich-app-button" @click.stop="mapControlsExpanded = false; routeDetailsPopupVisible = false; legendPopupVisible = false; phonePopupVisible = false">
           <!-- Zoom to Zurich Button (shown when zoomed out) -->
           <button
             v-if="mapZoom < 11"
@@ -998,12 +998,14 @@
           </div>
         </div>
 
-        <!-- Map Controls App Button (tool icon) -->
-        <div class="map-controls-app-container">
+        <!-- Right Column: 2x2 Grid (collapsed) / Row (expanded) -->
+        <div class="app-basket-right-column">
+          <!-- Map Controls App Button -->
+          <div class="map-controls-app-container">
           <button
             class="map-controls-app-button"
             :class="{ 'map-controls-app-button--expanded': mapControlsExpanded }"
-            @click.stop="mapControlsExpanded = !mapControlsExpanded"
+            @click.stop="mapControlsExpanded = !mapControlsExpanded; routeDetailsPopupVisible = false; legendPopupVisible = false; phonePopupVisible = false"
             aria-label="Map controls"
           >
             <svg
@@ -1142,15 +1144,12 @@
             </button>
           </div>
         </div>
-      </div>
 
-      <!-- Bottom Row -->
-      <div class="app-basket-row">
         <!-- Chat App Button -->
         <button
           class="chat-app-button"
           :class="{ 'chat-app-button--active': routeDetailsPopupVisible }"
-          @click.stop="toggleRouteDetailsPopup(); mapControlsExpanded = false; legendPopupVisible = false"
+          @click.stop="toggleRouteDetailsPopup(); mapControlsExpanded = false; legendPopupVisible = false; phonePopupVisible = false"
           aria-label="Open chat"
         >
           <svg
@@ -1172,7 +1171,7 @@
         <button
           class="legend-app-button"
           :class="{ 'legend-app-button--active': legendPopupVisible }"
-          @click.stop="toggleLegendPopup(); mapControlsExpanded = false; routeDetailsPopupVisible = false"
+          @click.stop="toggleLegendPopup(); mapControlsExpanded = false; routeDetailsPopupVisible = false; phonePopupVisible = false"
           aria-label="Open legend"
         >
           <svg
@@ -1193,64 +1192,39 @@
             <line x1="3" y1="18" x2="3.01" y2="18"></line>
           </svg>
         </button>
-      </div>
-    </div>
 
-    <!-- Legend Popup -->
-    <transition name="route-details-slide">
-      <div
-        v-if="legendPopupVisible"
-        class="route-details-popup-overlay"
-        @click="legendPopupVisible = false"
-      >
-        <div class="route-details-popup legend-popup" @click.stop>
-          <!-- Legend label -->
-          <div class="route-details-popup-label">Legend</div>
-          
-          <!-- Close button -->
-          <button
-            class="route-details-popup-close"
-            @click="legendPopupVisible = false"
-            aria-label="Close legend"
+        <!-- Phone App Button -->
+        <button
+          class="phone-app-button"
+          :class="{ 'phone-app-button--active': phonePopupVisible }"
+          @click.stop="phonePopupVisible = !phonePopupVisible; mapControlsExpanded = false; routeDetailsPopupVisible = false; legendPopupVisible = false"
+          aria-label="Open phone"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
           >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </button>
-
-          <!-- Legend content -->
-          <div class="route-details-popup-content">
-            <div class="legend-popup-content">
-              <Legend :mode="mode" :in-box="true" :dragged-out="false" />
-            </div>
-          </div>
-        </div>
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+          </svg>
+        </button>
       </div>
-    </transition>
+      </div>
 
-    <!-- Route Details Popup -->
-    <transition name="route-details-slide">
-      <div
-        v-if="routeDetailsPopupVisible"
-        class="route-details-popup-overlay"
-      >
-        <div class="route-details-popup">
+      <!-- Expanded Chat Content -->
+      <transition name="basket-expand">
+        <div v-if="routeDetailsPopupVisible" class="app-basket-chat-content">
           <!-- Chat label -->
-          <div class="route-details-popup-label">Chat</div>
+          <div class="app-basket-chat-label">Route Companion</div>
           
           <!-- Close button -->
           <button
-            class="route-details-popup-close"
+            class="app-basket-chat-close"
             @click="closeRouteDetailsPopup"
             aria-label="Close route details"
           >
@@ -1269,13 +1243,11 @@
             </svg>
           </button>
 
-          <!-- Popup header (fixed) -->
-
-          <!-- Popup content (scrollable) -->
+          <!-- Chat content (scrollable) -->
           <transition name="fade-content" mode="out-in">
             <div
               :key="currentRouteStats ? `${startHub}-${endHub}` : 'no-route'"
-              class="route-details-popup-content"
+              class="app-basket-chat-scrollable"
             >
               <!-- Route info section -->
               <div v-if="currentRouteStats" class="route-details-popup-info">
@@ -1402,8 +1374,51 @@
             </button>
           </div>
         </div>
+      </transition>
+    </div>
+
+    <!-- Legend Popup -->
+    <transition name="route-details-slide">
+      <div
+        v-if="legendPopupVisible"
+        class="route-details-popup-overlay"
+        @click="legendPopupVisible = false"
+      >
+        <div class="route-details-popup legend-popup" @click.stop>
+          <!-- Legend label -->
+          <div class="route-details-popup-label">Legend</div>
+          
+          <!-- Close button -->
+          <button
+            class="route-details-popup-close"
+            @click="legendPopupVisible = false"
+            aria-label="Close legend"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+
+          <!-- Legend content -->
+          <div class="route-details-popup-content">
+            <div class="legend-popup-content">
+              <Legend :mode="mode" :in-box="true" :dragged-out="false" />
+            </div>
+          </div>
+        </div>
       </div>
     </transition>
+
   </div>
 </template>
 
@@ -1462,6 +1477,8 @@ const hubs = ref([]);
 const routeHistory = ref([]);
 const currentRouteStats = ref(null);
 const routeDetailsPopupVisible = ref(false);
+const legendPopupVisible = ref(false);
+const phonePopupVisible = ref(false);
 const userMessage = ref("");
 const sentUserMessage = ref("");
 const userMessageSent = ref(false);
@@ -4481,8 +4498,8 @@ textarea:focus-visible {
   top: 30px;
   right: 30px;
   z-index: 15;
-  width: 140px; /* Quadratic container */
-  height: 140px;
+  width: 208px; /* 8px padding + 92px zurich + 8px gap + 92px grid + 8px padding */
+  height: 108px; /* 8px padding + 92px apps + 8px padding */
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(30px) saturate(180%);
   -webkit-backdrop-filter: blur(30px) saturate(180%);
@@ -4492,20 +4509,159 @@ textarea:focus-visible {
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
   box-sizing: border-box;
+  transition: width 0.3s cubic-bezier(0.16, 0.84, 0.24, 1), height 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
+  overflow: hidden;
 }
 
-.app-basket-row {
-  display: flex;
-  gap: 8px;
-  flex: 1;
+.app-basket--expanded {
+  width: 380px; /* Match sidebar width */
+  height: 600px; /* Tall enough for chat content */
+  max-height: calc(100vh - 60px); /* Don't exceed viewport */
+  padding: 12px; /* Consistent padding when expanded */
 }
+
+.app-basket-apps-container {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  flex-shrink: 0;
+  align-items: flex-start;
+  transition: gap 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
+}
+
+.app-basket-right-column {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 8px;
+  width: 92px;
+  height: 92px;
+  flex-shrink: 0;
+  transition: all 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
+}
+
+.app-basket--expanded .app-basket-apps-container {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.app-basket--expanded .app-basket-right-column {
+  display: flex;
+  flex-direction: row;
+  width: auto;
+  height: auto;
+  gap: 8px;
+}
+
+/* Chat content inside basket */
+.app-basket-chat-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  background: transparent;
+  overflow: hidden;
+}
+
+.app-basket-chat-label {
+  position: absolute;
+  top: 12px;
+  left: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.5);
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  letter-spacing: -0.01em;
+  z-index: 10;
+}
+
+.app-basket-chat-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 10;
+  padding: 0;
+  opacity: 0.7;
+}
+
+.app-basket-chat-close:hover {
+  opacity: 1;
+  color: rgba(255, 255, 255, 0.9);
+  transform: scale(1.1);
+}
+
+.app-basket-chat-close:active {
+  transform: scale(0.95);
+}
+
+.app-basket-chat-scrollable {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 40px 20px 80px 20px; /* Top padding for label, bottom for input */
+  min-height: 0;
+}
+
+.app-basket-chat-scrollable::-webkit-scrollbar {
+  width: 6px;
+}
+
+.app-basket-chat-scrollable::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.app-basket-chat-scrollable::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.app-basket-chat-scrollable::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Basket expand transition */
+.basket-expand-enter-active {
+  transition: all 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
+}
+
+.basket-expand-leave-active {
+  transition: all 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
+}
+
+.basket-expand-enter-from {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.basket-expand-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
 
 .zurich-app-button {
   position: relative;
-  width: 100%;
-  height: 100%;
+  width: 92px; /* Large app button */
+  height: 92px; /* Make it quadratic (width = height) */
   background: rgba(26, 27, 30, 0.5);
   border: none;
   border-radius: 12px;
@@ -4516,8 +4672,17 @@ textarea:focus-visible {
   justify-content: center;
   transition:
     background 0.3s ease,
-    box-shadow 0.3s ease;
+    box-shadow 0.3s ease,
+    width 0.3s cubic-bezier(0.16, 0.84, 0.24, 1),
+    height 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
   box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.app-basket--expanded .zurich-app-button {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
 }
 
 .zurich-app-button:hover {
@@ -4526,8 +4691,8 @@ textarea:focus-visible {
 }
 
 .zurich-app-button-inner {
-  width: 100%;
-  height: 100%;
+  width: 64px; /* Smaller quadratic button */
+  height: 64px; /* Square (width = height) */
   border: none;
   background: transparent;
   padding: 0;
@@ -4535,7 +4700,13 @@ textarea:focus-visible {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, width 0.3s cubic-bezier(0.16, 0.84, 0.24, 1), height 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
+  box-sizing: border-box;
+}
+
+.app-basket--expanded .zurich-app-button-inner {
+  width: 100%;
+  height: 100%;
 }
 
 .zurich-app-button-inner:hover {
@@ -4551,6 +4722,12 @@ textarea:focus-visible {
   height: 24px;
   display: block;
   flex-shrink: 0;
+  transition: width 0.3s cubic-bezier(0.16, 0.84, 0.24, 1), height 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
+}
+
+.app-basket--expanded .zurich-app-icon {
+  width: 20px;
+  height: 20px;
 }
 
 .zurich-app-location {
@@ -4563,6 +4740,12 @@ textarea:focus-visible {
   width: 100%;
   height: 100%;
   box-sizing: border-box;
+  transition: gap 0.3s cubic-bezier(0.16, 0.84, 0.24, 1), padding 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
+}
+
+.app-basket--expanded .zurich-app-location {
+  gap: 3px;
+  padding: 6px;
 }
 
 .zurich-app-location-name {
@@ -4572,6 +4755,11 @@ textarea:focus-visible {
   line-height: 1.2;
   white-space: nowrap;
   text-align: center;
+  transition: font-size 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
+}
+
+.app-basket--expanded .zurich-app-location-name {
+  font-size: 11px;
 }
 
 .zurich-app-location-time {
@@ -4581,6 +4769,11 @@ textarea:focus-visible {
   color: #b0b0b0;
   line-height: 1.2;
   white-space: nowrap;
+  transition: font-size 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
+}
+
+.app-basket--expanded .zurich-app-location-time {
+  font-size: 10px;
 }
 
 .zurich-app-time-text {
@@ -4604,6 +4797,14 @@ textarea:focus-visible {
   position: relative;
   width: 100%;
   height: 100%;
+  min-width: 0;
+  min-height: 0;
+  transition: width 0.3s cubic-bezier(0.16, 0.84, 0.24, 1), height 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
+}
+
+.app-basket--expanded .map-controls-app-container {
+  width: 56px;
+  height: 56px;
 }
 
 .map-controls-app-button {
@@ -4621,8 +4822,13 @@ textarea:focus-visible {
   transition:
     background 0.3s ease,
     box-shadow 0.3s ease,
-    transform 0.2s ease;
+    transform 0.2s ease,
+    border-radius 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
   box-sizing: border-box;
+}
+
+.app-basket--expanded .map-controls-app-button {
+  border-radius: 10px;
 }
 
 .map-controls-app-button:hover {
@@ -4649,6 +4855,12 @@ textarea:focus-visible {
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
+  transition: width 0.3s cubic-bezier(0.16, 0.84, 0.24, 1), height 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
+}
+
+.app-basket--expanded .map-controls-app-button svg {
+  width: 16px;
+  height: 16px;
 }
 
 /* Map Controls Panel (expanded) */
@@ -4743,6 +4955,11 @@ textarea:focus-visible {
   box-sizing: border-box;
 }
 
+.app-basket--expanded .chat-app-button {
+  width: 56px;
+  height: 56px;
+}
+
 .chat-app-button:hover {
   background: #1a1b1e;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
@@ -4767,6 +4984,12 @@ textarea:focus-visible {
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
+  transition: width 0.3s cubic-bezier(0.16, 0.84, 0.24, 1), height 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
+}
+
+.app-basket--expanded .chat-app-button svg {
+  width: 16px;
+  height: 16px;
 }
 
 /* -------- LEGEND APP BUTTON -------- */
@@ -4788,6 +5011,11 @@ textarea:focus-visible {
     box-shadow 0.3s ease,
     transform 0.2s ease;
   box-sizing: border-box;
+}
+
+.app-basket--expanded .legend-app-button {
+  width: 56px;
+  height: 56px;
 }
 
 .legend-app-button:hover {
@@ -4814,6 +5042,70 @@ textarea:focus-visible {
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
+  transition: width 0.3s cubic-bezier(0.16, 0.84, 0.24, 1), height 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
+}
+
+.app-basket--expanded .legend-app-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* -------- PHONE APP BUTTON -------- */
+.phone-app-button {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: rgba(26, 27, 30, 0.5);
+  border: none;
+  border-radius: 12px;
+  padding: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    background 0.3s ease,
+    box-shadow 0.3s ease,
+    transform 0.2s ease;
+  box-sizing: border-box;
+}
+
+.app-basket--expanded .phone-app-button {
+  width: 56px;
+  height: 56px;
+}
+
+.phone-app-button:hover {
+  background: #1a1b1e;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  transform: scale(1.05);
+}
+
+.phone-app-button:active {
+  transform: scale(0.95);
+}
+
+.phone-app-button--active {
+  background: #1a1b1e;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+.phone-app-button svg {
+  width: 20px;
+  height: 20px;
+  color: #ffffff;
+  stroke: #ffffff;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: width 0.3s cubic-bezier(0.16, 0.84, 0.24, 1), height 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
+}
+
+.app-basket--expanded .phone-app-button svg {
+  width: 16px;
+  height: 16px;
 }
 
 .top-controls-zurich-btn:active {
