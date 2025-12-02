@@ -1098,47 +1098,8 @@
         >
           <div class="location-name">{{ locationText }}</div>
           <div class="location-time">
-            <!-- Sun icon for daylight hours (6 AM - 8 PM) -->
-            <svg
-              v-if="isDaylight"
-              class="time-icon"
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <circle cx="12" cy="12" r="5" />
-              <line x1="12" y1="1" x2="12" y2="3" />
-              <line x1="12" y1="21" x2="12" y2="23" />
-              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-              <line x1="1" y1="12" x2="3" y2="12" />
-              <line x1="21" y1="12" x2="23" y2="12" />
-              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-            </svg>
-            <!-- Moon icon for nighttime hours -->
-            <svg
-              v-else
-              class="time-icon"
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-            </svg>
             <span class="time-text" v-if="zurichTime">
-              {{ zurichTime.split(":")[0] }}<span class="time-colon">:</span
-              >{{ zurichTime.split(":")[1] }}
+              {{ zurichTime }}
             </span>
           </div>
         </div>
@@ -1152,6 +1113,9 @@
         class="route-details-popup-overlay"
       >
         <div class="route-details-popup">
+          <!-- Chat label -->
+          <div class="route-details-popup-label">Chat</div>
+          
           <!-- Close button -->
           <button
             class="route-details-popup-close"
@@ -1159,12 +1123,12 @@
             aria-label="Close route details"
           >
             <svg
-              width="20"
-              height="20"
+              width="14"
+              height="14"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              stroke-width="2"
+              stroke-width="2.5"
               stroke-linecap="round"
               stroke-linejoin="round"
             >
@@ -1174,9 +1138,6 @@
           </button>
 
           <!-- Popup header (fixed) -->
-          <div class="route-details-popup-header">
-            <h2 class="route-details-popup-title">Route Details</h2>
-          </div>
 
           <!-- Popup content (scrollable) -->
           <transition name="fade-content" mode="out-in">
@@ -1189,39 +1150,43 @@
               <div class="route-details-popup-info">
                 <div class="route-details-intro">
                   <div class="route-details-intro-greeting">
-                    Hey John, ready for a great walk?
+                    <span class="route-details-greeting-bold">{{ currentGreeting }}</span>
                   </div>
-                  <p class="route-details-intro-text">
-                    {{ getRouteIntroText() }}
-                  </p>
+                  <div class="route-details-intro-text">
+                    Here are some insights about your route:
+                  </div>
                 </div>
               </div>
 
-              <!-- POI Statistics -->
+              <!-- POI Statistics as Document Attachment -->
               <div
                 v-if="
                   currentRouteStats &&
                   currentRouteStats.poiCounts &&
                   Object.keys(currentRouteStats.poiCounts).length > 0
                 "
-                class="route-details-poi-section"
+                class="route-details-document"
               >
-                <div class="route-details-mantra">
-                  <p class="route-details-mantra-text">
-                    Discover what makes this route special
-                  </p>
+                <div class="route-details-document-header">
+                  <svg class="route-details-document-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                  </svg>
+                  <span class="route-details-document-title">Route highlights</span>
                 </div>
-
-                <div class="route-details-poi-list">
+                <div class="route-details-document-content">
                   <div
                     v-for="(count, poiType) in currentRouteStats.poiCounts"
                     :key="poiType"
-                    class="route-details-poi-item"
+                    class="route-details-document-item"
                   >
-                    <div class="route-details-poi-icon-wrapper">
+                    <div class="route-details-document-item-icon">
                       <div class="route-details-poi-icon" v-html="getPoiIcon(poiType)"></div>
                     </div>
-                    <div class="route-details-poi-info">
+                    <div class="route-details-document-item-info">
                       <div
                         v-if="
                           currentRouteStats.poiFrequencies &&
@@ -1237,20 +1202,60 @@
                     </div>
                   </div>
                 </div>
-
-                <div class="route-details-footer">
-                  <p class="route-details-footer-text">
-                    Safe and surrounded by life
-                  </p>
-                </div>
               </div>
               <div v-else-if="currentRouteStats" class="route-details-empty">
                 <p class="route-details-empty-text">
                   Clear route, peaceful walk
                 </p>
               </div>
+
+              <div class="route-details-footer">
+                <div class="route-details-footer-bubble">
+                  You're all set! Enjoy your walk through the city.
+                </div>
+                
+                <!-- User message bubble (shown after user sends) -->
+                <div v-if="userMessageSent && sentUserMessage" class="route-details-user-message">
+                  {{ sentUserMessage }}
+                </div>
+                
+                <!-- Response bubbles (shown after user sends message) -->
+                <div v-if="userMessageSent" class="route-details-response-section">
+                  <div class="route-details-response-bubble">
+                    No worries!
+                  </div>
+                  <div class="route-details-safety-bubble">
+                    If you don't feel safe, head to the nearest café or restaurant where people are around.
+                  </div>
+                </div>
+              </div>
             </div>
           </transition>
+          
+          <!-- Floating input button/box -->
+          <div class="route-details-input-container">
+            <input
+              v-if="showInput"
+              v-model="userMessage"
+              @keyup.enter="handleSendMessage"
+              @blur="showInput = false"
+              type="text"
+              placeholder="Type a message..."
+              class="route-details-input"
+              ref="inputRef"
+            />
+            <button
+              v-else
+              @click="openInput"
+              class="route-details-input-button"
+              aria-label="Type a message"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                <line x1="9" y1="10" x2="15" y2="10"></line>
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
     </transition>
@@ -1312,6 +1317,10 @@ const hubs = ref([]);
 const routeHistory = ref([]);
 const currentRouteStats = ref(null);
 const routeDetailsPopupVisible = ref(false);
+const userMessage = ref("");
+const sentUserMessage = ref("");
+const userMessageSent = ref(false);
+const showInput = ref(false);
 
 // Hover popup data
 const popup = ref({ show: false, x: 0, y: 0, lights: 0, pois: 0, hub: "—" });
@@ -1441,6 +1450,33 @@ const locationText = ref("");
 const zurichTime = ref("");
 const isDaylight = ref(false);
 const isTilted = ref(false);
+
+// Greeting messages pool
+const greetingMessages = [
+  "Nice choice, John!",
+  "Great pick, John!",
+  "Solid route, John!",
+  "Love this route, John!",
+  "Perfect choice, John!",
+  "Excellent selection, John!",
+  "This looks awesome, John!",
+  "You nailed it, John!",
+  "Sweet route, John!",
+  "This is fire, John!",
+  "Brilliant choice, John!",
+  "You've got great taste, John!",
+  "This route's a winner, John!",
+  "Spot on, John!",
+  "Can't go wrong with this, John!",
+];
+
+const currentGreeting = ref("Nice choice, John!");
+
+// Function to get a random greeting
+function getRandomGreeting() {
+  const randomIndex = Math.floor(Math.random() * greetingMessages.length);
+  return greetingMessages[randomIndex];
+}
 
 // Update Zürich time
 function updateZurichTime() {
@@ -1633,6 +1669,39 @@ function handleRoutePopupClicked() {
 // Close route details popup
 function closeRouteDetailsPopup() {
   routeDetailsPopupVisible.value = false;
+  userMessage.value = "";
+  sentUserMessage.value = "";
+  userMessageSent.value = false;
+  showInput.value = false;
+}
+
+// Open input box
+const inputRef = ref(null);
+function openInput() {
+  showInput.value = true;
+  nextTick(() => {
+    if (inputRef.value) {
+      inputRef.value.focus();
+    }
+  });
+}
+
+// Handle sending a message
+function handleSendMessage() {
+  const message = userMessage.value.trim();
+  if (message) {
+    sentUserMessage.value = message;
+    userMessageSent.value = true;
+    userMessage.value = "";
+    showInput.value = false;
+    // Scroll to bottom to show response
+    setTimeout(() => {
+      const content = document.querySelector('.route-details-popup-content');
+      if (content) {
+        content.scrollTop = content.scrollHeight;
+      }
+    }, 100);
+  }
 }
 
 // Computed property to check if route can be planned
@@ -1699,6 +1768,9 @@ function route(event) {
       routeApi.selectHubs(startHub.value, endHub.value, true);
       console.log("✅ selectHubs called with loadRoute=true");
 
+      // Update greeting with a random message
+      currentGreeting.value = getRandomGreeting();
+
       // Update current route stats after a short delay to allow route to load
       setTimeout(() => {
         if (routeApi.getCurrentRouteStats) {
@@ -1764,6 +1836,8 @@ watch(
 
     // Automatically plan route when both hubs are selected and different
     if (newStart && newEnd && newStart !== newEnd) {
+      // Update greeting with a random message
+      currentGreeting.value = getRandomGreeting();
       // Automatically plan the route - route() function will handle selectHubs, history, and stats
       route();
     }
@@ -1836,20 +1910,15 @@ function getHubName(hubId) {
 // Get positive mantra for each POI type
 function getPoiMantra(poiType) {
   const mantras = {
-    BarOrPub:
-      "Vibrant social hubs with constant activity - gathering places that keep the streets alive",
-    CafeOrCoffeeShop:
-      "Busy spots with regular foot traffic - active spaces that add energy to your route",
-    Restaurant:
-      "Well-frequented dining areas - places where people come and go, keeping the area dynamic",
-    NightClub:
-      "Active nightlife zones - streets that stay vibrant and well-lit into the evening",
-    MusicVenue:
-      "Cultural hotspots with regular events - lively venues that bring continuous activity",
+    BarOrPub: "Lively spots that keep the area active",
+    CafeOrCoffeeShop: "Busy spots that add energy to your walk",
+    Restaurant: "Well-frequented areas that stay active",
+    NightClub: "Vibrant zones that stay well-lit",
+    MusicVenue: "Cultural hotspots with regular events",
   };
   return (
     mantras[poiType] ||
-    "Active points of interest that contribute to a vibrant, well-trafficked route"
+    "Active points that make your route engaging"
   );
 }
 
@@ -1924,37 +1993,50 @@ function getRouteIntroText() {
     return "";
   }
 
-  const start = getHubName(startHub.value);
-  const destination = getHubName(endHub.value);
+  const stats = currentRouteStats.value;
+  let routeDescription = "";
 
-  // Round duration to whole minutes
-  let durationText = "";
-  if (currentRouteStats.value.walkDurationMinutes !== null) {
-    const minutes = Math.round(currentRouteStats.value.walkDurationMinutes);
-    durationText = `${minutes}min`;
-  }
-
-  // Round distance to 1 decimal place
-  let distanceText = "";
-  if (currentRouteStats.value.lengthKm !== null) {
-    const distance = Math.round(currentRouteStats.value.lengthKm * 10) / 10;
-    distanceText = `${distance}km`;
-  }
-
-  // Build catchy, personal phrase
-  let phrase = `Your walk from ${start} to ${destination} leads you through a vibrant, well-lit area`;
-
-  if (durationText && distanceText) {
-    phrase += ` — just ${durationText} and ${distanceText} of safe, enjoyable walking.`;
-  } else if (durationText) {
-    phrase += ` — just ${durationText} of safe, enjoyable walking.`;
-  } else if (distanceText) {
-    phrase += ` — just ${distanceText} of safe, enjoyable walking.`;
+  // Get route description based on POI density - concise and positive
+  if (stats.poiCounts) {
+    const totalPois = Object.values(stats.poiCounts).reduce((sum, count) => sum + count, 0);
+    if (totalPois > 50) {
+      routeDescription = "route buzzing with life - cozy cafes, great restaurants, and lively spots await";
+    } else if (totalPois > 20) {
+      routeDescription = "route full of activity - you'll feel safe and connected to the city's energy";
+    } else if (totalPois > 0) {
+      routeDescription = "peaceful route with just the right balance - calm yet engaging";
+    } else {
+      routeDescription = "serene path perfect for a relaxing walk";
+    }
+  } else if (stats.lumoScore !== null && stats.lumoScore > 70) {
+    routeDescription = "well-lit, active route - safe and vibrant";
   } else {
-    phrase += " — safe and enjoyable walking ahead.";
+    routeDescription = "route that balances everything for a great walk";
   }
 
-  return phrase;
+  return `Here's what makes this route special: ${routeDescription}.`;
+}
+
+// Get one most relevant tip based on route stats
+function getRouteTips() {
+  if (!currentRouteStats.value) return [];
+
+  const stats = currentRouteStats.value;
+  const tips = [];
+
+  // Only POI-based tips, no duration tips
+  if (stats.poiCounts) {
+    const totalPois = Object.values(stats.poiCounts).reduce((sum, count) => sum + count, 0);
+    if (totalPois > 50) {
+      tips.push("Lots of cafes and restaurants along the way");
+      return tips; // Return early with most relevant tip
+    } else if (totalPois < 10) {
+      tips.push("Quieter, peaceful route");
+      return tips;
+    }
+  }
+
+  return tips.slice(0, 1); // Only return one tip
 }
 
 // Load route from history
@@ -1965,6 +2047,8 @@ function loadHistoryRoute(entry) {
   const routeApi = api || mapboxViewerRef.value;
   if (routeApi && routeApi.selectHubs) {
     routeApi.selectHubs(entry.fromId, entry.toId, true);
+    // Update greeting with a random message
+    currentGreeting.value = getRandomGreeting();
     // Update current route stats after a short delay
     setTimeout(() => {
       if (routeApi.getCurrentRouteStats) {
@@ -2231,9 +2315,9 @@ textarea:focus-visible {
 /* -------- SIDEBAR -------- */
 .sidebar {
   position: absolute;
-  top: 20px;
-  left: 20px;
-  bottom: 20px;
+  top: 30px;
+  left: 30px;
+  bottom: 30px;
   width: 380px; /* Same width as route details popup */
   padding: 0;
   background: #151517;
@@ -2658,7 +2742,7 @@ textarea:focus-visible {
 
 .sidebar h2 {
   margin: 6px 0 0 0;
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 800;
   letter-spacing: 0.2px;
 }
@@ -2840,7 +2924,7 @@ textarea:focus-visible {
 
 .settings-section-title {
   margin: 0 0 8px 0;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: #ffffff;
   line-height: 1.4;
@@ -4100,8 +4184,8 @@ textarea:focus-visible {
 /* -------- TOP CONTROLS BAR -------- */
 .top-controls-bar {
   position: fixed;
-  top: 20px;
-  right: 20px;
+  top: 30px;
+  right: 30px;
   z-index: 15;
   width: 280px; /* Same width as route details popup */
   height: 64px; /* Same height as collapsed left sidebar width */
@@ -4115,6 +4199,7 @@ textarea:focus-visible {
   justify-content: space-between;
   gap: 8px;
   box-sizing: border-box;
+  overflow: hidden; /* Prevent content from overflowing */
   transition:
     background 0.3s ease,
     box-shadow 0.3s ease; /* Smooth transitions */
@@ -4137,36 +4222,54 @@ textarea:focus-visible {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 12px;
+  gap: 6px;
   flex-shrink: 0;
+  margin-left: auto;
+  margin-right: 0;
 }
 
 .top-controls-bar .map-control-btn {
   width: 28px;
   height: 28px;
   border: none;
-  background: #1c1e21;
+  background: transparent;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   color: #e6e6e8;
   border-radius: 6px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s ease;
+  transition: 
+    background 0.3s ease,
+    box-shadow 0.3s ease;
   padding: 0;
   box-sizing: border-box;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
 
-.top-controls-bar .map-control-btn:hover {
-  background: #2a2f34;
+.top-controls-bar:not(:hover) .map-control-btn {
+  background: transparent;
+  box-shadow: none;
+}
+
+.top-controls-bar:hover .map-control-btn {
+  background: rgba(26, 27, 30, 0.5);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.top-controls-bar:hover .map-control-btn:hover {
+  background: #1a1b1e;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
 }
 
 .top-controls-bar .map-control-btn:active {
-  background: #1c1e21;
+  background: rgba(26, 27, 30, 0.7);
 }
 
 .top-controls-bar .map-control-btn.active {
-  background: #2a2f34;
+  background: #1a1b1e;
   color: #ffffff;
 }
 
@@ -4184,7 +4287,9 @@ textarea:focus-visible {
   width: 40px;
   height: 40px;
   border-radius: 8px;
-  background: rgba(28, 30, 33, 0.5);
+  background: transparent;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border: none;
   padding: 0;
   margin: 0;
@@ -4200,7 +4305,9 @@ textarea:focus-visible {
     opacity 0.4s cubic-bezier(0.16, 0.84, 0.24, 1),
     transform 0.4s cubic-bezier(0.16, 0.84, 0.24, 1),
     visibility 0ms 0.4s,
-    background 0.15s ease;
+    background 0.3s ease,
+    box-shadow 0.3s ease;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
 
 .top-controls-zurich-btn--visible {
@@ -4210,12 +4317,23 @@ textarea:focus-visible {
   pointer-events: auto;
 }
 
-.top-controls-zurich-btn:hover {
-  background: #151517;
+.top-controls-bar:not(:hover) .top-controls-zurich-btn {
+  background: transparent;
+  box-shadow: none;
+}
+
+.top-controls-bar:hover .top-controls-zurich-btn {
+  background: rgba(26, 27, 30, 0.5);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.top-controls-bar:hover .top-controls-zurich-btn:hover {
+  background: #1a1b1e;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
 }
 
 .top-controls-zurich-btn:active {
-  background: #1c1e21;
+  background: rgba(26, 27, 30, 0.7);
 }
 
 .top-controls-zurich-icon {
@@ -4239,7 +4357,9 @@ textarea:focus-visible {
     transform 0.4s cubic-bezier(0.16, 0.84, 0.24, 1),
     visibility 0ms 0.4s;
   pointer-events: none;
-  flex-shrink: 0; /* Don't shrink */
+  flex-shrink: 1; /* Allow shrinking */
+  min-width: 0; /* Allow text truncation */
+  overflow: hidden; /* Prevent overflow */
 }
 
 .top-controls-location--visible {
@@ -4255,15 +4375,19 @@ textarea:focus-visible {
   font-weight: 600;
   color: #ffffff;
   line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .top-controls-location .location-time {
   display: flex;
   align-items: center;
-  gap: 6px;
   font-size: 12px;
   color: #b0b0b0;
   line-height: 1.2;
+  white-space: nowrap;
 }
 
 .top-controls-location .time-icon {
@@ -4285,8 +4409,8 @@ textarea:focus-visible {
 /* -------- MAP SCALE -------- */
 .map-scale {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
+  bottom: 30px;
+  right: 30px;
   z-index: 12;
   display: flex;
   flex-direction: column;
@@ -4461,15 +4585,15 @@ textarea:focus-visible {
 
 .route-details-popup {
   position: fixed;
-  top: 96px; /* Aligned below top controls bar (20px top + 64px height + 12px gap) */
-  right: 20px; /* Match the right position of the time display */
-  bottom: 340px; /* Much less height - more space above the scale */
-  width: 280px; /* Even slimmer width */
+  top: 106px; /* Aligned below top controls bar (30px top + 64px height + 12px gap) */
+  right: 30px; /* Match the right position of the time display */
+  bottom: 400px; /* Reduced height - shorter popup */
+  width: 280px; /* Slimmer width */
   max-width: calc(100vw - 40px);
   max-height: none; /* Use bottom positioning instead */
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(30px) saturate(180%);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
   border: none;
   border-radius: 16px; /* Match sidebar border-radius */
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
@@ -4490,29 +4614,47 @@ textarea:focus-visible {
   }
 }
 
+.route-details-popup-label {
+  position: absolute;
+  top: 12px;
+  left: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.5);
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  letter-spacing: -0.01em;
+  z-index: 10;
+}
+
 .route-details-popup-close {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 36px;
-  height: 36px;
+  top: 12px;
+  right: 12px;
+  width: 24px;
+  height: 24px;
   border: none;
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-radius: 10px;
-  color: #ffffff;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
   z-index: 10;
+  padding: 0;
+  opacity: 0.7;
 }
 
 .route-details-popup-close:hover {
-  background: rgba(255, 255, 255, 0.25);
-  transform: scale(1.05);
+  opacity: 1;
+  color: rgba(255, 255, 255, 0.9);
+  transform: scale(1.1);
 }
 
 .route-details-popup-close:active {
@@ -4520,9 +4662,9 @@ textarea:focus-visible {
 }
 
 .route-details-popup-close svg {
-  width: 18px;
-  height: 18px;
-  stroke: #ffffff;
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
 }
 
 .route-details-popup-header {
@@ -4533,7 +4675,7 @@ textarea:focus-visible {
 }
 
 .route-details-popup-content {
-  padding: 24px 32px 32px 32px;
+  padding: 40px 32px 80px 32px; /* Extra top padding to shift content down, extra bottom padding for fixed input */
   overflow-y: auto;
   flex: 1;
   min-height: 0;
@@ -4573,20 +4715,32 @@ textarea:focus-visible {
 }
 
 .route-details-popup-info {
-  margin-bottom: 24px;
-  padding-bottom: 16px;
+  margin-bottom: 16px;
+  padding-bottom: 0;
   border-bottom: none;
 }
 
 .route-details-intro {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   align-items: flex-end; /* Align content to right for speech bubble */
+  margin-bottom: 4px;
+}
+
+@keyframes chatBubbleAppear {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .route-details-intro-greeting {
-  font-size: 22px;
+  font-size: 16px;
   line-height: 1.4;
   color: #ffffff;
   font-family:
@@ -4596,10 +4750,10 @@ textarea:focus-visible {
     BlinkMacSystemFont,
     system-ui,
     sans-serif;
-  font-weight: 800;
+  font-weight: 400;
   letter-spacing: -0.02em;
-  margin: 0 0 16px 0;
-  padding: 14px 18px;
+  margin: 0;
+  padding: 12px 16px;
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
@@ -4611,12 +4765,18 @@ textarea:focus-visible {
   margin-left: auto;
   word-wrap: break-word;
   box-shadow: none;
+  animation: chatBubbleAppear 0.5s ease-out 0.4s forwards;
+  opacity: 0;
+}
+
+.route-details-greeting-bold {
+  font-weight: 800;
 }
 
 .route-details-intro-text {
-  margin: 0;
-  font-size: 14px;
-  line-height: 1.5;
+  margin: 0 0 0 auto;
+  font-size: 13px;
+  line-height: 1.4;
   color: #ffffff;
   font-family:
     "SF Pro Display",
@@ -4625,8 +4785,49 @@ textarea:focus-visible {
     BlinkMacSystemFont,
     system-ui,
     sans-serif;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-radius: 18px 18px 0 18px;
+  position: relative;
+  display: inline-block;
+  max-width: calc(100% - 20px);
+  align-self: flex-end;
+  word-wrap: break-word;
+  box-shadow: none;
   font-weight: 400;
   letter-spacing: 0.01em;
+  animation: chatBubbleAppear 0.5s ease-out 0.7s forwards;
+  opacity: 0;
+}
+
+.route-details-tip {
+  margin: 0 0 0 auto;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #ffffff;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-radius: 18px 18px 0 18px;
+  position: relative;
+  display: inline-block;
+  max-width: calc(100% - 20px);
+  align-self: flex-end;
+  word-wrap: break-word;
+  box-shadow: none;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  opacity: 0.9;
 }
 
 .route-details-info-item {
@@ -4673,6 +4874,82 @@ textarea:focus-visible {
     BlinkMacSystemFont,
     system-ui,
     sans-serif;
+}
+
+.route-details-document {
+  margin: 0 0 0 auto;
+  max-width: calc(100% - 20px);
+  align-self: flex-end;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-radius: 18px 18px 0 18px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  margin-top: 10px;
+  animation: chatBubbleAppear 0.5s ease-out 1s forwards;
+  opacity: 0;
+}
+
+.route-details-document-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.route-details-document-icon {
+  width: 14px;
+  height: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  flex-shrink: 0;
+}
+
+.route-details-document-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  letter-spacing: 0.01em;
+}
+
+.route-details-document-content {
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.route-details-document-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.route-details-document-item-icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+}
+
+.route-details-document-item-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .route-details-poi-section {
@@ -4737,12 +5014,17 @@ textarea:focus-visible {
 }
 
 .route-details-poi-icon {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #70f0c3;
+}
+
+.route-details-document-item-icon .route-details-poi-icon {
+  width: 18px;
+  height: 18px;
 }
 
 .route-details-poi-icon svg {
@@ -4773,7 +5055,7 @@ textarea:focus-visible {
 }
 
 .route-details-poi-frequency {
-  font-size: 16px;
+  font-size: 14px;
   color: #ffffff;
   font-weight: 600;
   font-family:
@@ -4783,13 +5065,14 @@ textarea:focus-visible {
     BlinkMacSystemFont,
     system-ui,
     sans-serif;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
+  line-height: 1.3;
 }
 
 .route-details-poi-mantra {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.8);
-  line-height: 1.5;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.4;
   font-family:
     "SF Pro Display",
     "SF Pro Text",
@@ -4800,17 +5083,18 @@ textarea:focus-visible {
 }
 
 .route-details-footer {
-  margin-top: 24px;
-  padding-top: 20px;
-  border-top: none;
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
 }
 
-.route-details-footer-text {
-  font-size: 16px;
-  color: rgba(255, 255, 255, 0.9);
-  font-weight: 500;
-  text-align: center;
-  margin: 0;
+.route-details-footer-bubble {
+  margin: 0 0 0 auto;
+  font-size: 14px;
+  line-height: 1.4;
+  color: #ffffff;
   font-family:
     "SF Pro Display",
     "SF Pro Text",
@@ -4818,6 +5102,187 @@ textarea:focus-visible {
     BlinkMacSystemFont,
     system-ui,
     sans-serif;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-radius: 18px 18px 0 18px;
+  position: relative;
+  display: inline-block;
+  max-width: calc(100% - 20px);
+  align-self: flex-end;
+  word-wrap: break-word;
+  box-shadow: none;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  animation: chatBubbleAppear 0.5s ease-out 1.3s forwards;
+  opacity: 0;
+}
+
+.route-details-response-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.route-details-response-bubble {
+  margin: 0 0 0 auto;
+  font-size: 14px;
+  line-height: 1.4;
+  color: #ffffff;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-radius: 18px 18px 0 18px;
+  position: relative;
+  display: inline-block;
+  max-width: calc(100% - 20px);
+  align-self: flex-end;
+  word-wrap: break-word;
+  box-shadow: none;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  animation: chatBubbleAppear 0.5s ease-out 0.4s forwards;
+  opacity: 0;
+}
+
+.route-details-safety-bubble {
+  margin: 0 0 0 auto;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #ffffff;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-radius: 18px 18px 0 18px;
+  position: relative;
+  display: inline-block;
+  max-width: calc(100% - 20px);
+  align-self: flex-end;
+  word-wrap: break-word;
+  box-shadow: none;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  opacity: 0.9;
+  animation: chatBubbleAppear 0.5s ease-out 0.7s forwards;
+  opacity: 0;
+}
+
+.route-details-input-container {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  right: 12px;
+  z-index: 10;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.route-details-input-button {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(128, 128, 128, 0.2);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  color: rgba(160, 160, 160, 0.9);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  padding: 0;
+}
+
+.route-details-input-button:hover {
+  background: rgba(128, 128, 128, 0.3);
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.route-details-input-button:active {
+  transform: scale(0.95);
+}
+
+.route-details-input {
+  width: 100%;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  color: #ffffff;
+  font-size: 14px;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  outline: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.route-details-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.route-details-input:focus {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.route-details-user-message {
+  margin: 0 auto 0 0;
+  font-size: 14px;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.9);
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  padding: 12px 16px;
+  background: rgba(112, 240, 195, 0.15);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-radius: 18px 18px 18px 0; /* Sharp edge on left */
+  position: relative;
+  display: inline-block;
+  max-width: calc(100% - 20px);
+  align-self: flex-start;
+  word-wrap: break-word;
+  box-shadow: none;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  margin-top: 10px;
+  animation: chatBubbleAppear 0.5s ease-out forwards;
+  opacity: 0;
 }
 
 .route-details-empty {
@@ -4858,3 +5323,4 @@ textarea:focus-visible {
   transform: translateY(-10px);
 }
 </style>
+

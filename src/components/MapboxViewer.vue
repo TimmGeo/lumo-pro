@@ -11,7 +11,7 @@
       :class="{ 'map-controls-bar--collapsed': controlsCollapsed }"
       @mouseenter="handleControlsBarMouseEnter"
       @mouseleave="handleControlsBarMouseLeave"
-      style="display: none;"
+      style="display: none"
     >
       <div class="map-controls-content">
         <div class="map-controls-grid">
@@ -253,6 +253,18 @@ let hexVibrancyData = null;
 let hubsLoaded = false;
 let pendingZurichFocusKey = 0;
 
+// Debounce ensureHubsOnTop to avoid excessive calls
+let ensureHubsOnTopTimeout = null;
+const debouncedEnsureHubsOnTop = () => {
+  if (ensureHubsOnTopTimeout) {
+    clearTimeout(ensureHubsOnTopTimeout);
+  }
+  ensureHubsOnTopTimeout = setTimeout(() => {
+    ensureHubsOnTop();
+    ensureHubsOnTopTimeout = null;
+  }, 100);
+};
+
 // Routing state
 let selectedHubId1 = null;
 let selectedHubId2 = null;
@@ -474,7 +486,7 @@ onMounted(async () => {
     map.on("zoom", () => {
       const zoom = map.getZoom();
       emit("zoom", { zoom: zoom, center: map.getCenter() });
-      
+
       // Show/hide route popup based on zoom (same condition as zurich time display)
       handleRoutePopupVisibility(zoom);
     });
@@ -482,7 +494,7 @@ onMounted(async () => {
     map.on("move", () => {
       const zoom = map.getZoom();
       emit("move", { zoom: zoom, center: map.getCenter() });
-      
+
       // Show/hide route popup based on zoom (same condition as zurich time display)
       handleRoutePopupVisibility(zoom);
     });
@@ -495,6 +507,9 @@ onMounted(async () => {
         emit("mapReady");
       });
 
+      // Note: We removed the styledata and idle event listeners to improve performance
+      // ensureHubsOnTop() is now only called when layers are actually added or changed
+
       // Emit initial zoom/center
       emit("zoom", { zoom: map.getZoom(), center: map.getCenter() });
 
@@ -506,6 +521,9 @@ onMounted(async () => {
         map.addSource("hubs", {
           type: "geojson",
           data: hubsData,
+          cluster: true,
+          clusterMaxZoom: 14, // Max zoom to cluster points on
+          clusterRadius: 50, // Radius of each cluster when clustering points
         });
 
         // Emit hubs ready event immediately (before locality names are fetched)
@@ -514,11 +532,62 @@ onMounted(async () => {
         // Fetch locality names for each hub using reverse geocoding (async, in background)
         fetchLocalityNamesForHubs();
 
-        // Add circles for hubs (matching Cesium styling)
+        // Add cluster circles (white circles for clusters)
+        map.addLayer({
+          id: "hubs-clusters",
+          type: "circle",
+          source: "hubs",
+          filter: ["has", "point_count"],
+          paint: {
+            "circle-color": "#ffffff",
+            "circle-radius": [
+              "step",
+              ["get", "point_count"],
+              20, // Default radius for clusters
+              10,
+              25, // Larger radius for 10+ points
+              50,
+              30, // Even larger for 50+ points
+              100,
+              35, // Largest for 100+ points
+            ],
+            "circle-stroke-width": 0, // No contour
+            "circle-opacity": 0.7, // Slightly transparent
+          },
+        });
+
+        // Add cluster count labels (numbers on clusters)
+        map.addLayer({
+          id: "hubs-cluster-count",
+          type: "symbol",
+          source: "hubs",
+          filter: ["has", "point_count"],
+          layout: {
+            "text-field": "{point_count_abbreviated}",
+            "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
+            "text-size": [
+              "step",
+              ["get", "point_count"],
+              12, // Default size
+              10,
+              14, // Larger for 10+ points
+              50,
+              16, // Even larger for 50+ points
+              100,
+              18, // Largest for 100+ points
+            ],
+          },
+          paint: {
+            "text-color": "#0b0b0c", // Black text, no halo
+          },
+        });
+
+        // Add circles for unclustered hubs (matching Cesium styling)
         map.addLayer({
           id: "hubs-circles",
           type: "circle",
           source: "hubs",
+          filter: ["!", ["has", "point_count"]],
           paint: {
             "circle-radius": 6,
             "circle-color": "#70f0c3", // Default green for all hubs
@@ -526,6 +595,25 @@ onMounted(async () => {
             "circle-stroke-width": 0,
             "circle-opacity": 1,
           },
+        });
+
+        // Add click handler for clusters (zoom in when clicked)
+        map.on("click", "hubs-clusters", (e) => {
+          const features = map.queryRenderedFeatures(e.point, {
+            layers: ["hubs-clusters"],
+          });
+          const clusterId = features[0].properties.cluster_id;
+          const source = map.getSource("hubs");
+
+          source.getClusterExpansionZoom(clusterId, (err, zoom) => {
+            if (err) return;
+
+            map.easeTo({
+              center: features[0].geometry.coordinates,
+              zoom: zoom,
+              duration: 500,
+            });
+          });
         });
 
         // Add click handler for hubs
@@ -538,7 +626,16 @@ onMounted(async () => {
           handleHubClick(hubId);
         });
 
-        // Change cursor on hover
+        // Change cursor on hover for clusters
+        map.on("mouseenter", "hubs-clusters", () => {
+          map.getCanvas().style.cursor = "pointer";
+        });
+
+        map.on("mouseleave", "hubs-clusters", () => {
+          map.getCanvas().style.cursor = "";
+        });
+
+        // Change cursor on hover for hubs
         map.on("mouseenter", "hubs-circles", () => {
           map.getCanvas().style.cursor = "pointer";
         });
@@ -822,53 +919,49 @@ onMounted(async () => {
           });
 
           // Add 3D extruded hexagon layer for combined (height based on combined_score)
-          // Position it before hubs so it's visible
-          map.addLayer(
-            {
-              id: "hex-combined-layer",
-              type: "fill-extrusion",
-              source: "hex-combined",
-              filter: [">", ["get", "combined_score"], 0], // Only show hexagons with combined_score > 0
-              paint: {
-                "fill-extrusion-color": [
-                  "interpolate",
-                  ["linear"],
-                  ["get", "combined_score"],
-                  0,
-                  "#0b0b0c", // Match dark background for low scores
-                  0.1,
-                  "#161718", // Slightly lighter, still blends with background
-                  0.5,
-                  "#2d3561", // Dark blue
-                  1,
-                  "#6c5ce7", // Medium purple-blue
-                  2,
-                  "#a29bfe", // Bright purple-blue
-                  5,
-                  "#e0e7ff", // Very bright light purple-blue for high scores
-                ],
-                // Fade out hexagons as zoom increases (same as vibrancy layer)
-                "fill-extrusion-opacity": [
-                  "interpolate",
-                  ["linear"],
-                  ["zoom"],
-                  15,
-                  0.6, // At zoom 15, opacity 0.6
-                  15.15,
-                  0.15, // At zoom 15.15, opacity 0.15 (more drastic drop)
-                  15.3,
-                  0, // At zoom 15.3+, opacity 0 (fully transparent - hexagons disappear)
-                ],
-                "fill-extrusion-height": [
-                  "*",
-                  ["get", "combined_score"],
-                  2500, // Higher scale factor for more visible height differences
-                ],
-                "fill-extrusion-base": 0,
-              },
+          map.addLayer({
+            id: "hex-combined-layer",
+            type: "fill-extrusion",
+            source: "hex-combined",
+            filter: [">", ["get", "combined_score"], 0], // Only show hexagons with combined_score > 0
+            paint: {
+              "fill-extrusion-color": [
+                "interpolate",
+                ["linear"],
+                ["get", "combined_score"],
+                0,
+                "#0b0b0c", // Match dark background for low scores
+                0.1,
+                "#161718", // Slightly lighter, still blends with background
+                0.5,
+                "#2d3561", // Dark blue
+                1,
+                "#6c5ce7", // Medium purple-blue
+                2,
+                "#a29bfe", // Bright purple-blue
+                5,
+                "#e0e7ff", // Very bright light purple-blue for high scores
+              ],
+              // Fade out hexagons as zoom increases (same as vibrancy layer)
+              "fill-extrusion-opacity": [
+                "interpolate",
+                ["linear"],
+                ["zoom"],
+                15,
+                0.6, // At zoom 15, opacity 0.6
+                15.15,
+                0.15, // At zoom 15.15, opacity 0.15 (more drastic drop)
+                15.3,
+                0, // At zoom 15.3+, opacity 0 (fully transparent - hexagons disappear)
+              ],
+              "fill-extrusion-height": [
+                "*",
+                ["get", "combined_score"],
+                2500, // Higher scale factor for more visible height differences
+              ],
+              "fill-extrusion-base": 0,
             },
-            "hubs-circles" // Position before hubs so 3D hexagons are visible
-          );
+          });
 
           // Initial visibility - only show combined layers when combined layer is selected
           map.setLayoutProperty(
@@ -889,6 +982,9 @@ onMounted(async () => {
         } catch (error) {
           console.error("Failed to load vibrancy GeoJSON data:", error);
         }
+
+        // Ensure hubs are always on top of all other layers
+        ensureHubsOnTop();
 
         // Debug
         window.map = map;
@@ -970,6 +1066,9 @@ watch(
           updateLayerVisibility("hex-combined-layer", false);
           updateLayerVisibility("vibrancy-points-layer", false);
         }
+
+        // Ensure hubs are always on top after visibility changes (debounced)
+        debouncedEnsureHubsOnTop();
       };
 
       updateVisibility();
@@ -1015,6 +1114,9 @@ watch(
           updateLayerVisibility("hex-combined-outline", false);
           updateLayerVisibility("hex-combined-layer", false);
         }
+
+        // Ensure hubs are always on top after visibility changes (debounced)
+        debouncedEnsureHubsOnTop();
       };
 
       updateVisibility();
@@ -1074,6 +1176,9 @@ watch(
           updateLayerVisibility("hex-vibrancy-layer", false);
           updateLayerVisibility("vibrancy-points-layer", false);
         }
+
+        // Ensure hubs are always on top after visibility changes (debounced)
+        debouncedEnsureHubsOnTop();
       };
 
       updateVisibility();
@@ -1099,21 +1204,71 @@ watch(
 
 function ensureHubsOnTop() {
   if (!map || !map.isStyleLoaded()) return;
-  if (map.getLayer("hubs-labels")) {
-    map.moveLayer("hubs-labels");
+
+  const hubLayers = [
+    "hubs-clusters", // Move first (will be at bottom of hub stack)
+    "hubs-cluster-count",
+    "hubs-circles",
+    "hubs-labels", // Move last (will be on top of hub stack)
+  ];
+
+  // Check if all hub layers exist
+  const existingHubLayers = hubLayers.filter((layerId) =>
+    map.getLayer(layerId)
+  );
+  if (existingHubLayers.length === 0) return;
+
+  // Get current layer order
+  const style = map.getStyle();
+  if (!style || !style.layers) return;
+
+  const allLayers = style.layers;
+  const layerIndices = {};
+  allLayers.forEach((layer, index) => {
+    layerIndices[layer.id] = index;
+  });
+
+  // Check if hubs are already on top
+  // Find the last non-hub layer index
+  let lastNonHubIndex = -1;
+  for (let i = allLayers.length - 1; i >= 0; i--) {
+    if (!hubLayers.includes(allLayers[i].id)) {
+      lastNonHubIndex = i;
+      break;
+    }
   }
-  if (map.getLayer("hubs-circles")) {
-    map.moveLayer("hubs-circles");
+
+  // Check if all hub layers are after the last non-hub layer
+  let needsReordering = false;
+  for (const hubLayerId of existingHubLayers) {
+    const hubIndex = layerIndices[hubLayerId];
+    if (hubIndex === undefined || hubIndex <= lastNonHubIndex) {
+      needsReordering = true;
+      break;
+    }
+  }
+
+  // Only move layers if they're not already on top
+  if (needsReordering) {
+    // Move each hub layer to the absolute top
+    hubLayers.forEach((layerId) => {
+      if (map.getLayer(layerId)) {
+        map.moveLayer(layerId);
+      }
+    });
   }
 }
 
 function setHubsVisibility(visible) {
   if (!map || !map.isStyleLoaded()) return;
   const visibility = visible ? "visible" : "none";
+  map.setLayoutProperty("hubs-clusters", "visibility", visibility);
+  map.setLayoutProperty("hubs-cluster-count", "visibility", visibility);
   map.setLayoutProperty("hubs-circles", "visibility", visibility);
   map.setLayoutProperty("hubs-labels", "visibility", visibility);
   if (visible) {
-    ensureHubsOnTop();
+    // Use debounced version for visibility toggles to avoid excessive calls
+    debouncedEnsureHubsOnTop();
   }
 }
 
@@ -1258,18 +1413,21 @@ async function loadAndDisplayRoute(fromId, toId) {
     }
 
     console.log(`Route has ${routeData.features.length} feature(s)`);
-    
+
     // Extract route geometry for popup positioning
     let route_geom = null;
     if (routeData.features && routeData.features.length > 0) {
       const firstFeature = routeData.features[0];
-      if (firstFeature.geometry && firstFeature.geometry.type === 'LineString') {
+      if (
+        firstFeature.geometry &&
+        firstFeature.geometry.type === "LineString"
+      ) {
         route_geom = {
-          coords: firstFeature.geometry.coordinates
+          coords: firstFeature.geometry.coordinates,
         };
       }
     }
-    
+
     // Extract route statistics from route data
     currentRouteLumoScore = null;
     currentRouteStats = null;
@@ -1277,12 +1435,12 @@ async function loadAndDisplayRoute(fromId, toId) {
       const firstFeature = routeData.features[0];
       if (firstFeature.properties) {
         const props = firstFeature.properties;
-        
+
         // Extract lumo score
         if (props.lumo_score_percentage !== undefined) {
           currentRouteLumoScore = props.lumo_score_percentage;
         }
-        
+
         // Extract all route statistics
         currentRouteStats = {
           lengthMeters: props.route_length_meters || null,
@@ -1292,7 +1450,7 @@ async function loadAndDisplayRoute(fromId, toId) {
           poiCounts: props.poi_counts || {},
           poiFrequencies: props.poi_frequencies || {},
         };
-        
+
         console.log(`Route Stats:`, currentRouteStats);
       }
     }
@@ -1495,12 +1653,15 @@ async function loadAndDisplayRoute(fromId, toId) {
       }
     }
 
+    // Ensure hubs are always on top after routes are added
+    ensureHubsOnTop();
+
     currentRouteSource = routeUrl;
     console.log(`✅ Route successfully loaded: ${routeFileName}`);
 
     // Force a repaint to ensure route is visible
     map.triggerRepaint();
-    
+
     // Zoom and center map on the route
     if (route_geom && route_geom.coords && route_geom.coords.length > 0) {
       // Calculate bounding box of the route
@@ -1509,7 +1670,7 @@ async function loadAndDisplayRoute(fromId, toId) {
       let maxLng = coords[0][0];
       let minLat = coords[0][1];
       let maxLat = coords[0][1];
-      
+
       coords.forEach((coord) => {
         const [lng, lat] = coord;
         minLng = Math.min(minLng, lng);
@@ -1517,24 +1678,24 @@ async function loadAndDisplayRoute(fromId, toId) {
         minLat = Math.min(minLat, lat);
         maxLat = Math.max(maxLat, lat);
       });
-      
+
       // Add padding around the route (in degrees)
       const padding = 0.01; // Adjust this value to control how much padding around the route
       const bounds = [
         [minLng - padding, minLat - padding], // Southwest corner
         [maxLng + padding, maxLat + padding], // Northeast corner
       ];
-      
+
       // Get current pitch and bearing to preserve them
       const currentPitch = map.getPitch();
       const currentBearing = map.getBearing();
-      
+
       // Create LngLatBounds object
       const routeBounds = new mapboxgl.LngLatBounds(bounds[0], bounds[1]);
-      
+
       // Calculate the center point
       const center = routeBounds.getCenter();
-      
+
       // Calculate zoom level manually based on bounds
       // This is a simplified calculation - fitBounds does this more accurately
       // but we'll use a reasonable approximation
@@ -1543,22 +1704,22 @@ async function loadAndDisplayRoute(fromId, toId) {
       const latDiff = ne.lat - sw.lat;
       const lngDiff = ne.lng - sw.lng;
       const maxDiff = Math.max(latDiff, lngDiff);
-      
+
       // Estimate zoom level (this is approximate, fitBounds does it better)
       // We'll use fitBounds with duration 0 to get accurate zoom, then animate
       const originalCenter = map.getCenter();
       const originalZoom = map.getZoom();
-      
+
       // Temporarily fit bounds to calculate optimal zoom
       map.fitBounds(routeBounds, {
         padding: { top: 50, bottom: 50, left: 50, right: 50 },
         duration: 0,
         maxZoom: 16,
       });
-      
+
       const targetZoom = Math.min(map.getZoom(), 16);
       const targetCenter = map.getCenter();
-      
+
       // Restore original position
       map.jumpTo({
         center: originalCenter,
@@ -1566,7 +1727,7 @@ async function loadAndDisplayRoute(fromId, toId) {
         pitch: currentPitch,
         bearing: currentBearing,
       });
-      
+
       // Now animate to the target position while preserving pitch
       map.easeTo({
         center: targetCenter,
@@ -1578,10 +1739,10 @@ async function loadAndDisplayRoute(fromId, toId) {
           return t * (2 - t); // ease-out easing
         },
       });
-      
+
       console.log("✅ Map zoomed and centered on route");
     }
-    
+
     // Show route statistics popup after a short delay
     setTimeout(() => {
       if (route_geom && currentRouteStats) {
@@ -1596,9 +1757,9 @@ async function loadAndDisplayRoute(fromId, toId) {
 // Handle route popup visibility based on zoom level
 function handleRoutePopupVisibility(zoom) {
   if (!map) return;
-  
+
   const shouldShow = zoom >= 11 && routePopupGeom && currentRouteStats;
-  
+
   if (shouldShow) {
     // Show popup if it doesn't exist
     if (!routePopup) {
@@ -1606,24 +1767,26 @@ function handleRoutePopupVisibility(zoom) {
     } else {
       // Fade in existing popup
       setTimeout(() => {
-        const popupElement = document.querySelector('.route-stats-map-popup');
+        const popupElement = document.querySelector(".route-stats-map-popup");
         if (popupElement) {
-          popupElement.style.opacity = '1';
-          popupElement.style.visibility = 'visible';
-          popupElement.style.pointerEvents = 'auto';
-          popupElement.style.transition = 'opacity 0.4s ease, visibility 0.4s ease';
+          popupElement.style.opacity = "1";
+          popupElement.style.visibility = "visible";
+          popupElement.style.pointerEvents = "auto";
+          popupElement.style.transition =
+            "opacity 0.4s ease, visibility 0.4s ease";
         }
       }, 10);
     }
   } else {
     // Fade out popup
     if (routePopup) {
-      const popupElement = document.querySelector('.route-stats-map-popup');
+      const popupElement = document.querySelector(".route-stats-map-popup");
       if (popupElement) {
-        popupElement.style.opacity = '0';
-        popupElement.style.visibility = 'hidden';
-        popupElement.style.pointerEvents = 'none';
-        popupElement.style.transition = 'opacity 0.3s ease, visibility 0.3s ease';
+        popupElement.style.opacity = "0";
+        popupElement.style.visibility = "hidden";
+        popupElement.style.pointerEvents = "none";
+        popupElement.style.transition =
+          "opacity 0.3s ease, visibility 0.3s ease";
       }
     }
   }
@@ -1651,18 +1814,21 @@ function showRouteStatsPopup(routeGeom) {
 
   // Get route stats
   const stats = currentRouteStats;
-  const duration = stats.walkDurationMinutes !== null ? Math.round(stats.walkDurationMinutes) : null;
+  const duration =
+    stats.walkDurationMinutes !== null
+      ? Math.round(stats.walkDurationMinutes)
+      : null;
   const distance = stats.lengthKm !== null ? stats.lengthKm.toFixed(1) : null;
 
   // Create HTML content for popup - simple style like navigation apps with walking icon
-  const popupContent = document.createElement('div');
-  popupContent.className = 'route-stats-popup';
-  
+  const popupContent = document.createElement("div");
+  popupContent.className = "route-stats-popup";
+
   // Get walking icon path
   const walkingIconUrl = `${BASE}walking.svg`.replace(/\/{2,}/g, "/");
-  
-  let html = '';
-  
+
+  let html = "";
+
   // First row: Icon and duration on same horizontal line (inline)
   html += '<div class="route-stats-popup-top-line">';
   html += `
@@ -1673,42 +1839,42 @@ function showRouteStatsPopup(routeGeom) {
   if (duration !== null) {
     html += `<span class="route-stats-popup-duration" style="color: #000000 !important; font-weight: 800 !important; font-size: 22px !important;">${duration} min</span>`;
   }
-  html += '</div>';
-  
+  html += "</div>";
+
   // Second row: Distance below, aligned with duration text
   if (distance !== null) {
     html += `<div class="route-stats-popup-bottom-line">`;
     html += `<span class="route-stats-popup-distance" style="color: #000000 !important;">${distance} km</span>`;
     html += `</div>`;
   }
-  
+
   popupContent.innerHTML = html;
 
   // Add click handler to open route details in sidebar
-  popupContent.addEventListener('click', (e) => {
+  popupContent.addEventListener("click", (e) => {
     e.stopPropagation();
     // Add visual feedback
-    popupContent.classList.add('route-popup-clicked');
+    popupContent.classList.add("route-popup-clicked");
     setTimeout(() => {
-      popupContent.classList.remove('route-popup-clicked');
+      popupContent.classList.remove("route-popup-clicked");
     }, 200);
-    emit('routePopupClicked');
+    emit("routePopupClicked");
   });
-  popupContent.style.cursor = 'pointer';
+  popupContent.style.cursor = "pointer";
 
   // Add hover timer for auto-opening sidebar
   let hoverTimer = null;
   const HOVER_DELAY = 1500; // 1.5 seconds hover to auto-open
-  
-  popupContent.addEventListener('mouseenter', (e) => {
+
+  popupContent.addEventListener("mouseenter", (e) => {
     e.stopPropagation();
     hoverTimer = setTimeout(() => {
-      emit('routePopupClicked');
+      emit("routePopupClicked");
       hoverTimer = null;
     }, HOVER_DELAY);
   });
-  
-  popupContent.addEventListener('mouseleave', (e) => {
+
+  popupContent.addEventListener("mouseleave", (e) => {
     e.stopPropagation();
     if (hoverTimer) {
       clearTimeout(hoverTimer);
@@ -1720,84 +1886,91 @@ function showRouteStatsPopup(routeGeom) {
   // Use a point that's slightly offset from the midpoint to position the popup better
   const routePointIndex = Math.floor(coords.length * 0.4); // Use 40% along the route
   const routePoint = coords[routePointIndex];
-  
+
   // Create and show popup with tip pointing to route
   routePopup = new mapboxgl.Popup({
     closeButton: false,
     closeOnClick: false,
-    className: 'route-stats-map-popup',
-    anchor: 'bottom',
+    className: "route-stats-map-popup",
+    anchor: "bottom",
     offset: [0, -5], // Smaller offset so tip is closer to route
   })
     .setLngLat([routePoint[0], routePoint[1]])
     .setDOMContent(popupContent)
     .addTo(map);
-  
+
   // Set initial visibility based on current zoom after popup is added
   setTimeout(() => {
     const currentZoom = map.getZoom();
-    const popupElement = document.querySelector('.route-stats-map-popup');
+    const popupElement = document.querySelector(".route-stats-map-popup");
     if (popupElement) {
       if (currentZoom >= 11) {
-        popupElement.style.opacity = '1';
-        popupElement.style.visibility = 'visible';
-        popupElement.style.pointerEvents = 'auto';
-        popupElement.style.transition = 'opacity 0.4s ease, visibility 0.4s ease';
+        popupElement.style.opacity = "1";
+        popupElement.style.visibility = "visible";
+        popupElement.style.pointerEvents = "auto";
+        popupElement.style.transition =
+          "opacity 0.4s ease, visibility 0.4s ease";
       } else {
-        popupElement.style.opacity = '0';
-        popupElement.style.visibility = 'hidden';
-        popupElement.style.pointerEvents = 'none';
-        popupElement.style.transition = 'opacity 0.3s ease, visibility 0.3s ease';
+        popupElement.style.opacity = "0";
+        popupElement.style.visibility = "hidden";
+        popupElement.style.pointerEvents = "none";
+        popupElement.style.transition =
+          "opacity 0.3s ease, visibility 0.3s ease";
       }
     }
   }, 50);
-  
+
   // Set glassmorphism effect directly on the popup element
   setTimeout(() => {
-    const popupContentEl = document.querySelector('.route-stats-map-popup .mapboxgl-popup-content');
+    const popupContentEl = document.querySelector(
+      ".route-stats-map-popup .mapboxgl-popup-content"
+    );
     if (popupContentEl) {
-      popupContentEl.style.background = 'rgba(255, 255, 255, 0.25)';
-      popupContentEl.style.backgroundColor = 'rgba(255, 255, 255, 0.25)';
-      popupContentEl.style.backdropFilter = 'blur(20px) saturate(180%)';
-      popupContentEl.style.webkitBackdropFilter = 'blur(20px) saturate(180%)';
-      popupContentEl.style.boxShadow = '0 8px 32px 0 rgba(0, 0, 0, 0.1)';
-      popupContentEl.style.transition = 'transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, border-color 0.2s ease';
-      
+      popupContentEl.style.background = "rgba(255, 255, 255, 0.25)";
+      popupContentEl.style.backgroundColor = "rgba(255, 255, 255, 0.25)";
+      popupContentEl.style.backdropFilter = "blur(20px) saturate(180%)";
+      popupContentEl.style.webkitBackdropFilter = "blur(20px) saturate(180%)";
+      popupContentEl.style.boxShadow = "0 8px 32px 0 rgba(0, 0, 0, 0.1)";
+      popupContentEl.style.transition =
+        "transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, border-color 0.2s ease";
+
       // Add hover event listeners to manually change styles (since CSS hover might be overridden)
-      popupContentEl.addEventListener('mouseenter', () => {
-        popupContentEl.style.background = 'rgba(255, 255, 255, 0.5)';
-        popupContentEl.style.backgroundColor = 'rgba(255, 255, 255, 0.5)';
-        popupContentEl.style.borderColor = 'rgba(255, 255, 255, 0.5)';
-        popupContentEl.style.transform = 'scale(1.08)';
-        popupContentEl.style.boxShadow = '0 12px 40px 0 rgba(0, 0, 0, 0.2)';
+      popupContentEl.addEventListener("mouseenter", () => {
+        popupContentEl.style.background = "rgba(255, 255, 255, 0.5)";
+        popupContentEl.style.backgroundColor = "rgba(255, 255, 255, 0.5)";
+        popupContentEl.style.borderColor = "rgba(255, 255, 255, 0.5)";
+        popupContentEl.style.transform = "scale(1.08)";
+        popupContentEl.style.boxShadow = "0 12px 40px 0 rgba(0, 0, 0, 0.2)";
       });
-      
-      popupContentEl.addEventListener('mouseleave', () => {
-        popupContentEl.style.background = 'rgba(255, 255, 255, 0.25)';
-        popupContentEl.style.backgroundColor = 'rgba(255, 255, 255, 0.25)';
-        popupContentEl.style.borderColor = 'rgba(255, 255, 255, 0.18)';
-        popupContentEl.style.transform = 'scale(1)';
-        popupContentEl.style.boxShadow = '0 8px 32px 0 rgba(0, 0, 0, 0.1)';
+
+      popupContentEl.addEventListener("mouseleave", () => {
+        popupContentEl.style.background = "rgba(255, 255, 255, 0.25)";
+        popupContentEl.style.backgroundColor = "rgba(255, 255, 255, 0.25)";
+        popupContentEl.style.borderColor = "rgba(255, 255, 255, 0.18)";
+        popupContentEl.style.transform = "scale(1)";
+        popupContentEl.style.boxShadow = "0 8px 32px 0 rgba(0, 0, 0, 0.1)";
       });
     }
-    const popupTip = document.querySelector('.route-stats-map-popup .mapboxgl-popup-tip');
+    const popupTip = document.querySelector(
+      ".route-stats-map-popup .mapboxgl-popup-tip"
+    );
     if (popupTip) {
-      popupTip.style.borderTopColor = 'rgba(255, 255, 255, 0.25)';
-      popupTip.style.borderTopWidth = '6px';
-      popupTip.style.borderLeft = '6px solid transparent';
-      popupTip.style.borderRight = '6px solid transparent';
-      popupTip.style.borderBottom = 'none';
-      popupTip.style.width = '0';
-      popupTip.style.height = '0';
-      popupTip.style.display = 'block';
-      popupTip.style.visibility = 'visible';
-      popupTip.style.opacity = '1';
-      popupTip.style.position = 'relative';
-      popupTip.style.zIndex = '1';
-      popupTip.style.marginTop = '0';
-      popupTip.style.marginLeft = 'auto';
-      popupTip.style.marginRight = 'auto';
-      popupTip.style.boxShadow = '0 2px 8px 0 rgba(0, 0, 0, 0.1)';
+      popupTip.style.borderTopColor = "rgba(255, 255, 255, 0.25)";
+      popupTip.style.borderTopWidth = "6px";
+      popupTip.style.borderLeft = "6px solid transparent";
+      popupTip.style.borderRight = "6px solid transparent";
+      popupTip.style.borderBottom = "none";
+      popupTip.style.width = "0";
+      popupTip.style.height = "0";
+      popupTip.style.display = "block";
+      popupTip.style.visibility = "visible";
+      popupTip.style.opacity = "1";
+      popupTip.style.position = "relative";
+      popupTip.style.zIndex = "1";
+      popupTip.style.marginTop = "0";
+      popupTip.style.marginLeft = "auto";
+      popupTip.style.marginRight = "auto";
+      popupTip.style.boxShadow = "0 2px 8px 0 rgba(0, 0, 0, 0.1)";
     }
   }, 10);
 }
@@ -1811,7 +1984,7 @@ function clearRoute() {
     routePopup.remove();
     routePopup = null;
   }
-  
+
   // Clear stored data
   currentRouteStats = null;
   routePopupGeom = null;
@@ -2327,7 +2500,7 @@ onBeforeUnmount(() => {
 }
 
 .map-controls-toggle-tooltip::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 100%;
   left: 50%;
@@ -2459,7 +2632,11 @@ onBeforeUnmount(() => {
   -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
   opacity: 1 !important;
   cursor: pointer !important;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, border-color 0.2s ease !important;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease !important;
 }
 
 .route-stats-map-popup .mapboxgl-popup-content:hover {
@@ -2501,7 +2678,7 @@ onBeforeUnmount(() => {
   opacity: 0 !important;
   visibility: hidden !important;
   transition:
-    opacity 0.4s ease !important,
+    opacity 0.4s ease,
     visibility 0.4s ease !important;
   pointer-events: none !important;
 }
@@ -2517,7 +2694,7 @@ onBeforeUnmount(() => {
   visibility: hidden !important;
   pointer-events: none !important;
   transition:
-    opacity 0.3s ease !important,
+    opacity 0.3s ease,
     visibility 0.3s ease !important;
 }
 
@@ -2530,7 +2707,9 @@ onBeforeUnmount(() => {
 }
 
 .route-stats-popup {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif !important;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue",
+    Arial, sans-serif !important;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #000000 !important;
