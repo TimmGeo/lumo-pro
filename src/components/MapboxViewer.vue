@@ -231,6 +231,7 @@ const emit = defineEmits([
   "mapReady",
   "hubsUpdated",
   "routePopupClicked",
+  "hubsSelected",
 ]);
 
 const sceneEl = ref(null);
@@ -552,7 +553,7 @@ onMounted(async () => {
               35, // Largest for 100+ points
             ],
             "circle-stroke-width": 0, // No contour
-            "circle-opacity": 0.7, // Slightly transparent
+            "circle-opacity": 1, // Fully opaque white
           },
         });
 
@@ -1310,6 +1311,8 @@ function handleHubClick(hubId) {
     selectedHubId2 = id;
     loadAndDisplayRoute(selectedHubId1, selectedHubId2);
     updateHubColors();
+    // Emit event to notify parent that route was created via hub clicks
+    emit("hubsSelected", { hubId1: selectedHubId1, hubId2: selectedHubId2 });
     return;
   }
 
@@ -1495,7 +1498,15 @@ async function loadAndDisplayRoute(fromId, toId) {
               18,
               26,
             ],
-            "line-opacity": 0.4,
+            "line-opacity": [
+              "interpolate",
+              ["linear"],
+              ["zoom"],
+              10.9,
+              0,
+              11,
+              0.4,
+            ],
             "line-blur": 10,
           },
           layout: {
@@ -1537,7 +1548,15 @@ async function loadAndDisplayRoute(fromId, toId) {
               18,
               10,
             ],
-            "line-opacity": 1,
+            "line-opacity": [
+              "interpolate",
+              ["linear"],
+              ["zoom"],
+              10.9,
+              0,
+              11,
+              1,
+            ],
           },
           layout: {
             "line-join": "round",
@@ -1572,6 +1591,15 @@ async function loadAndDisplayRoute(fromId, toId) {
         18,
         10,
       ]);
+      map.setPaintProperty("route-line", "line-opacity", [
+        "interpolate",
+        ["linear"],
+        ["zoom"],
+        10.9,
+        0,
+        11,
+        1,
+      ]);
     }
 
     // Highlight layer for extra shine (on top)
@@ -1594,7 +1622,15 @@ async function loadAndDisplayRoute(fromId, toId) {
               18,
               2.5,
             ],
-            "line-opacity": 0.6,
+            "line-opacity": [
+              "interpolate",
+              ["linear"],
+              ["zoom"],
+              10.9,
+              0,
+              11,
+              0.6,
+            ],
             "line-gap-width": [
               "interpolate",
               ["linear"],
@@ -2184,6 +2220,7 @@ defineExpose({
   resetNorth,
   toggleTilt,
   getIsTilted: () => isTilted.value,
+  clearRoute,
 });
 
 function requestZurichFocus(key) {
