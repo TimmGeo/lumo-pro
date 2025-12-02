@@ -582,7 +582,7 @@ onMounted(async () => {
           },
         });
 
-        // Add circles for unclustered hubs (matching Cesium styling)
+        // Add circles for unclustered hubs
         map.addLayer({
           id: "hubs-circles",
           type: "circle",
@@ -590,7 +590,7 @@ onMounted(async () => {
           filter: ["!", ["has", "point_count"]],
           paint: {
             "circle-radius": 6,
-            "circle-color": "#70f0c3", // Default green for all hubs
+            "circle-color": "#ffffff", // White for all hubs
             "circle-stroke-color": "#0b0b0c",
             "circle-stroke-width": 0,
             "circle-opacity": 1,
@@ -1347,8 +1347,8 @@ function updateHubColors() {
 
   map.getSource("hubs").setData(updatedData);
 
-  // Set paint property to use default green for all hubs
-  map.setPaintProperty("hubs-circles", "circle-color", "#70f0c3");
+  // Set paint property to use white for all hubs
+  map.setPaintProperty("hubs-circles", "circle-color", "#ffffff");
 }
 
 // Load and display route between two hubs
