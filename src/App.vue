@@ -126,9 +126,8 @@
               stroke-linecap="round"
               stroke-linejoin="round"
             >
-              <path d="M3 3h18v18H3V3z" />
-              <path d="M3 9h18" />
-              <path d="M9 3v18" />
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
             </svg>
             <span class="sidebar-icon-tooltip">Route History</span>
           </button>
@@ -958,8 +957,103 @@
     <div class="app-basket" :class="{ 'app-basket--expanded': isBasketExpanded }">
       <!-- Apps Container -->
       <div class="app-basket-apps-container">
-        <!-- Zurich App Button -->
-        <div class="zurich-app-button" @click.stop="activeBasketApp = null">
+        <!-- Map Controls App Button -->
+        <div class="map-controls-app-container">
+          <button
+            class="map-controls-app-button"
+            :class="{ 'map-controls-app-button--expanded': activeBasketApp === 'map-controls' }"
+            @click.stop="toggleMapControls"
+            aria-label="Map controls"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"
+              />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Chat App Button -->
+        <button
+          class="chat-app-button"
+          :class="{ 'chat-app-button--active': activeBasketApp === 'chat' }"
+          @click.stop="toggleChat"
+          aria-label="Open chat"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            <line x1="9" y1="10" x2="15" y2="10"></line>
+          </svg>
+        </button>
+
+        <!-- Legend App Button -->
+        <button
+          class="legend-app-button"
+          :class="{ 'legend-app-button--active': activeBasketApp === 'legend' }"
+          @click.stop="toggleLegend"
+          aria-label="Open legend"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="8" y1="6" x2="21" y2="6"></line>
+            <line x1="8" y1="12" x2="21" y2="12"></line>
+            <line x1="8" y1="18" x2="21" y2="18"></line>
+            <line x1="3" y1="6" x2="3.01" y2="6"></line>
+            <line x1="3" y1="12" x2="3.01" y2="12"></line>
+            <line x1="3" y1="18" x2="3.01" y2="18"></line>
+          </svg>
+        </button>
+
+        <!-- Phone App Button -->
+        <button
+          class="phone-app-button"
+          :class="{ 'phone-app-button--active': activeBasketApp === 'phone' }"
+          @click.stop="togglePhone"
+          aria-label="Open phone"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+          </svg>
+        </button>
+
+        <!-- Zurich App Button (on the right) -->
+        <div class="zurich-app-button" @click.stop="closeBasket">
           <!-- Zoom to Zurich Button (shown when zoomed out) -->
           <button
             v-if="mapZoom < 11"
@@ -994,105 +1088,6 @@
             </div>
           </div>
         </div>
-
-        <!-- Right Column: 2x2 Grid (collapsed) / Row (expanded) -->
-        <div class="app-basket-right-column">
-          <!-- Map Controls App Button -->
-          <div class="map-controls-app-container">
-          <button
-            class="map-controls-app-button"
-            :class="{ 'map-controls-app-button--expanded': activeBasketApp === 'map-controls' }"
-            @click.stop="activeBasketApp = activeBasketApp === 'map-controls' ? null : 'map-controls'"
-            aria-label="Map controls"
-          >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path
-                d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"
-              />
-              <circle cx="12" cy="12" r="3" />
-            </svg>
-          </button>
-
-        </div>
-
-        <!-- Chat App Button -->
-        <button
-          class="chat-app-button"
-          :class="{ 'chat-app-button--active': activeBasketApp === 'chat' }"
-          @click.stop="activeBasketApp = activeBasketApp === 'chat' ? null : 'chat'"
-          aria-label="Open chat"
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-            <line x1="9" y1="10" x2="15" y2="10"></line>
-          </svg>
-        </button>
-
-        <!-- Legend App Button -->
-        <button
-          class="legend-app-button"
-          :class="{ 'legend-app-button--active': activeBasketApp === 'legend' }"
-          @click.stop="activeBasketApp = activeBasketApp === 'legend' ? null : 'legend'"
-          aria-label="Open legend"
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <line x1="8" y1="6" x2="21" y2="6"></line>
-            <line x1="8" y1="12" x2="21" y2="12"></line>
-            <line x1="8" y1="18" x2="21" y2="18"></line>
-            <line x1="3" y1="6" x2="3.01" y2="6"></line>
-            <line x1="3" y1="12" x2="3.01" y2="12"></line>
-            <line x1="3" y1="18" x2="3.01" y2="18"></line>
-          </svg>
-        </button>
-
-        <!-- Phone App Button -->
-        <button
-          class="phone-app-button"
-          :class="{ 'phone-app-button--active': activeBasketApp === 'phone' }"
-          @click.stop="activeBasketApp = activeBasketApp === 'phone' ? null : 'phone'"
-          aria-label="Open phone"
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-          </svg>
-        </button>
-      </div>
       </div>
 
       <!-- Expanded App Content -->
@@ -1107,11 +1102,11 @@
           </div>
           
           <!-- Close button (chevron up) -->
-          <button
-            class="app-basket-content-close"
-            @click="activeBasketApp = null"
-            aria-label="Close app"
-          >
+                <button
+                  class="app-basket-content-close"
+                  @click="closeBasket"
+                  aria-label="Close app"
+                >
             <svg
               width="20"
               height="20"
@@ -1130,10 +1125,15 @@
           <transition name="fade-content" mode="out-in">
             <div
               :key="activeBasketApp"
-              class="app-basket-content-scrollable"
+              class="app-basket-content-scrollable-wrapper"
             >
+              <div class="app-basket-content-scrollable">
               <!-- Chat App Content -->
-              <div v-if="activeBasketApp === 'chat'" class="app-basket-app-section">
+              <div 
+                v-if="activeBasketApp === 'chat'" 
+                class="app-basket-app-section"
+                :class="{ 'route-already-shown': isCurrentRouteAlreadyShown }"
+              >
               <!-- Route info section -->
               <div v-if="currentRouteStats" class="route-details-popup-info">
                 <div class="route-details-intro">
@@ -1241,7 +1241,49 @@
               <!-- Phone App Content -->
               <div v-else-if="activeBasketApp === 'phone'" class="app-basket-app-section">
                 <div class="app-basket-phone-content">
-                  <p>Phone functionality coming soon...</p>
+                  <h3 class="phone-content-title">Emergency Numbers</h3>
+                  <div class="phone-contacts-table">
+                    <div class="phone-contacts-header">
+                      <div class="phone-contact-facility">Service</div>
+                      <div class="phone-contact-number">Phone Number</div>
+                    </div>
+                    <div class="phone-contact-row">
+                      <div class="phone-contact-facility">General Emergency</div>
+                      <div class="phone-contact-number">
+                        <a href="tel:112" class="phone-contact-link">112</a>
+                      </div>
+                    </div>
+                    <div class="phone-contact-row">
+                      <div class="phone-contact-facility">Police</div>
+                      <div class="phone-contact-number">
+                        <a href="tel:117" class="phone-contact-link">117</a>
+                      </div>
+                    </div>
+                    <div class="phone-contact-row">
+                      <div class="phone-contact-facility">Fire Department</div>
+                      <div class="phone-contact-number">
+                        <a href="tel:118" class="phone-contact-link">118</a>
+                      </div>
+                    </div>
+                    <div class="phone-contact-row">
+                      <div class="phone-contact-facility">Medical Emergency</div>
+                      <div class="phone-contact-number">
+                        <a href="tel:144" class="phone-contact-link">144</a>
+                      </div>
+                    </div>
+                    <div class="phone-contact-row">
+                      <div class="phone-contact-facility">Poison Control</div>
+                      <div class="phone-contact-number">
+                        <a href="tel:145" class="phone-contact-link">145</a>
+                      </div>
+                    </div>
+                    <div class="phone-contact-row">
+                      <div class="phone-contact-facility">Roadside Assistance</div>
+                      <div class="phone-contact-number">
+                        <a href="tel:140" class="phone-contact-link">140</a>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -1382,6 +1424,7 @@
                   </div>
                 </div>
               </div>
+              </div>
             </div>
           </transition>
           
@@ -1515,6 +1558,10 @@ const currentRouteStats = ref(null);
 const isLoadingFromHistory = ref(false); // Flag to prevent adding history routes to history
 const isHandlingHubClicks = ref(false); // Flag to prevent watcher from triggering when handling hub clicks
 const routeDetailsPopupVisible = ref(false);
+// Track which routes have been shown in the chat app before
+const routesShownInChat = ref(new Set());
+// Track timeout for marking route as shown (to allow animations to complete)
+let markRouteShownTimeout = null;
 const legendPopupVisible = ref(false);
 const phonePopupVisible = ref(false);
 const userMessage = ref("");
@@ -1525,11 +1572,49 @@ const mapControlsExpanded = ref(false);
 
 // Track which app is currently active in the basket
 const activeBasketApp = ref(null); // 'chat', 'legend', 'phone', 'map-controls', or null
+// Store previous app state to restore when zooming back in
+const previousBasketApp = ref(null);
 
 // Computed to check if basket should be expanded
 const isBasketExpanded = computed(() => {
   return activeBasketApp.value !== null;
 });
+
+// Computed to check if current route has been shown in chat before
+const isCurrentRouteAlreadyShown = computed(() => {
+  // Only check if chat app is active and we have route stats
+  if (activeBasketApp.value !== 'chat' || !currentRouteStats.value) return false;
+  if (!startHub.value || !endHub.value) return false;
+  const routeKey = `${startHub.value}-${endHub.value}`;
+  return routesShownInChat.value.has(routeKey);
+});
+
+// Helper function to close basket (clears previous state to prevent auto-reopen)
+function closeBasket() {
+  activeBasketApp.value = null;
+  previousBasketApp.value = null;
+}
+
+// Handler functions for app buttons that clear previous state on manual interaction
+function toggleMapControls() {
+  previousBasketApp.value = null; // Clear previous state on manual interaction
+  activeBasketApp.value = activeBasketApp.value === 'map-controls' ? null : 'map-controls';
+}
+
+function toggleChat() {
+  previousBasketApp.value = null; // Clear previous state on manual interaction
+  activeBasketApp.value = activeBasketApp.value === 'chat' ? null : 'chat';
+}
+
+function toggleLegend() {
+  previousBasketApp.value = null; // Clear previous state on manual interaction
+  activeBasketApp.value = activeBasketApp.value === 'legend' ? null : 'legend';
+}
+
+function togglePhone() {
+  previousBasketApp.value = null; // Clear previous state on manual interaction
+  activeBasketApp.value = activeBasketApp.value === 'phone' ? null : 'phone';
+}
 
 // Hover popup data
 const popup = ref({ show: false, x: 0, y: 0, lights: 0, pois: 0, hub: "—" });
@@ -1760,6 +1845,22 @@ function handleMapZoom(event) {
     event.center.lat,
   ]);
   updateLocation(event.zoom);
+
+  // Close app basket when zoomed out (same threshold as route fade: 11)
+  const zoomThreshold = 11;
+  if (event.zoom < zoomThreshold) {
+    // Store current app state before closing
+    if (activeBasketApp.value !== null) {
+      previousBasketApp.value = activeBasketApp.value;
+      activeBasketApp.value = null;
+    }
+  } else {
+    // Restore previous app state when zoomed back in
+    if (previousBasketApp.value !== null && activeBasketApp.value === null) {
+      activeBasketApp.value = previousBasketApp.value;
+      previousBasketApp.value = null;
+    }
+  }
 }
 
 function handleMapMove(event) {
@@ -1885,6 +1986,7 @@ function handleHubsSelected({ hubId1, hubId2 }) {
       console.log("Updated route stats from hub clicks:", currentRouteStats.value);
       // Automatically open chat app when route is created via hub clicks
       if (currentRouteStats.value) {
+        previousBasketApp.value = null; // Clear previous state on programmatic open
         activeBasketApp.value = 'chat';
       }
     }
@@ -1937,7 +2039,7 @@ function handleClearRoute() {
   
   // Close chat app if open
   if (activeBasketApp.value === 'chat') {
-    activeBasketApp.value = null;
+    closeBasket();
   }
 }
 
@@ -1945,8 +2047,9 @@ function handleClearRoute() {
 function handleRoutePopupClicked() {
   // If chat is open, close it; otherwise open chat
   if (activeBasketApp.value === 'chat') {
-    activeBasketApp.value = null;
+    closeBasket();
   } else {
+    previousBasketApp.value = null; // Clear previous state on programmatic open
     activeBasketApp.value = 'chat';
   }
 }
@@ -1954,8 +2057,9 @@ function handleRoutePopupClicked() {
 // Toggle route details popup (kept for backwards compatibility)
 function toggleRouteDetailsPopup() {
   if (activeBasketApp.value === 'chat') {
-    activeBasketApp.value = null;
+    closeBasket();
   } else {
+    previousBasketApp.value = null; // Clear previous state on programmatic open
     activeBasketApp.value = 'chat';
   }
 }
@@ -1963,8 +2067,9 @@ function toggleRouteDetailsPopup() {
 // Toggle legend popup (kept for backwards compatibility)
 function toggleLegendPopup() {
   if (activeBasketApp.value === 'legend') {
-    activeBasketApp.value = null;
+    closeBasket();
   } else {
+    previousBasketApp.value = null; // Clear previous state on programmatic open
     activeBasketApp.value = 'legend';
   }
 }
@@ -2081,6 +2186,7 @@ function route(event) {
           console.log("Updated route stats:", currentRouteStats.value);
           // Automatically open chat app when route is created
           if (currentRouteStats.value) {
+            previousBasketApp.value = null; // Clear previous state on programmatic open
             activeBasketApp.value = 'chat';
           }
         }
@@ -2183,6 +2289,7 @@ watch(
     if (newStats && Object.keys(newStats).length > 0) {
       // Automatically open chat app when route stats are available
       if (activeBasketApp.value !== 'chat') {
+        previousBasketApp.value = null; // Clear previous state on programmatic open
         activeBasketApp.value = 'chat';
       }
       // If chat was already open, keep it open (elegant reload)
@@ -2196,12 +2303,40 @@ watch(
   { deep: true }
 );
 
+// Watch for chat app opening and mark route as shown (after animations complete)
+watch(
+  [activeBasketApp, startHub, endHub, currentRouteStats],
+  ([newApp, newStart, newEnd, newStats], [oldApp, oldStart, oldEnd, oldStats]) => {
+    // Clear any pending timeout when route changes or chat closes
+    if (markRouteShownTimeout) {
+      clearTimeout(markRouteShownTimeout);
+      markRouteShownTimeout = null;
+    }
+
+    // When chat app is opened and we have a route with stats
+    if (newApp === 'chat' && newStart && newEnd && newStats && Object.keys(newStats).length > 0) {
+      const routeKey = `${newStart}-${newEnd}`;
+      
+      // Only mark as shown if it hasn't been shown before
+      // The longest animation is footer bubble: 1.3s delay + 0.5s duration = 1.8s
+      // Wait 2.5 seconds to ensure all animations complete
+      if (!routesShownInChat.value.has(routeKey)) {
+        markRouteShownTimeout = setTimeout(() => {
+          routesShownInChat.value.add(routeKey);
+          markRouteShownTimeout = null;
+        }, 2500);
+      }
+    }
+  }
+);
+
 // Watch for layer selection and automatically open legend app
 watch(
   [lightingVisible, vibrancyVisible, combinedVisible],
   ([newLighting, newVibrancy, newCombined], [oldLighting, oldVibrancy, oldCombined]) => {
     // If any layer is selected, open legend app
     if (newLighting || newVibrancy || newCombined) {
+      previousBasketApp.value = null; // Clear previous state on programmatic open
       activeBasketApp.value = 'legend';
     }
   },
@@ -2387,6 +2522,7 @@ function loadHistoryRoute(entry) {
         );
         // Automatically open chat app when route is loaded from history
         if (currentRouteStats.value) {
+          previousBasketApp.value = null; // Clear previous state on programmatic open
           activeBasketApp.value = 'chat';
         }
       }
@@ -4694,8 +4830,8 @@ textarea:focus-visible {
   top: 30px;
   right: 30px;
   z-index: 15;
-  width: 208px; /* 8px padding + 92px zurich + 8px gap + 92px grid + 8px padding */
-  height: 108px; /* 8px padding + 92px apps + 8px padding */
+  width: 216px; /* 8px padding + 46px + 8px gap + 46px + 8px gap + 92px (Zurich) + 8px padding = 216px */
+  height: 108px; /* 8px padding + 42px + 8px gap + 42px + 8px padding = 108px */
   background: rgba(255, 255, 255, 0.03); /* More transparent for glassier feel */
   backdrop-filter: blur(40px) saturate(200%);
   -webkit-backdrop-filter: blur(40px) saturate(200%);
@@ -4719,36 +4855,60 @@ textarea:focus-visible {
 }
 
 .app-basket-apps-container {
-  display: flex;
-  flex-direction: row;
+  display: grid;
+  grid-template-columns: 46px 46px 92px;
+  grid-template-rows: 42px 42px;
   gap: 8px;
   flex-shrink: 0;
-  align-items: flex-start;
-  transition: gap 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
+  align-items: start;
+  justify-items: start;
+  transition: grid-template-columns 0.3s cubic-bezier(0.16, 0.84, 0.24, 1), grid-template-rows 0.3s cubic-bezier(0.16, 0.84, 0.24, 1), gap 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
 }
 
-.app-basket-right-column {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 1fr;
-  gap: 8px;
-  width: 92px;
-  height: 92px;
-  flex-shrink: 0;
-  transition: all 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
+/* Map Controls: top-left of 2x2 grid */
+.map-controls-app-container {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+/* Chat: top-right of 2x2 grid */
+.chat-app-button {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+/* Legend: bottom-left of 2x2 grid */
+.legend-app-button {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+/* Phone: bottom-right of 2x2 grid */
+.phone-app-button {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+/* Zurich: spans 2 rows on the right (bigger) */
+.zurich-app-button {
+  grid-column: 3;
+  grid-row: 1 / 3;
 }
 
 .app-basket--expanded .app-basket-apps-container {
-  flex-wrap: wrap;
+  grid-template-columns: repeat(5, 56px);
+  grid-template-rows: 56px;
   gap: 8px;
 }
 
-.app-basket--expanded .app-basket-right-column {
-  display: flex;
-  flex-direction: row;
-  width: auto;
-  height: auto;
-  gap: 8px;
+/* Reset grid positions when expanded - all apps in a single row */
+.app-basket--expanded .zurich-app-button,
+.app-basket--expanded .map-controls-app-container,
+.app-basket--expanded .chat-app-button,
+.app-basket--expanded .legend-app-button,
+.app-basket--expanded .phone-app-button {
+  grid-column: auto;
+  grid-row: 1;
 }
 
 /* App content inside basket */
@@ -4809,28 +4969,38 @@ textarea:focus-visible {
   transform: scale(0.95);
 }
 
-.app-basket-content-scrollable {
+.app-basket-content-scrollable-wrapper {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 40px 20px 80px 20px; /* Top padding for label, bottom for input */
+  position: relative;
+  margin-top: 48px; /* Prevent content from scrolling behind header */
+  scroll-padding-top: 48px; /* Additional scroll padding for better behavior */
+}
+
+.app-basket-content-scrollable {
+  flex: 1;
+  padding: 20px 20px 80px 20px; /* Content padding, bottom for input */
   min-height: 0;
 }
 
-.app-basket-content-scrollable::-webkit-scrollbar {
+.app-basket-content-scrollable-wrapper::-webkit-scrollbar {
   width: 6px;
 }
 
-.app-basket-content-scrollable::-webkit-scrollbar-track {
+.app-basket-content-scrollable-wrapper::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.app-basket-content-scrollable::-webkit-scrollbar-thumb {
+.app-basket-content-scrollable-wrapper::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 3px;
 }
 
-.app-basket-content-scrollable::-webkit-scrollbar-thumb:hover {
+.app-basket-content-scrollable-wrapper::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.2);
 }
 
@@ -4842,6 +5012,75 @@ textarea:focus-visible {
 .app-basket-map-controls-content {
   padding: 20px;
   color: rgba(255, 255, 255, 0.9);
+}
+
+.phone-content-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  margin: 0 0 20px 0;
+  letter-spacing: -0.02em;
+}
+
+.phone-contacts-table {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
+}
+
+.phone-contacts-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  font-weight: 600;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.95);
+  letter-spacing: -0.01em;
+}
+
+.phone-contact-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background-color 0.2s ease;
+}
+
+.phone-contact-row:hover {
+  background-color: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  padding-left: 8px;
+  padding-right: 8px;
+  margin-left: -8px;
+  margin-right: -8px;
+}
+
+.phone-contact-facility {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.5;
+}
+
+.phone-contact-number {
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  text-align: right;
+}
+
+.phone-contact-link {
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.phone-contact-link:hover {
+  color: rgba(255, 255, 255, 1);
+  text-decoration: underline;
 }
 
 .map-controls-grid {
@@ -4976,7 +5215,7 @@ textarea:focus-visible {
 
 .zurich-app-button {
   position: relative;
-  width: 92px; /* Large app button */
+  width: 92px; /* Larger app button in collapsed state */
   height: 92px; /* Make it quadratic (width = height) */
   background: rgba(26, 27, 30, 0.5);
   border: none;
@@ -5007,8 +5246,8 @@ textarea:focus-visible {
 }
 
 .zurich-app-button-inner {
-  width: 64px; /* Smaller quadratic button */
-  height: 64px; /* Square (width = height) */
+  width: 100%;
+  height: 100%;
   border: none;
   background: transparent;
   padding: 0;
@@ -5016,7 +5255,7 @@ textarea:focus-visible {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: transform 0.2s ease, width 0.3s cubic-bezier(0.16, 0.84, 0.24, 1), height 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
+  transition: transform 0.2s ease;
   box-sizing: border-box;
 }
 
@@ -5111,8 +5350,8 @@ textarea:focus-visible {
 /* -------- MAP CONTROLS APP BUTTON -------- */
 .map-controls-app-container {
   position: relative;
-  width: 100%;
-  height: 100%;
+  width: 46px;
+  height: 42px;
   min-width: 0;
   min-height: 0;
   transition: width 0.3s cubic-bezier(0.16, 0.84, 0.24, 1), height 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
@@ -5184,8 +5423,8 @@ textarea:focus-visible {
 /* -------- CHAT APP BUTTON -------- */
 .chat-app-button {
   position: relative;
-  width: 100%;
-  height: 100%;
+  width: 46px;
+  height: 42px;
   background: rgba(26, 27, 30, 0.5);
   border: none;
   border-radius: 12px;
@@ -5198,7 +5437,9 @@ textarea:focus-visible {
   transition:
     background 0.3s ease,
     box-shadow 0.3s ease,
-    transform 0.2s ease;
+    transform 0.2s ease,
+    width 0.3s cubic-bezier(0.16, 0.84, 0.24, 1),
+    height 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
   box-sizing: border-box;
 }
 
@@ -5242,8 +5483,8 @@ textarea:focus-visible {
 /* -------- LEGEND APP BUTTON -------- */
 .legend-app-button {
   position: relative;
-  width: 100%;
-  height: 100%;
+  width: 46px;
+  height: 42px;
   background: rgba(26, 27, 30, 0.5);
   border: none;
   border-radius: 12px;
@@ -5256,7 +5497,9 @@ textarea:focus-visible {
   transition:
     background 0.3s ease,
     box-shadow 0.3s ease,
-    transform 0.2s ease;
+    transform 0.2s ease,
+    width 0.3s cubic-bezier(0.16, 0.84, 0.24, 1),
+    height 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
   box-sizing: border-box;
 }
 
@@ -5300,8 +5543,8 @@ textarea:focus-visible {
 /* -------- PHONE APP BUTTON -------- */
 .phone-app-button {
   position: relative;
-  width: 100%;
-  height: 100%;
+  width: 46px;
+  height: 42px;
   background: rgba(26, 27, 30, 0.5);
   border: none;
   border-radius: 12px;
@@ -5314,7 +5557,9 @@ textarea:focus-visible {
   transition:
     background 0.3s ease,
     box-shadow 0.3s ease,
-    transform 0.2s ease;
+    transform 0.2s ease,
+    width 0.3s cubic-bezier(0.16, 0.84, 0.24, 1),
+    height 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
   box-sizing: border-box;
 }
 
@@ -5802,6 +6047,12 @@ textarea:focus-visible {
   opacity: 0;
 }
 
+/* Disable animations when route has been shown before */
+.route-already-shown .route-details-intro-greeting {
+  animation: none;
+  opacity: 1;
+}
+
 .route-details-greeting-bold {
   font-weight: 800;
 }
@@ -5833,6 +6084,11 @@ textarea:focus-visible {
   letter-spacing: 0.01em;
   animation: chatBubbleAppear 0.5s ease-out 0.7s forwards;
   opacity: 0;
+}
+
+.route-already-shown .route-details-intro-text {
+  animation: none;
+  opacity: 1;
 }
 
 .route-details-tip {
@@ -5922,6 +6178,11 @@ textarea:focus-visible {
   margin-top: 10px;
   animation: chatBubbleAppear 0.5s ease-out 1s forwards;
   opacity: 0;
+}
+
+.route-already-shown .route-details-document {
+  animation: none;
+  opacity: 1;
 }
 
 .route-details-document-header {
@@ -6169,6 +6430,11 @@ textarea:focus-visible {
   opacity: 0;
 }
 
+.route-already-shown .route-details-footer-bubble {
+  animation: none;
+  opacity: 1;
+}
+
 .route-details-response-section {
   display: flex;
   flex-direction: column;
@@ -6206,6 +6472,11 @@ textarea:focus-visible {
   opacity: 0;
 }
 
+.route-already-shown .route-details-response-bubble {
+  animation: none;
+  opacity: 1;
+}
+
 .route-details-safety-bubble {
   margin: 0 0 0 auto;
   font-size: 13px;
@@ -6234,6 +6505,11 @@ textarea:focus-visible {
   opacity: 0.9;
   animation: chatBubbleAppear 0.5s ease-out 0.7s forwards;
   opacity: 0;
+}
+
+.route-already-shown .route-details-safety-bubble {
+  animation: none;
+  opacity: 1;
 }
 
 .route-details-input-container {
@@ -6333,6 +6609,11 @@ textarea:focus-visible {
   margin-top: 10px;
   animation: chatBubbleAppear 0.5s ease-out forwards;
   opacity: 0;
+}
+
+.route-already-shown .route-details-user-message {
+  animation: none;
+  opacity: 1;
 }
 
 .route-details-empty {
