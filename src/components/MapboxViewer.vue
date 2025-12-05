@@ -655,7 +655,7 @@ onMounted(async () => {
           map.getCanvas().style.cursor = "";
         });
 
-        // Add labels for hubs (matching Cesium styling)
+        // Add labels for hubs (anchored above points)
         map.addLayer({
           id: "hubs-labels",
           type: "symbol",
@@ -670,8 +670,8 @@ onMounted(async () => {
             ],
             "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
             "text-size": 14,
-            "text-offset": [0.7, 0],
-            "text-anchor": "left",
+            "text-offset": [0, -1.5], // Position above point (negative Y moves up)
+            "text-anchor": "bottom", // Anchor at bottom of text
           },
           paint: {
             "text-color": "#e9f7f2",

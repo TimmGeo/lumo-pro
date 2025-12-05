@@ -279,7 +279,9 @@
                                 'option-show-more': h.id === 'show_more',
                               }"
                               :style="
-                                h.id === 'show_more' ? 'font-weight: bold;' : ''
+                                h.id === 'show_more'
+                                  ? 'font-weight: bold; font-style: italic;'
+                                  : ''
                               "
                             >
                               {{ h.name }}
@@ -361,7 +363,9 @@
                                 'option-show-more': h.id === 'show_more',
                               }"
                               :style="
-                                h.id === 'show_more' ? 'font-weight: bold;' : ''
+                                h.id === 'show_more'
+                                  ? 'font-weight: bold; font-style: italic;'
+                                  : ''
                               "
                             >
                               {{ h.name }}
@@ -1708,11 +1712,11 @@ const displayedHubs = computed(() => {
     .map((id) => hubs.value.find((h) => h.id === id))
     .filter((h) => h && !firstFour.find((f) => f.id === h.id)); // Only include if not already in first 4
 
-  // Combine first 4, selected hubs (if any), and "Show more"
+  // Combine first 4, selected hubs (if any), and "Show more" with arrow
   return [
     ...firstFour,
     ...selectedHubs,
-    { id: "show_more", name: "Show more" },
+    { id: "show_more", name: "Show more →" },
   ];
 });
 const currentRouteStats = ref(null);
@@ -4322,14 +4326,16 @@ textarea:focus-visible {
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
 }
 
-/* Make "Show more" option bold */
+/* Make "Show more" option bold and italic with arrow */
 .route-select option.option-show-more {
   font-weight: bold !important;
+  font-style: italic !important;
 }
 
 /* Alternative approach for browsers that support it */
 .route-select option[value="show_more"] {
   font-weight: bold !important;
+  font-style: italic !important;
 }
 
 .route-swap-btn {
