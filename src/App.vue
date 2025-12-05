@@ -362,7 +362,10 @@
               </div>
 
               <!-- Clear Route Button -->
-              <div v-if="startHub || endHub || currentRouteStats" class="route-clear-section">
+              <div
+                v-if="startHub || endHub || currentRouteStats"
+                class="route-clear-section"
+              >
                 <button
                   class="route-clear-button"
                   @click="handleClearRoute"
@@ -379,7 +382,9 @@
                     stroke-linecap="round"
                     stroke-linejoin="round"
                   >
-                    <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                    <path
+                      d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+                    />
                   </svg>
                 </button>
               </div>
@@ -505,9 +510,7 @@
                       >
                         <path d="M5 12h14M12 5l7 7-7 7" />
                       </svg>
-                      <span class="route-history-to">{{
-                        entry.toName
-                      }}</span>
+                      <span class="route-history-to">{{ entry.toName }}</span>
                     </div>
                     <div class="route-history-date">{{ entry.date }}</div>
                   </div>
@@ -954,14 +957,20 @@
 
     <!-- Zurich App Button (top right corner) -->
     <!-- App Basket Container (Glassmorphic) -->
-    <div class="app-basket" :class="{ 'app-basket--expanded': isBasketExpanded }">
+    <div
+      class="app-basket"
+      :class="{ 'app-basket--expanded': isBasketExpanded }"
+    >
       <!-- Apps Container -->
       <div class="app-basket-apps-container">
         <!-- Map Controls App Button -->
         <div class="map-controls-app-container">
           <button
             class="map-controls-app-button"
-            :class="{ 'map-controls-app-button--expanded': activeBasketApp === 'map-controls' }"
+            :class="{
+              'map-controls-app-button--expanded':
+                activeBasketApp === 'map-controls',
+            }"
             @click.stop="toggleMapControls"
             aria-label="Map controls"
           >
@@ -1000,7 +1009,9 @@
             stroke-linecap="round"
             stroke-linejoin="round"
           >
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            <path
+              d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+            ></path>
             <line x1="9" y1="10" x2="15" y2="10"></line>
           </svg>
         </button>
@@ -1048,7 +1059,9 @@
             stroke-linecap="round"
             stroke-linejoin="round"
           >
-            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+            <path
+              d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"
+            ></path>
           </svg>
         </button>
 
@@ -1098,15 +1111,17 @@
             <span v-if="activeBasketApp === 'chat'">Route Companion</span>
             <span v-else-if="activeBasketApp === 'legend'">Legend</span>
             <span v-else-if="activeBasketApp === 'phone'">Phone</span>
-            <span v-else-if="activeBasketApp === 'map-controls'">Map Controls</span>
+            <span v-else-if="activeBasketApp === 'map-controls'"
+              >Map Controls</span
+            >
           </div>
-          
+
           <!-- Close button (chevron up) -->
-                <button
-                  class="app-basket-content-close"
-                  @click="closeBasket"
-                  aria-label="Close app"
-                >
+          <button
+            class="app-basket-content-close"
+            @click="closeBasket"
+            aria-label="Close app"
+          >
             <svg
               width="20"
               height="20"
@@ -1126,318 +1141,389 @@
             <div
               :key="activeBasketApp"
               class="app-basket-content-scrollable-wrapper"
-              :class="{ 'route-already-shown': activeBasketApp === 'chat' && isCurrentRouteAlreadyShown }"
+              :class="{
+                'route-already-shown':
+                  activeBasketApp === 'chat' && isCurrentRouteAlreadyShown,
+              }"
             >
-              <div 
+              <div
                 class="app-basket-content-scrollable"
                 ref="chatScrollableRef"
               >
-              <!-- Chat App Content -->
-              <div 
-                v-if="activeBasketApp === 'chat'" 
-                class="app-basket-app-section"
-                :class="{ 'route-already-shown': isCurrentRouteAlreadyShown }"
-              >
-              <!-- Route info section -->
-              <div v-if="currentRouteStats" class="route-details-popup-info">
-                <div class="route-details-intro">
-                  <div class="route-details-intro-greeting">
-                    <span class="route-details-greeting-bold">{{ currentGreeting }}</span>
-                  </div>
-                  <div class="route-details-intro-text">
-                    Here are some insights about your route:
-                  </div>
-                </div>
-              </div>
-
-              <!-- Empty state when no route is selected -->
-              <div v-else class="route-details-popup-info">
-              </div>
-
-              <!-- POI Statistics as Document Attachment -->
-              <div
-                v-if="
-                  currentRouteStats &&
-                  currentRouteStats.poiCounts &&
-                  Object.keys(currentRouteStats.poiCounts).length > 0
-                "
-                class="route-details-document"
-              >
-                <div class="route-details-document-header">
-                  <svg class="route-details-document-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                    <polyline points="14 2 14 8 20 8"></polyline>
-                    <line x1="16" y1="13" x2="8" y2="13"></line>
-                    <line x1="16" y1="17" x2="8" y2="17"></line>
-                    <polyline points="10 9 9 9 8 9"></polyline>
-                  </svg>
-                  <span class="route-details-document-title">Route highlights</span>
-                </div>
-                <div class="route-details-document-content">
-                  <div
-                    v-for="(count, poiType) in currentRouteStats.poiCounts"
-                    :key="poiType"
-                    class="route-details-document-item"
-                  >
-                    <div class="route-details-document-item-icon">
-                      <div class="route-details-poi-icon" v-html="getPoiIcon(poiType)"></div>
-                    </div>
-                    <div class="route-details-document-item-info">
-                      <div
-                        v-if="
-                          currentRouteStats.poiFrequencies &&
-                          currentRouteStats.poiFrequencies[poiType]
-                        "
-                        class="route-details-poi-frequency"
-                      >
-                        {{ formatPoiFrequency(poiType, currentRouteStats.poiFrequencies[poiType]) }}
-                      </div>
-                      <div class="route-details-poi-mantra">
-                        {{ getPoiMantra(poiType) }}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div v-else-if="currentRouteStats" class="route-details-empty">
-                <p class="route-details-empty-text">
-                  Clear route, peaceful walk
-                </p>
-              </div>
-
-              <div v-if="currentRouteStats" class="route-details-footer">
-                <div class="route-details-footer-bubble">
-                  You're all set! Enjoy your walk through the city.
-                </div>
-                
-                <!-- User message bubble (shown after user sends) -->
-                <div v-if="userMessageSent && sentUserMessage && isCurrentRouteMessages" class="route-details-user-message">
-                  {{ sentUserMessage }}
-                </div>
-                
-                <!-- Response bubbles (shown after user sends message) -->
-                <div 
-                  v-if="userMessageSent && isCurrentRouteMessages" 
-                  class="route-details-response-section"
-                  :class="{ 'response-already-shown': shouldSkipResponseAnimations }"
+                <!-- Chat App Content -->
+                <div
+                  v-if="activeBasketApp === 'chat'"
+                  class="app-basket-app-section"
+                  :class="{ 'route-already-shown': isCurrentRouteAlreadyShown }"
                 >
-                  <div class="route-details-response-bubble">
-                    No worries!
+                  <!-- Route info section -->
+                  <div
+                    v-if="currentRouteStats"
+                    class="route-details-popup-info"
+                  >
+                    <div class="route-details-intro">
+                      <div class="route-details-intro-greeting">
+                        <span class="route-details-greeting-bold">{{
+                          currentGreeting
+                        }}</span>
+                      </div>
+                      <div class="route-details-intro-text">
+                        Here are some insights about your route:
+                      </div>
+                    </div>
                   </div>
-                  <div class="route-details-safety-bubble">
-                    If you don't feel safe, head to the nearest café or restaurant where people are around.
-                  </div>
-                </div>
-              </div>
-              
-              <!-- Empty state footer message -->
-              <div v-else class="route-details-footer">
-                <div class="route-details-footer-bubble route-details-footer-bubble--quick" style="animation-delay: 0.2s;">
-                  Hey! 👋 Pick a route on the map first, and I'll share some cool insights about it.
-                </div>
-                <div class="route-details-footer-bubble route-details-footer-bubble--quick" style="margin-top: 8px; animation-delay: 0.6s;">
-                  Looking forward to helping you explore the city!
-                </div>
-              </div>
-              </div>
 
-              <!-- Legend App Content -->
-              <div v-else-if="activeBasketApp === 'legend'" class="app-basket-app-section">
-                <Legend :mode="mode" :in-box="true" :dragged-out="false" />
-              </div>
+                  <!-- Empty state when no route is selected -->
+                  <div v-else class="route-details-popup-info"></div>
 
-              <!-- Phone App Content -->
-              <div v-else-if="activeBasketApp === 'phone'" class="app-basket-app-section">
-                <div class="app-basket-phone-content">
-                  <h3 class="phone-content-title">Emergency Numbers</h3>
-                  <div class="phone-contacts-table">
-                    <div class="phone-contacts-header">
-                      <div class="phone-contact-facility">Service</div>
-                      <div class="phone-contact-number">Phone Number</div>
+                  <!-- POI Statistics as Document Attachment -->
+                  <div
+                    v-if="
+                      currentRouteStats &&
+                      currentRouteStats.poiCounts &&
+                      Object.keys(currentRouteStats.poiCounts).length > 0
+                    "
+                    class="route-details-document"
+                  >
+                    <div class="route-details-document-header">
+                      <svg
+                        class="route-details-document-icon"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path
+                          d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                        ></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                      </svg>
+                      <span class="route-details-document-title"
+                        >Route highlights</span
+                      >
                     </div>
-                    <div class="phone-contact-row">
-                      <div class="phone-contact-facility">General Emergency</div>
-                      <div class="phone-contact-number">
-                        <a href="tel:112" class="phone-contact-link">112</a>
+                    <div class="route-details-document-content">
+                      <div
+                        v-for="(count, poiType) in currentRouteStats.poiCounts"
+                        :key="poiType"
+                        class="route-details-document-item"
+                      >
+                        <div class="route-details-document-item-icon">
+                          <div
+                            class="route-details-poi-icon"
+                            v-html="getPoiIcon(poiType)"
+                          ></div>
+                        </div>
+                        <div class="route-details-document-item-info">
+                          <div
+                            v-if="
+                              currentRouteStats.poiFrequencies &&
+                              currentRouteStats.poiFrequencies[poiType]
+                            "
+                            class="route-details-poi-frequency"
+                          >
+                            {{
+                              formatPoiFrequency(
+                                poiType,
+                                currentRouteStats.poiFrequencies[poiType]
+                              )
+                            }}
+                          </div>
+                          <div class="route-details-poi-mantra">
+                            {{ getPoiMantra(poiType) }}
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    <div class="phone-contact-row">
-                      <div class="phone-contact-facility">Police</div>
-                      <div class="phone-contact-number">
-                        <a href="tel:117" class="phone-contact-link">117</a>
+                  </div>
+                  <div
+                    v-else-if="currentRouteStats"
+                    class="route-details-empty"
+                  >
+                    <p class="route-details-empty-text">
+                      Clear route, peaceful walk
+                    </p>
+                  </div>
+
+                  <div v-if="currentRouteStats" class="route-details-footer">
+                    <div class="route-details-footer-bubble">
+                      You're all set! Enjoy your walk through the city.
+                    </div>
+
+                    <!-- User message bubble (shown after user sends) -->
+                    <div
+                      v-if="
+                        userMessageSent &&
+                        sentUserMessage &&
+                        isCurrentRouteMessages
+                      "
+                      class="route-details-user-message"
+                    >
+                      {{ sentUserMessage }}
+                    </div>
+
+                    <!-- Response bubbles (shown after user sends message) -->
+                    <div
+                      v-if="userMessageSent && isCurrentRouteMessages"
+                      class="route-details-response-section"
+                      :class="{
+                        'response-already-shown': shouldSkipResponseAnimations,
+                      }"
+                    >
+                      <div class="route-details-response-bubble">
+                        No worries!
+                      </div>
+                      <div class="route-details-safety-bubble">
+                        If you don't feel safe, head to the nearest café or
+                        restaurant where people are around.
                       </div>
                     </div>
-                    <div class="phone-contact-row">
-                      <div class="phone-contact-facility">Fire Department</div>
-                      <div class="phone-contact-number">
-                        <a href="tel:118" class="phone-contact-link">118</a>
-                      </div>
+                  </div>
+
+                  <!-- Empty state footer message -->
+                  <div v-else class="route-details-footer">
+                    <div
+                      class="route-details-footer-bubble route-details-footer-bubble--quick"
+                      style="animation-delay: 0.2s"
+                    >
+                      Hey! 👋 Pick a route on the map first, and I'll share some
+                      cool insights about it.
                     </div>
-                    <div class="phone-contact-row">
-                      <div class="phone-contact-facility">Medical Emergency</div>
-                      <div class="phone-contact-number">
-                        <a href="tel:144" class="phone-contact-link">144</a>
-                      </div>
+                    <div
+                      class="route-details-footer-bubble route-details-footer-bubble--quick"
+                      style="margin-top: 8px; animation-delay: 0.6s"
+                    >
+                      Looking forward to helping you explore the city!
                     </div>
-                    <div class="phone-contact-row">
-                      <div class="phone-contact-facility">Poison Control</div>
-                      <div class="phone-contact-number">
-                        <a href="tel:145" class="phone-contact-link">145</a>
+                  </div>
+                </div>
+
+                <!-- Legend App Content -->
+                <div
+                  v-else-if="activeBasketApp === 'legend'"
+                  class="app-basket-app-section"
+                >
+                  <Legend :mode="mode" :in-box="true" :dragged-out="false" />
+                </div>
+
+                <!-- Phone App Content -->
+                <div
+                  v-else-if="activeBasketApp === 'phone'"
+                  class="app-basket-app-section"
+                >
+                  <div class="app-basket-phone-content">
+                    <h3 class="phone-content-title">Emergency Numbers</h3>
+                    <div class="phone-contacts-table">
+                      <div class="phone-contacts-header">
+                        <div class="phone-contact-facility">Service</div>
+                        <div class="phone-contact-number">Phone Number</div>
                       </div>
-                    </div>
-                    <div class="phone-contact-row">
-                      <div class="phone-contact-facility">Roadside Assistance</div>
-                      <div class="phone-contact-number">
-                        <a href="tel:140" class="phone-contact-link">140</a>
+                      <div class="phone-contact-row">
+                        <div class="phone-contact-facility">
+                          General Emergency
+                        </div>
+                        <div class="phone-contact-number">
+                          <a href="tel:112" class="phone-contact-link">112</a>
+                        </div>
+                      </div>
+                      <div class="phone-contact-row">
+                        <div class="phone-contact-facility">Police</div>
+                        <div class="phone-contact-number">
+                          <a href="tel:117" class="phone-contact-link">117</a>
+                        </div>
+                      </div>
+                      <div class="phone-contact-row">
+                        <div class="phone-contact-facility">
+                          Fire Department
+                        </div>
+                        <div class="phone-contact-number">
+                          <a href="tel:118" class="phone-contact-link">118</a>
+                        </div>
+                      </div>
+                      <div class="phone-contact-row">
+                        <div class="phone-contact-facility">
+                          Medical Emergency
+                        </div>
+                        <div class="phone-contact-number">
+                          <a href="tel:144" class="phone-contact-link">144</a>
+                        </div>
+                      </div>
+                      <div class="phone-contact-row">
+                        <div class="phone-contact-facility">Poison Control</div>
+                        <div class="phone-contact-number">
+                          <a href="tel:145" class="phone-contact-link">145</a>
+                        </div>
+                      </div>
+                      <div class="phone-contact-row">
+                        <div class="phone-contact-facility">
+                          Roadside Assistance
+                        </div>
+                        <div class="phone-contact-number">
+                          <a href="tel:140" class="phone-contact-link">140</a>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              <!-- Map Controls App Content -->
-              <div v-else-if="activeBasketApp === 'map-controls'" class="app-basket-app-section">
-                <div class="app-basket-map-controls-content">
-                  <div class="map-controls-grid">
-                    <button
-                      class="map-control-card zoom-in-card"
-                      @click="handleZoomIn"
-                      aria-label="Zoom in"
-                    >
-                      <div class="map-control-icon">
-                        <svg
-                          width="24"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M12 5V19M5 12H19"
-                            stroke="currentColor"
-                            stroke-width="2.5"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                          />
-                        </svg>
-                      </div>
-                      <span class="map-control-label">Zoom In</span>
-                    </button>
-                    <button
-                      class="map-control-card zoom-out-card"
-                      @click="handleZoomOut"
-                      aria-label="Zoom out"
-                    >
-                      <div class="map-control-icon">
-                        <svg
-                          width="24"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M5 12H19"
-                            stroke="currentColor"
-                            stroke-width="2.5"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                          />
-                        </svg>
-                      </div>
-                      <span class="map-control-label">Zoom Out</span>
-                    </button>
-                    <button
-                      class="map-control-card north-card"
-                      @click="handleResetNorth"
-                      aria-label="Reset to north"
-                    >
-                      <div class="map-control-icon">
-                        <svg
-                          width="24"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M12 2V22M12 2L8 6M12 2L16 6"
-                            stroke="currentColor"
-                            stroke-width="2.5"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                          />
-                        </svg>
-                      </div>
-                      <span class="map-control-label">North</span>
-                    </button>
-                    <button
-                      class="map-control-card tilt-card"
-                      :class="{ active: isTilted }"
-                      @click="handleToggleTilt"
-                      aria-label="Toggle map tilt"
-                    >
-                      <div class="map-control-icon">
-                        <!-- Flat view icon (2D square) -->
-                        <svg
-                          v-if="!isTilted"
-                          width="24"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M3 3H21V21H3V3Z"
-                            stroke="currentColor"
-                            stroke-width="2.5"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                          />
-                        </svg>
-                        <!-- Tilted view icon (3D perspective) -->
-                        <svg
-                          v-else
-                          width="24"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M3 3L12 8L21 3"
-                            stroke="currentColor"
-                            stroke-width="2.5"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                          />
-                          <path
-                            d="M3 21L12 16L21 21"
-                            stroke="currentColor"
-                            stroke-width="2.5"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                          />
-                          <path
-                            d="M3 3V21M21 3V21"
-                            stroke="currentColor"
-                            stroke-width="2.5"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                          />
-                        </svg>
-                      </div>
-                      <span class="map-control-label">{{ isTilted ? '3D' : '2D' }}</span>
-                    </button>
+                <!-- Map Controls App Content -->
+                <div
+                  v-else-if="activeBasketApp === 'map-controls'"
+                  class="app-basket-app-section"
+                >
+                  <div class="app-basket-map-controls-content">
+                    <div class="map-controls-grid">
+                      <button
+                        class="map-control-card zoom-in-card"
+                        @click="handleZoomIn"
+                        aria-label="Zoom in"
+                      >
+                        <div class="map-control-icon">
+                          <svg
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M12 5V19M5 12H19"
+                              stroke="currentColor"
+                              stroke-width="2.5"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            />
+                          </svg>
+                        </div>
+                        <span class="map-control-label">Zoom In</span>
+                      </button>
+                      <button
+                        class="map-control-card zoom-out-card"
+                        @click="handleZoomOut"
+                        aria-label="Zoom out"
+                      >
+                        <div class="map-control-icon">
+                          <svg
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M5 12H19"
+                              stroke="currentColor"
+                              stroke-width="2.5"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            />
+                          </svg>
+                        </div>
+                        <span class="map-control-label">Zoom Out</span>
+                      </button>
+                      <button
+                        class="map-control-card north-card"
+                        @click="handleResetNorth"
+                        aria-label="Reset to north"
+                      >
+                        <div class="map-control-icon">
+                          <svg
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M12 2V22M12 2L8 6M12 2L16 6"
+                              stroke="currentColor"
+                              stroke-width="2.5"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            />
+                          </svg>
+                        </div>
+                        <span class="map-control-label">North</span>
+                      </button>
+                      <button
+                        class="map-control-card tilt-card"
+                        :class="{ active: isTilted }"
+                        @click="handleToggleTilt"
+                        aria-label="Toggle map tilt"
+                      >
+                        <div class="map-control-icon">
+                          <!-- Flat view icon (2D square) -->
+                          <svg
+                            v-if="!isTilted"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M3 3H21V21H3V3Z"
+                              stroke="currentColor"
+                              stroke-width="2.5"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            />
+                          </svg>
+                          <!-- Tilted view icon (3D perspective) -->
+                          <svg
+                            v-else
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M3 3L12 8L21 3"
+                              stroke="currentColor"
+                              stroke-width="2.5"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            />
+                            <path
+                              d="M3 21L12 16L21 21"
+                              stroke="currentColor"
+                              stroke-width="2.5"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            />
+                            <path
+                              d="M3 3V21M21 3V21"
+                              stroke="currentColor"
+                              stroke-width="2.5"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            />
+                          </svg>
+                        </div>
+                        <span class="map-control-label">{{
+                          isTilted ? "3D" : "2D"
+                        }}</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
               </div>
             </div>
           </transition>
-          
+
           <!-- Floating input button/box (only for chat) -->
-          <div v-if="activeBasketApp === 'chat'" class="route-details-input-container">
+          <div
+            v-if="activeBasketApp === 'chat'"
+            class="route-details-input-container"
+          >
             <input
               v-if="showInput"
               v-model="userMessage"
@@ -1454,8 +1540,19 @@
               class="route-details-input-button"
               aria-label="Type a message"
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+                ></path>
                 <line x1="9" y1="10" x2="15" y2="10"></line>
               </svg>
             </button>
@@ -1474,7 +1571,7 @@
         <div class="route-details-popup legend-popup" @click.stop>
           <!-- Legend label -->
           <div class="route-details-popup-label">Legend</div>
-          
+
           <!-- Close button -->
           <button
             class="route-details-popup-close"
@@ -1505,7 +1602,6 @@
         </div>
       </div>
     </transition>
-
   </div>
 </template>
 
@@ -1594,8 +1690,9 @@ const isBasketExpanded = computed(() => {
 
 // Computed to check if current route has been shown in chat before
 const isCurrentRouteAlreadyShown = computed(() => {
-  if (activeBasketApp.value !== 'chat') return false;
-  if (!currentRouteStats.value || !startHub.value || !endHub.value) return false;
+  if (activeBasketApp.value !== "chat") return false;
+  if (!currentRouteStats.value || !startHub.value || !endHub.value)
+    return false;
   const routeKey = `${startHub.value}-${endHub.value}`;
   return routesShownInChat.value.includes(routeKey);
 });
@@ -1623,22 +1720,23 @@ function closeBasket() {
 // Handler functions for app buttons that clear previous state on manual interaction
 function toggleMapControls() {
   previousBasketApp.value = null; // Clear previous state on manual interaction
-  activeBasketApp.value = activeBasketApp.value === 'map-controls' ? null : 'map-controls';
+  activeBasketApp.value =
+    activeBasketApp.value === "map-controls" ? null : "map-controls";
 }
 
 function toggleChat() {
   previousBasketApp.value = null; // Clear previous state on manual interaction
-  activeBasketApp.value = activeBasketApp.value === 'chat' ? null : 'chat';
+  activeBasketApp.value = activeBasketApp.value === "chat" ? null : "chat";
 }
 
 function toggleLegend() {
   previousBasketApp.value = null; // Clear previous state on manual interaction
-  activeBasketApp.value = activeBasketApp.value === 'legend' ? null : 'legend';
+  activeBasketApp.value = activeBasketApp.value === "legend" ? null : "legend";
 }
 
 function togglePhone() {
   previousBasketApp.value = null; // Clear previous state on manual interaction
-  activeBasketApp.value = activeBasketApp.value === 'phone' ? null : 'phone';
+  activeBasketApp.value = activeBasketApp.value === "phone" ? null : "phone";
 }
 
 // Hover popup data
@@ -1996,27 +2094,30 @@ function handleHubsUpdated() {
 function handleHubsSelected({ hubId1, hubId2 }) {
   // Set flag to prevent watcher from triggering
   isHandlingHubClicks.value = true;
-  
+
   // Update sidebar inputs to match the selected hubs
   startHub.value = hubId1;
   endHub.value = hubId2;
-  
+
   // Set flag to prevent adding to history (route is already loaded on map)
   isLoadingFromHistory.value = true;
-  
+
   // Update route stats and open chat app after a short delay
   setTimeout(() => {
     const routeApi = api || mapboxViewerRef.value;
     if (routeApi && routeApi.getCurrentRouteStats) {
       currentRouteStats.value = routeApi.getCurrentRouteStats();
-      console.log("Updated route stats from hub clicks:", currentRouteStats.value);
+      console.log(
+        "Updated route stats from hub clicks:",
+        currentRouteStats.value
+      );
       // Automatically open chat app when route is created via hub clicks
       if (currentRouteStats.value) {
         previousBasketApp.value = null; // Clear previous state on programmatic open
-        activeBasketApp.value = 'chat';
+        activeBasketApp.value = "chat";
       }
     }
-    
+
     // Add to history (route is already loaded, so we just add the history entry)
     if (currentRouteStats.value) {
       const fromHub = hubs.value.find((h) => h.id === hubId1);
@@ -2041,7 +2142,7 @@ function handleHubsSelected({ hubId1, hubId2 }) {
         }
       }
     }
-    
+
     // Reset flags
     isLoadingFromHistory.value = false;
     isHandlingHubClicks.value = false;
@@ -2055,16 +2156,16 @@ function handleClearRoute() {
   if (routeApi && routeApi.clearRoute) {
     routeApi.clearRoute();
   }
-  
+
   // Clear sidebar inputs
-  startHub.value = '';
-  endHub.value = '';
-  
+  startHub.value = "";
+  endHub.value = "";
+
   // Clear route stats
   currentRouteStats.value = null;
-  
+
   // Close chat app if open
-  if (activeBasketApp.value === 'chat') {
+  if (activeBasketApp.value === "chat") {
     closeBasket();
   }
 }
@@ -2072,31 +2173,31 @@ function handleClearRoute() {
 // Handle route popup click - toggle route details popup
 function handleRoutePopupClicked() {
   // If chat is open, close it; otherwise open chat
-  if (activeBasketApp.value === 'chat') {
+  if (activeBasketApp.value === "chat") {
     closeBasket();
   } else {
     previousBasketApp.value = null; // Clear previous state on programmatic open
-    activeBasketApp.value = 'chat';
+    activeBasketApp.value = "chat";
   }
 }
 
 // Toggle route details popup (kept for backwards compatibility)
 function toggleRouteDetailsPopup() {
-  if (activeBasketApp.value === 'chat') {
+  if (activeBasketApp.value === "chat") {
     closeBasket();
   } else {
     previousBasketApp.value = null; // Clear previous state on programmatic open
-    activeBasketApp.value = 'chat';
+    activeBasketApp.value = "chat";
   }
 }
 
 // Toggle legend popup (kept for backwards compatibility)
 function toggleLegendPopup() {
-  if (activeBasketApp.value === 'legend') {
+  if (activeBasketApp.value === "legend") {
     closeBasket();
   } else {
     previousBasketApp.value = null; // Clear previous state on programmatic open
-    activeBasketApp.value = 'legend';
+    activeBasketApp.value = "legend";
   }
 }
 
@@ -2129,7 +2230,7 @@ function scrollChatToBottom() {
     if (wrapper) {
       wrapper.scrollTo({
         top: wrapper.scrollHeight,
-        behavior: 'smooth'
+        behavior: "smooth",
       });
     }
   });
@@ -2146,7 +2247,7 @@ function handleSendMessage() {
     userMessageSent.value = true;
     userMessage.value = "";
     showInput.value = false;
-    
+
     // Mark route as having shown responses (after animations complete)
     // The longest animation is safety bubble: 1.2s delay + 0.5s duration = 1.7s
     // Wait 2 seconds to ensure all animations complete
@@ -2157,7 +2258,7 @@ function handleSendMessage() {
         }
       }, 2000);
     }
-    
+
     // Scroll to bottom after message is sent
     scrollChatToBottom();
     // Also scroll after response appears (with delay for animation)
@@ -2242,7 +2343,7 @@ function route(event) {
           // Automatically open chat app when route is created
           if (currentRouteStats.value) {
             previousBasketApp.value = null; // Clear previous state on programmatic open
-            activeBasketApp.value = 'chat';
+            activeBasketApp.value = "chat";
           }
         }
       }, 800);
@@ -2298,7 +2399,7 @@ watch(
   ([newStart, newEnd], [oldStart, oldEnd]) => {
     // Skip if handling hub clicks (route is already loaded on map)
     if (isHandlingHubClicks.value) return;
-    
+
     // Ensure API is available - try to get it from ref if not set
     if (!api && mapboxViewerRef.value) {
       api = mapboxViewerRef.value;
@@ -2343,9 +2444,9 @@ watch(
   (newStats, oldStats) => {
     if (newStats && Object.keys(newStats).length > 0) {
       // Automatically open chat app when route stats are available
-      if (activeBasketApp.value !== 'chat') {
+      if (activeBasketApp.value !== "chat") {
         previousBasketApp.value = null; // Clear previous state on programmatic open
-        activeBasketApp.value = 'chat';
+        activeBasketApp.value = "chat";
       }
       // If chat was already open, keep it open (elegant reload)
       // (already handled above)
@@ -2359,23 +2460,23 @@ watch(
 );
 
 // Watch for route changes and clear messages if route changed
-watch(
-  [startHub, endHub],
-  ([newStart, newEnd], [oldStart, oldEnd]) => {
-    // If route changed (and both hubs are set), clear messages
-    if (newStart && newEnd && (newStart !== oldStart || newEnd !== oldEnd)) {
-      sentUserMessage.value = "";
-      userMessageSent.value = false;
-      messagesRouteKey.value = null;
-      // Note: We don't clear routesWithResponseShown so responses appear instantly for routes that had responses before
-    }
+watch([startHub, endHub], ([newStart, newEnd], [oldStart, oldEnd]) => {
+  // If route changed (and both hubs are set), clear messages
+  if (newStart && newEnd && (newStart !== oldStart || newEnd !== oldEnd)) {
+    sentUserMessage.value = "";
+    userMessageSent.value = false;
+    messagesRouteKey.value = null;
+    // Note: We don't clear routesWithResponseShown so responses appear instantly for routes that had responses before
   }
-);
+});
 
 // Watch for chat app opening and mark route as shown (after animations complete)
 watch(
   [activeBasketApp, startHub, endHub, currentRouteStats],
-  ([newApp, newStart, newEnd, newStats], [oldApp, oldStart, oldEnd, oldStats]) => {
+  (
+    [newApp, newStart, newEnd, newStats],
+    [oldApp, oldStart, oldEnd, oldStats]
+  ) => {
     // Clear any pending timeout when route changes or chat closes
     if (markRouteShownTimeout) {
       clearTimeout(markRouteShownTimeout);
@@ -2383,9 +2484,15 @@ watch(
     }
 
     // When chat app is opened and we have a route with stats
-    if (newApp === 'chat' && newStart && newEnd && newStats && Object.keys(newStats).length > 0) {
+    if (
+      newApp === "chat" &&
+      newStart &&
+      newEnd &&
+      newStats &&
+      Object.keys(newStats).length > 0
+    ) {
       const routeKey = `${newStart}-${newEnd}`;
-      
+
       // Only mark as shown if it hasn't been shown before
       // The longest animation is footer bubble: 1.3s delay + 0.5s duration = 1.8s
       // Wait 2.5 seconds to ensure all animations complete
@@ -2407,7 +2514,7 @@ watch(
   [userMessageSent, sentUserMessage, activeBasketApp],
   ([newSent, newMessage, newApp]) => {
     // Auto-scroll when message is sent or when chat is opened with existing messages
-    if (newApp === 'chat' && newSent && newMessage) {
+    if (newApp === "chat" && newSent && newMessage) {
       scrollChatToBottom();
       // Also scroll after a delay to catch response animations
       setTimeout(() => {
@@ -2420,11 +2527,14 @@ watch(
 // Watch for layer selection and automatically open legend app
 watch(
   [lightingVisible, vibrancyVisible, combinedVisible],
-  ([newLighting, newVibrancy, newCombined], [oldLighting, oldVibrancy, oldCombined]) => {
+  (
+    [newLighting, newVibrancy, newCombined],
+    [oldLighting, oldVibrancy, oldCombined]
+  ) => {
     // If any layer is selected, open legend app
     if (newLighting || newVibrancy || newCombined) {
       previousBasketApp.value = null; // Clear previous state on programmatic open
-      activeBasketApp.value = 'legend';
+      activeBasketApp.value = "legend";
     }
   },
   { immediate: false }
@@ -2463,10 +2573,7 @@ function getPoiMantra(poiType) {
     NightClub: "Vibrant zones that stay well-lit",
     MusicVenue: "Cultural hotspots with regular events",
   };
-  return (
-    mantras[poiType] ||
-    "Active points that make your route engaging"
-  );
+  return mantras[poiType] || "Active points that make your route engaging";
 }
 
 // Get icon SVG for each POI type
@@ -2511,14 +2618,14 @@ function getPoiIcon(poiType) {
       <path d="M12 2v4M12 18v4M2 12h4M18 12h4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
     </svg>`,
   };
-  
+
   return icons[poiType] || icons.Restaurant;
 }
 
 // Format POI frequency as "A [type] every [time]"
 function formatPoiFrequency(poiType, frequency) {
   if (!frequency) return "";
-  
+
   // Get singular form of POI type
   const singularMap = {
     BarOrPub: "bar",
@@ -2527,9 +2634,9 @@ function formatPoiFrequency(poiType, frequency) {
     NightClub: "night club",
     MusicVenue: "music venue",
   };
-  
+
   const singularType = singularMap[poiType] || "point of interest";
-  
+
   // Format as "A restaurant every 30 seconds"
   return `A ${singularType} every ${frequency}`;
 }
@@ -2545,13 +2652,19 @@ function getRouteIntroText() {
 
   // Get route description based on POI density - concise and positive
   if (stats.poiCounts) {
-    const totalPois = Object.values(stats.poiCounts).reduce((sum, count) => sum + count, 0);
+    const totalPois = Object.values(stats.poiCounts).reduce(
+      (sum, count) => sum + count,
+      0
+    );
     if (totalPois > 50) {
-      routeDescription = "route buzzing with life - cozy cafes, great restaurants, and lively spots await";
+      routeDescription =
+        "route buzzing with life - cozy cafes, great restaurants, and lively spots await";
     } else if (totalPois > 20) {
-      routeDescription = "route full of activity - you'll feel safe and connected to the city's energy";
+      routeDescription =
+        "route full of activity - you'll feel safe and connected to the city's energy";
     } else if (totalPois > 0) {
-      routeDescription = "peaceful route with just the right balance - calm yet engaging";
+      routeDescription =
+        "peaceful route with just the right balance - calm yet engaging";
     } else {
       routeDescription = "serene path perfect for a relaxing walk";
     }
@@ -2573,7 +2686,10 @@ function getRouteTips() {
 
   // Only POI-based tips, no duration tips
   if (stats.poiCounts) {
-    const totalPois = Object.values(stats.poiCounts).reduce((sum, count) => sum + count, 0);
+    const totalPois = Object.values(stats.poiCounts).reduce(
+      (sum, count) => sum + count,
+      0
+    );
     if (totalPois > 50) {
       tips.push("Lots of cafes and restaurants along the way");
       return tips; // Return early with most relevant tip
@@ -2590,7 +2706,7 @@ function getRouteTips() {
 function loadHistoryRoute(entry) {
   // Set flag to prevent adding this route to history
   isLoadingFromHistory.value = true;
-  
+
   startHub.value = entry.fromId;
   endHub.value = entry.toId;
   // Trigger route loading
@@ -2610,7 +2726,7 @@ function loadHistoryRoute(entry) {
         // Automatically open chat app when route is loaded from history
         if (currentRouteStats.value) {
           previousBasketApp.value = null; // Clear previous state on programmatic open
-          activeBasketApp.value = 'chat';
+          activeBasketApp.value = "chat";
         }
       }
       // Reset flag after route is loaded
@@ -3756,7 +3872,12 @@ textarea:focus-visible {
   padding: 0;
   overflow: visible;
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.03); /* More transparent for glassier feel */
+  background: rgba(
+    255,
+    255,
+    255,
+    0.03
+  ); /* More transparent for glassier feel */
   backdrop-filter: blur(40px) saturate(200%);
   -webkit-backdrop-filter: blur(40px) saturate(200%);
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); /* Match app basket shadow */
@@ -3772,7 +3893,12 @@ textarea:focus-visible {
 }
 
 .sidebar--collapsed:hover {
-  background: rgba(255, 255, 255, 0.06); /* Slightly more opaque on hover, still very glassy */
+  background: rgba(
+    255,
+    255,
+    255,
+    0.06
+  ); /* Slightly more opaque on hover, still very glassy */
   backdrop-filter: blur(40px) saturate(200%);
   -webkit-backdrop-filter: blur(40px) saturate(200%);
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
@@ -4057,8 +4183,12 @@ textarea:focus-visible {
   padding-bottom: 6px;
 }
 
-.route-input-content:has(.route-label-float--active) .route-select-wrapper:has(.route-select-clear) .route-select,
-.route-input-content:has(.route-select:focus) .route-select-wrapper:has(.route-select-clear) .route-select {
+.route-input-content:has(.route-label-float--active)
+  .route-select-wrapper:has(.route-select-clear)
+  .route-select,
+.route-input-content:has(.route-select:focus)
+  .route-select-wrapper:has(.route-select-clear)
+  .route-select {
   padding-right: 36px;
 }
 
@@ -4835,7 +4965,7 @@ textarea:focus-visible {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: 
+  transition:
     background 0.3s ease,
     box-shadow 0.3s ease;
   padding: 0;
@@ -4935,7 +5065,12 @@ textarea:focus-visible {
   z-index: 15;
   width: 216px; /* 8px padding + 46px + 8px gap + 46px + 8px gap + 92px (Zurich) + 8px padding = 216px */
   height: 108px; /* 8px padding + 42px + 8px gap + 42px + 8px padding = 108px */
-  background: rgba(255, 255, 255, 0.03); /* More transparent for glassier feel */
+  background: rgba(
+    255,
+    255,
+    255,
+    0.03
+  ); /* More transparent for glassier feel */
   backdrop-filter: blur(40px) saturate(200%);
   -webkit-backdrop-filter: blur(40px) saturate(200%);
   border: none;
@@ -4946,7 +5081,10 @@ textarea:focus-visible {
   flex-direction: column;
   gap: 12px;
   box-sizing: border-box;
-  transition: width 0.3s cubic-bezier(0.16, 0.84, 0.24, 1), height 0.3s cubic-bezier(0.16, 0.84, 0.24, 1), backdrop-filter 0.3s ease;
+  transition:
+    width 0.3s cubic-bezier(0.16, 0.84, 0.24, 1),
+    height 0.3s cubic-bezier(0.16, 0.84, 0.24, 1),
+    backdrop-filter 0.3s ease;
   overflow: hidden;
 }
 
@@ -4965,7 +5103,10 @@ textarea:focus-visible {
   flex-shrink: 0;
   align-items: start;
   justify-items: start;
-  transition: grid-template-columns 0.3s cubic-bezier(0.16, 0.84, 0.24, 1), grid-template-rows 0.3s cubic-bezier(0.16, 0.84, 0.24, 1), gap 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
+  transition:
+    grid-template-columns 0.3s cubic-bezier(0.16, 0.84, 0.24, 1),
+    grid-template-rows 0.3s cubic-bezier(0.16, 0.84, 0.24, 1),
+    gap 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
 }
 
 /* Map Controls: top-left of 2x2 grid */
@@ -5212,13 +5353,17 @@ textarea:focus-visible {
 }
 
 .map-control-card::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0) 100%
+  );
   opacity: 0;
   transition: opacity 0.25s ease;
 }
@@ -5315,7 +5460,6 @@ textarea:focus-visible {
   transform: translateY(-10px);
 }
 
-
 .zurich-app-button {
   position: relative;
   width: 92px; /* Larger app button in collapsed state */
@@ -5380,7 +5524,9 @@ textarea:focus-visible {
   height: 24px;
   display: block;
   flex-shrink: 0;
-  transition: width 0.3s cubic-bezier(0.16, 0.84, 0.24, 1), height 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
+  transition:
+    width 0.3s cubic-bezier(0.16, 0.84, 0.24, 1),
+    height 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
 }
 
 .app-basket--expanded .zurich-app-icon {
@@ -5398,7 +5544,9 @@ textarea:focus-visible {
   width: 100%;
   height: 100%;
   box-sizing: border-box;
-  transition: gap 0.3s cubic-bezier(0.16, 0.84, 0.24, 1), padding 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
+  transition:
+    gap 0.3s cubic-bezier(0.16, 0.84, 0.24, 1),
+    padding 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
 }
 
 .app-basket--expanded .zurich-app-location {
@@ -5457,7 +5605,9 @@ textarea:focus-visible {
   height: 42px;
   min-width: 0;
   min-height: 0;
-  transition: width 0.3s cubic-bezier(0.16, 0.84, 0.24, 1), height 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
+  transition:
+    width 0.3s cubic-bezier(0.16, 0.84, 0.24, 1),
+    height 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
 }
 
 .app-basket--expanded .map-controls-app-container {
@@ -5513,7 +5663,9 @@ textarea:focus-visible {
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
-  transition: width 0.3s cubic-bezier(0.16, 0.84, 0.24, 1), height 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
+  transition:
+    width 0.3s cubic-bezier(0.16, 0.84, 0.24, 1),
+    height 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
 }
 
 .app-basket--expanded .map-controls-app-button svg {
@@ -5575,7 +5727,9 @@ textarea:focus-visible {
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
-  transition: width 0.3s cubic-bezier(0.16, 0.84, 0.24, 1), height 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
+  transition:
+    width 0.3s cubic-bezier(0.16, 0.84, 0.24, 1),
+    height 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
 }
 
 .app-basket--expanded .chat-app-button svg {
@@ -5635,7 +5789,9 @@ textarea:focus-visible {
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
-  transition: width 0.3s cubic-bezier(0.16, 0.84, 0.24, 1), height 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
+  transition:
+    width 0.3s cubic-bezier(0.16, 0.84, 0.24, 1),
+    height 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
 }
 
 .app-basket--expanded .legend-app-button svg {
@@ -5695,7 +5851,9 @@ textarea:focus-visible {
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
-  transition: width 0.3s cubic-bezier(0.16, 0.84, 0.24, 1), height 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
+  transition:
+    width 0.3s cubic-bezier(0.16, 0.84, 0.24, 1),
+    height 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
 }
 
 .app-basket--expanded .phone-app-button svg {
@@ -6758,4 +6916,3 @@ textarea:focus-visible {
   transform: translateY(-5px);
 }
 </style>
-

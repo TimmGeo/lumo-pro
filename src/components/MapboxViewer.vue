@@ -274,6 +274,13 @@ let currentRouteLumoScore = null;
 let currentRouteStats = null;
 let routePopup = null;
 let routePopupGeom = null; // Store route geometry for recreating popup
+// Separate stats and popups for fast and bright routes
+let fastRouteStats = null;
+let brightRouteStats = null;
+let fastRoutePopup = null;
+let brightRoutePopup = null;
+let fastRouteGeom = null;
+let brightRouteGeom = null;
 
 // Paths that work both locally and in deploy
 const BASE = import.meta.env.BASE_URL || "/";
@@ -1623,10 +1630,27 @@ async function loadAndDisplayRoute(fromId, toId) {
           firstFeature.geometry.type === "LineString"
         ) {
           allCoords.push(...firstFeature.geometry.coordinates);
+          fastRouteGeom = {
+            coords: firstFeature.geometry.coordinates,
+          };
           if (!route_geom) {
             route_geom = {
               coords: firstFeature.geometry.coordinates,
             };
+          }
+
+          // Extract fast route statistics
+          if (firstFeature.properties) {
+            const props = firstFeature.properties;
+            fastRouteStats = {
+              lengthMeters: props.route_length_meters || null,
+              lengthKm: props.route_length_km || null,
+              walkDurationMinutes: props.walk_duration_minutes || null,
+              walkDurationFormatted: props.walk_duration_formatted || null,
+              poiCounts: props.poi_counts || {},
+              poiFrequencies: props.poi_frequencies || {},
+            };
+            console.log(`Fast Route Stats:`, fastRouteStats);
           }
         }
       }
@@ -1648,44 +1672,40 @@ async function loadAndDisplayRoute(fromId, toId) {
           firstFeature.geometry.type === "LineString"
         ) {
           allCoords.push(...firstFeature.geometry.coordinates);
+          brightRouteGeom = {
+            coords: firstFeature.geometry.coordinates,
+          };
           if (!route_geom) {
             route_geom = {
               coords: firstFeature.geometry.coordinates,
             };
           }
+
+          // Extract bright route statistics
+          if (firstFeature.properties) {
+            const props = firstFeature.properties;
+            brightRouteStats = {
+              lengthMeters: props.route_length_meters || null,
+              lengthKm: props.route_length_km || null,
+              walkDurationMinutes: props.walk_duration_minutes || null,
+              walkDurationFormatted: props.walk_duration_formatted || null,
+              poiCounts: props.poi_counts || {},
+              poiFrequencies: props.poi_frequencies || {},
+            };
+
+            // Extract lumo score from bright route
+            if (props.lumo_score_percentage !== undefined) {
+              currentRouteLumoScore = props.lumo_score_percentage;
+            }
+
+            console.log(`Bright Route Stats:`, brightRouteStats);
+          }
         }
       }
     }
 
-    // Extract route statistics (prefer bright route for POI stats, fallback to fast route)
-    currentRouteLumoScore = null;
-    currentRouteStats = null;
-
-    // Prefer bright route for stats (especially POIs), fallback to fast route
-    const statsRoute = brightRouteData || fastRouteData;
-    if (statsRoute && statsRoute.features && statsRoute.features.length > 0) {
-      const firstFeature = statsRoute.features[0];
-      if (firstFeature.properties) {
-        const props = firstFeature.properties;
-
-        // Extract lumo score
-        if (props.lumo_score_percentage !== undefined) {
-          currentRouteLumoScore = props.lumo_score_percentage;
-        }
-
-        // Extract all route statistics
-        currentRouteStats = {
-          lengthMeters: props.route_length_meters || null,
-          lengthKm: props.route_length_km || null,
-          walkDurationMinutes: props.walk_duration_minutes || null,
-          walkDurationFormatted: props.walk_duration_formatted || null,
-          poiCounts: props.poi_counts || {},
-          poiFrequencies: props.poi_frequencies || {},
-        };
-
-        console.log(`Route Stats:`, currentRouteStats);
-      }
-    }
+    // Set currentRouteStats to bright route stats for backward compatibility
+    currentRouteStats = brightRouteStats || fastRouteStats;
 
     const beforeLayer = map.getLayer("hubs-circles")
       ? "hubs-circles"
@@ -1857,10 +1877,16 @@ async function loadAndDisplayRoute(fromId, toId) {
       console.log("✅ Map zoomed and centered on routes");
     }
 
-    // Show route statistics popup after a short delay
+    // Show route statistics popups after a short delay
     setTimeout(() => {
-      if (route_geom && currentRouteStats) {
-        showRouteStatsPopup(route_geom);
+      // Show popup for fast route if available
+      if (fastRouteGeom && fastRouteStats) {
+        showRouteStatsPopup(fastRouteGeom, fastRouteStats, "fast");
+      }
+
+      // Show popup for bright route if available
+      if (brightRouteGeom && brightRouteStats) {
+        showRouteStatsPopup(brightRouteGeom, brightRouteStats, "bright");
       }
     }, 300);
   } catch (error) {
@@ -1872,16 +1898,18 @@ async function loadAndDisplayRoute(fromId, toId) {
 function handleRoutePopupVisibility(zoom) {
   if (!map) return;
 
-  const shouldShow = zoom >= 11 && routePopupGeom && currentRouteStats;
+  const shouldShow = zoom >= 11;
 
-  if (shouldShow) {
-    // Show popup if it doesn't exist
-    if (!routePopup) {
-      showRouteStatsPopup(routePopupGeom);
+  // Handle fast route popup
+  if (shouldShow && fastRouteGeom && fastRouteStats) {
+    if (!fastRoutePopup) {
+      showRouteStatsPopup(fastRouteGeom, fastRouteStats, "fast");
     } else {
       // Fade in existing popup
       setTimeout(() => {
-        const popupElement = document.querySelector(".route-stats-map-popup");
+        const popupElement = document.querySelector(
+          ".route-stats-map-popup--fast"
+        );
         if (popupElement) {
           popupElement.style.opacity = "1";
           popupElement.style.visibility = "visible";
@@ -1892,42 +1920,83 @@ function handleRoutePopupVisibility(zoom) {
       }, 10);
     }
   } else {
-    // Fade out popup
-    if (routePopup) {
-      const popupElement = document.querySelector(".route-stats-map-popup");
-      if (popupElement) {
-        popupElement.style.opacity = "0";
-        popupElement.style.visibility = "hidden";
-        popupElement.style.pointerEvents = "none";
-        popupElement.style.transition =
-          "opacity 0.3s ease, visibility 0.3s ease";
-      }
+    // Fade out fast route popup
+    const fastPopupElement = document.querySelector(
+      ".route-stats-map-popup--fast"
+    );
+    if (fastPopupElement) {
+      fastPopupElement.style.opacity = "0";
+      fastPopupElement.style.visibility = "hidden";
+      fastPopupElement.style.pointerEvents = "none";
+      fastPopupElement.style.transition =
+        "opacity 0.3s ease, visibility 0.3s ease";
+    }
+  }
+
+  // Handle bright route popup
+  if (shouldShow && brightRouteGeom && brightRouteStats) {
+    if (!brightRoutePopup) {
+      showRouteStatsPopup(brightRouteGeom, brightRouteStats, "bright");
+    } else {
+      // Fade in existing popup
+      setTimeout(() => {
+        const popupElement = document.querySelector(
+          ".route-stats-map-popup--bright"
+        );
+        if (popupElement) {
+          popupElement.style.opacity = "1";
+          popupElement.style.visibility = "visible";
+          popupElement.style.pointerEvents = "auto";
+          popupElement.style.transition =
+            "opacity 0.4s ease, visibility 0.4s ease";
+        }
+      }, 10);
+    }
+  } else {
+    // Fade out bright route popup
+    const brightPopupElement = document.querySelector(
+      ".route-stats-map-popup--bright"
+    );
+    if (brightPopupElement) {
+      brightPopupElement.style.opacity = "0";
+      brightPopupElement.style.visibility = "hidden";
+      brightPopupElement.style.pointerEvents = "none";
+      brightPopupElement.style.transition =
+        "opacity 0.3s ease, visibility 0.3s ease";
     }
   }
 }
 
 // Show route statistics popup on the map
-function showRouteStatsPopup(routeGeom) {
-  if (!map || !routeGeom || !currentRouteStats) return;
+function showRouteStatsPopup(routeGeom, stats, routeType = "fast") {
+  if (!map || !routeGeom || !stats) return;
 
-  // Store geometry for later recreation
-  routePopupGeom = routeGeom;
-
-  // Remove existing popup if any
-  if (routePopup) {
-    routePopup.remove();
-    routePopup = null;
+  // Store geometry for later recreation based on route type
+  if (routeType === "fast") {
+    fastRouteGeom = routeGeom;
+  } else {
+    brightRouteGeom = routeGeom;
   }
 
-  // Calculate midpoint of route for popup position
+  // Remove existing popup for this route type
+  if (routeType === "fast" && fastRoutePopup) {
+    fastRoutePopup.remove();
+    fastRoutePopup = null;
+  } else if (routeType === "bright" && brightRoutePopup) {
+    brightRoutePopup.remove();
+    brightRoutePopup = null;
+  }
+
+  // Calculate position along route for popup
   const coords = routeGeom.coords;
   if (!coords || coords.length === 0) return;
 
-  const midIndex = Math.floor(coords.length / 2);
-  const midCoord = coords[midIndex];
+  // Position fast route popup at 40% along route, bright at 60% to avoid overlap
+  const positionPercent = routeType === "fast" ? 0.4 : 0.6;
+  const routePointIndex = Math.floor(coords.length * positionPercent);
+  const routePoint = coords[routePointIndex];
 
   // Get route stats
-  const stats = currentRouteStats;
   const duration =
     stats.walkDurationMinutes !== null
       ? Math.round(stats.walkDurationMinutes)
@@ -1996,16 +2065,13 @@ function showRouteStatsPopup(routeGeom) {
     }
   });
 
-  // Calculate position closer to route - find a point on the route line
-  // Use a point that's slightly offset from the midpoint to position the popup better
-  const routePointIndex = Math.floor(coords.length * 0.4); // Use 40% along the route
-  const routePoint = coords[routePointIndex];
-
   // Create and show popup with tip pointing to route
-  routePopup = new mapboxgl.Popup({
+  // Use different CSS class based on route type
+  const popupClassName = `route-stats-map-popup route-stats-map-popup--${routeType}`;
+  const popupInstance = new mapboxgl.Popup({
     closeButton: false,
     closeOnClick: false,
-    className: "route-stats-map-popup",
+    className: popupClassName,
     anchor: "bottom",
     offset: [0, -5], // Smaller offset so tip is closer to route
   })
@@ -2013,10 +2079,19 @@ function showRouteStatsPopup(routeGeom) {
     .setDOMContent(popupContent)
     .addTo(map);
 
+  // Store popup instance based on route type
+  if (routeType === "fast") {
+    fastRoutePopup = popupInstance;
+  } else {
+    brightRoutePopup = popupInstance;
+  }
+
   // Set initial visibility based on current zoom after popup is added
   setTimeout(() => {
     const currentZoom = map.getZoom();
-    const popupElement = document.querySelector(".route-stats-map-popup");
+    const popupElement = document.querySelector(
+      `.route-stats-map-popup--${routeType}`
+    );
     if (popupElement) {
       if (currentZoom >= 11) {
         popupElement.style.opacity = "1";
@@ -2037,7 +2112,7 @@ function showRouteStatsPopup(routeGeom) {
   // Set glassmorphism effect directly on the popup element
   setTimeout(() => {
     const popupContentEl = document.querySelector(
-      ".route-stats-map-popup .mapboxgl-popup-content"
+      `.route-stats-map-popup--${routeType} .mapboxgl-popup-content`
     );
     if (popupContentEl) {
       popupContentEl.style.background = "rgba(255, 255, 255, 0.25)";
@@ -2066,7 +2141,7 @@ function showRouteStatsPopup(routeGeom) {
       });
     }
     const popupTip = document.querySelector(
-      ".route-stats-map-popup .mapboxgl-popup-tip"
+      `.route-stats-map-popup--${routeType} .mapboxgl-popup-tip`
     );
     if (popupTip) {
       popupTip.style.borderTopColor = "rgba(255, 255, 255, 0.25)";
@@ -2093,7 +2168,16 @@ function showRouteStatsPopup(routeGeom) {
 function clearRoute() {
   if (!map || !map.isStyleLoaded()) return;
 
-  // Remove popup if exists
+  // Remove popups if they exist
+  if (fastRoutePopup) {
+    fastRoutePopup.remove();
+    fastRoutePopup = null;
+  }
+  if (brightRoutePopup) {
+    brightRoutePopup.remove();
+    brightRoutePopup = null;
+  }
+  // Also remove legacy popup for backward compatibility
   if (routePopup) {
     routePopup.remove();
     routePopup = null;
@@ -2102,6 +2186,10 @@ function clearRoute() {
   // Clear stored data
   currentRouteStats = null;
   routePopupGeom = null;
+  fastRouteStats = null;
+  brightRouteStats = null;
+  fastRouteGeom = null;
+  brightRouteGeom = null;
 
   // Hide all route layers (both fast and bright)
   const routeSources = ["route-fast", "route-bright"];
