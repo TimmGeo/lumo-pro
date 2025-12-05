@@ -277,7 +277,10 @@ let routePopupGeom = null; // Store route geometry for recreating popup
 
 // Paths that work both locally and in deploy
 const BASE = import.meta.env.BASE_URL || "/";
-const hubsUrl = `${BASE}data/routing_hubs.geojson`.replace(/\/{2,}/g, "/");
+const hubsUrl = `${BASE}data/routing_HUBS/routing_HUBS.geojson`.replace(
+  /\/{2,}/g,
+  "/"
+);
 const lumoScoreUrl = `${BASE}data/lumo_score.geojson`.replace(/\/{2,}/g, "/");
 const hexUrl = `${BASE}data/hex_light_100m.geojson`.replace(/\/{2,}/g, "/");
 const hexVibrancyUrl = `${BASE}data/hex_vibrancy_100m.geojson`.replace(
@@ -1354,7 +1357,187 @@ function updateHubColors() {
   map.setPaintProperty("hubs-circles", "circle-color", "#ffffff");
 }
 
-// Load and display route between two hubs
+// Helper function to add route layers for a given source
+// routeType: "fast" (grey) or "bright" (blue)
+function addRouteLayers(sourceId, beforeLayer, routeType = "bright") {
+  const routeLayers = [];
+  const isFast = routeType === "fast";
+
+  // Define colors based on route type
+  const glowColor = isFast ? "#808080" : "#00a8ff"; // Grey for fast, blue for bright
+  const mainColor = isFast
+    ? ["#666666", "#808080", "#999999"] // Grey shades for fast
+    : ["#0099ff", "#00a8ff", "#00b8ff"]; // Blue shades for bright
+  const highlightColor = isFast ? "#cccccc" : "#ffffff"; // Light grey for fast, white for bright
+
+  // Glow/shadow layer (underneath main line)
+  const glowLayerId = `${sourceId}-glow`;
+  if (!map.getLayer(glowLayerId)) {
+    map.addLayer(
+      {
+        id: glowLayerId,
+        type: "line",
+        source: sourceId,
+        paint: {
+          "line-color": glowColor,
+          "line-width": [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            10,
+            14,
+            15,
+            20,
+            18,
+            26,
+          ],
+          "line-opacity": [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            10.9,
+            0,
+            11,
+            0.4,
+          ],
+          "line-blur": 10,
+        },
+        layout: {
+          "line-join": "round",
+          "line-cap": "round",
+        },
+      },
+      beforeLayer
+    );
+    routeLayers.push(glowLayerId);
+  } else {
+    // Update existing layer color if it exists
+    map.setPaintProperty(glowLayerId, "line-color", glowColor);
+  }
+
+  // Main route line
+  const mainLayerId = `${sourceId}-line`;
+  if (!map.getLayer(mainLayerId)) {
+    map.addLayer(
+      {
+        id: mainLayerId,
+        type: "line",
+        source: sourceId,
+        paint: {
+          "line-color": [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            10,
+            mainColor[0],
+            15,
+            mainColor[1],
+            18,
+            mainColor[2],
+          ],
+          "line-width": [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            10,
+            5,
+            15,
+            8,
+            18,
+            10,
+          ],
+          "line-opacity": ["interpolate", ["linear"], ["zoom"], 10.9, 0, 11, 1],
+        },
+        layout: {
+          "line-join": "round",
+          "line-cap": "round",
+        },
+      },
+      beforeLayer
+    );
+    routeLayers.push(mainLayerId);
+  } else {
+    // Update existing layer color if it exists
+    map.setPaintProperty(mainLayerId, "line-color", [
+      "interpolate",
+      ["linear"],
+      ["zoom"],
+      10,
+      mainColor[0],
+      15,
+      mainColor[1],
+      18,
+      mainColor[2],
+    ]);
+  }
+
+  // Highlight layer for extra shine (on top)
+  const highlightLayerId = `${sourceId}-highlight`;
+  if (!map.getLayer(highlightLayerId)) {
+    map.addLayer(
+      {
+        id: highlightLayerId,
+        type: "line",
+        source: sourceId,
+        paint: {
+          "line-color": highlightColor,
+          "line-width": [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            10,
+            1.5,
+            15,
+            2,
+            18,
+            2.5,
+          ],
+          "line-opacity": [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            10.9,
+            0,
+            11,
+            0.6,
+          ],
+          "line-gap-width": [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            10,
+            3.5,
+            15,
+            6,
+            18,
+            7.5,
+          ],
+        },
+        layout: {
+          "line-join": "round",
+          "line-cap": "round",
+        },
+      },
+      mainLayerId
+    );
+    routeLayers.push(highlightLayerId);
+  } else {
+    // Update existing layer color if it exists
+    map.setPaintProperty(highlightLayerId, "line-color", highlightColor);
+  }
+
+  // Always ensure all layers are visible (including existing ones)
+  const allLayerIds = [glowLayerId, mainLayerId, highlightLayerId];
+  allLayerIds.forEach((layerId) => {
+    if (map.getLayer(layerId)) {
+      map.setLayoutProperty(layerId, "visibility", "visible");
+    }
+  });
+
+  return allLayerIds;
+}
+
+// Load and display route between two hubs (both fast and bright routes)
 async function loadAndDisplayRoute(fromId, toId) {
   console.log("loadAndDisplayRoute called with", {
     fromId,
@@ -1381,61 +1564,107 @@ async function loadAndDisplayRoute(fromId, toId) {
     console.log("Map style loaded, proceeding with route");
   }
 
-  // Determine route filename (always use smaller ID first for consistency)
+  // Determine route filenames (always use smaller ID first for consistency)
   const routeId1 = Math.min(fromId, toId);
   const routeId2 = Math.max(fromId, toId);
-  const routeFileName = `${routeId1}_${routeId2}.geojson`;
-  const routeUrl = `${BASE}data/routes/${routeFileName}`.replace(
+  const fastRouteFileName = `${routeId1}_${routeId2}_f.geojson`;
+  const brightRouteFileName = `${routeId1}_${routeId2}_b.geojson`;
+  const fastRouteUrl = `${BASE}data/routes_wgs84/${fastRouteFileName}`.replace(
     /\/{2,}/g,
     "/"
   );
+  const brightRouteUrl =
+    `${BASE}data/routes_wgs84/${brightRouteFileName}`.replace(/\/{2,}/g, "/");
 
-  console.log(`Loading route: ${routeFileName} from ${routeUrl}`);
+  console.log(
+    `Loading routes: ${fastRouteFileName} and ${brightRouteFileName}`
+  );
 
   try {
-    // Clear existing route first
+    // Clear existing routes first
     clearRoute();
 
-    // Load route data
-    const routeResponse = await fetch(routeUrl);
-    if (!routeResponse.ok) {
-      console.error(`Route not found: ${routeFileName}`, {
-        status: routeResponse.status,
-        statusText: routeResponse.statusText,
-      });
+    // Load both route files in parallel
+    const [fastResponse, brightResponse] = await Promise.all([
+      fetch(fastRouteUrl),
+      fetch(brightRouteUrl),
+    ]);
+
+    // Check if routes exist
+    if (!fastResponse.ok && !brightResponse.ok) {
+      console.error(
+        `Routes not found: ${fastRouteFileName} and ${brightRouteFileName}`,
+        {
+          fastStatus: fastResponse.status,
+          brightStatus: brightResponse.status,
+        }
+      );
       return;
     }
 
-    const routeData = await routeResponse.json();
-    console.log("Route data loaded:", routeData);
-
-    // Validate route data
-    if (!routeData || !routeData.features || routeData.features.length === 0) {
-      console.error("Route data is empty or invalid:", routeData);
-      return;
-    }
-
-    console.log(`Route has ${routeData.features.length} feature(s)`);
-
-    // Extract route geometry for popup positioning
+    let fastRouteData = null;
+    let brightRouteData = null;
     let route_geom = null;
-    if (routeData.features && routeData.features.length > 0) {
-      const firstFeature = routeData.features[0];
+    let allCoords = []; // Collect all coordinates for bounding box
+
+    // Load fast route if available
+    if (fastResponse.ok) {
+      fastRouteData = await fastResponse.json();
+      console.log("Fast route data loaded:", fastRouteData);
+
       if (
-        firstFeature.geometry &&
-        firstFeature.geometry.type === "LineString"
+        fastRouteData &&
+        fastRouteData.features &&
+        fastRouteData.features.length > 0
       ) {
-        route_geom = {
-          coords: firstFeature.geometry.coordinates,
-        };
+        const firstFeature = fastRouteData.features[0];
+        if (
+          firstFeature.geometry &&
+          firstFeature.geometry.type === "LineString"
+        ) {
+          allCoords.push(...firstFeature.geometry.coordinates);
+          if (!route_geom) {
+            route_geom = {
+              coords: firstFeature.geometry.coordinates,
+            };
+          }
+        }
       }
     }
 
-    // Extract route statistics from route data
+    // Load bright route if available
+    if (brightResponse.ok) {
+      brightRouteData = await brightResponse.json();
+      console.log("Bright route data loaded:", brightRouteData);
+
+      if (
+        brightRouteData &&
+        brightRouteData.features &&
+        brightRouteData.features.length > 0
+      ) {
+        const firstFeature = brightRouteData.features[0];
+        if (
+          firstFeature.geometry &&
+          firstFeature.geometry.type === "LineString"
+        ) {
+          allCoords.push(...firstFeature.geometry.coordinates);
+          if (!route_geom) {
+            route_geom = {
+              coords: firstFeature.geometry.coordinates,
+            };
+          }
+        }
+      }
+    }
+
+    // Extract route statistics (prefer bright route for POI stats, fallback to fast route)
     currentRouteLumoScore = null;
     currentRouteStats = null;
-    if (routeData.features && routeData.features.length > 0) {
-      const firstFeature = routeData.features[0];
+
+    // Prefer bright route for stats (especially POIs), fallback to fast route
+    const statsRoute = brightRouteData || fastRouteData;
+    if (statsRoute && statsRoute.features && statsRoute.features.length > 0) {
+      const firstFeature = statsRoute.features[0];
       if (firstFeature.properties) {
         const props = firstFeature.properties;
 
@@ -1458,227 +1687,88 @@ async function loadAndDisplayRoute(fromId, toId) {
       }
     }
 
-    // Add route source
-    if (map.getSource("route")) {
-      console.log("Updating existing route source");
-      map.getSource("route").setData(routeData);
-    } else {
-      console.log("Creating new route source");
-      map.addSource("route", {
-        type: "geojson",
-        data: routeData,
-      });
-    }
-
-    // Wait a bit to ensure source is ready
-    await nextTick();
-
-    // Add route layers if they don't exist (glow + main line for techy effect)
     const beforeLayer = map.getLayer("hubs-circles")
       ? "hubs-circles"
       : undefined;
 
-    // Glow/shadow layer (underneath main line) - blue glow
-    if (!map.getLayer("route-line-glow")) {
-      map.addLayer(
-        {
-          id: "route-line-glow",
-          type: "line",
-          source: "route",
-          paint: {
-            "line-color": "#00a8ff",
-            "line-width": [
-              "interpolate",
-              ["linear"],
-              ["zoom"],
-              10,
-              14,
-              15,
-              20,
-              18,
-              26,
-            ],
-            "line-opacity": [
-              "interpolate",
-              ["linear"],
-              ["zoom"],
-              10.9,
-              0,
-              11,
-              0.4,
-            ],
-            "line-blur": 10,
-          },
-          layout: {
-            "line-join": "round",
-            "line-cap": "round",
-          },
-        },
-        beforeLayer
-      );
-    }
-
-    // Main route line - thick, bright blue
-    if (!map.getLayer("route-line")) {
-      map.addLayer(
-        {
-          id: "route-line",
-          type: "line",
-          source: "route",
-          paint: {
-            "line-color": [
-              "interpolate",
-              ["linear"],
-              ["zoom"],
-              10,
-              "#0099ff",
-              15,
-              "#00a8ff",
-              18,
-              "#00b8ff",
-            ],
-            "line-width": [
-              "interpolate",
-              ["linear"],
-              ["zoom"],
-              10,
-              5,
-              15,
-              8,
-              18,
-              10,
-            ],
-            "line-opacity": [
-              "interpolate",
-              ["linear"],
-              ["zoom"],
-              10.9,
-              0,
-              11,
-              1,
-            ],
-          },
-          layout: {
-            "line-join": "round",
-            "line-cap": "round",
-          },
-        },
-        beforeLayer
-      );
-      console.log("Route layer added");
-    } else {
-      console.log("Route layer already exists");
-      // Update existing layer properties
-      map.setPaintProperty("route-line", "line-color", [
-        "interpolate",
-        ["linear"],
-        ["zoom"],
-        10,
-        "#0099ff",
-        15,
-        "#00a8ff",
-        18,
-        "#00b8ff",
-      ]);
-      map.setPaintProperty("route-line", "line-width", [
-        "interpolate",
-        ["linear"],
-        ["zoom"],
-        10,
-        5,
-        15,
-        8,
-        18,
-        10,
-      ]);
-      map.setPaintProperty("route-line", "line-opacity", [
-        "interpolate",
-        ["linear"],
-        ["zoom"],
-        10.9,
-        0,
-        11,
-        1,
-      ]);
-    }
-
-    // Highlight layer for extra shine (on top)
-    if (!map.getLayer("route-line-highlight")) {
-      map.addLayer(
-        {
-          id: "route-line-highlight",
-          type: "line",
-          source: "route",
-          paint: {
-            "line-color": "#ffffff",
-            "line-width": [
-              "interpolate",
-              ["linear"],
-              ["zoom"],
-              10,
-              1.5,
-              15,
-              2,
-              18,
-              2.5,
-            ],
-            "line-opacity": [
-              "interpolate",
-              ["linear"],
-              ["zoom"],
-              10.9,
-              0,
-              11,
-              0.6,
-            ],
-            "line-gap-width": [
-              "interpolate",
-              ["linear"],
-              ["zoom"],
-              10,
-              3.5,
-              15,
-              6,
-              18,
-              7.5,
-            ],
-          },
-          layout: {
-            "line-join": "round",
-            "line-cap": "round",
-          },
-        },
-        "route-line"
-      );
-    }
-
-    // Ensure all route layers are visible
-    const routeLayers = [
-      "route-line-glow",
-      "route-line",
-      "route-line-highlight",
-    ];
-    routeLayers.forEach((layerId) => {
-      if (map.getLayer(layerId)) {
-        map.setLayoutProperty(layerId, "visibility", "visible");
+    // Add fast route if available
+    if (
+      fastRouteData &&
+      fastRouteData.features &&
+      fastRouteData.features.length > 0
+    ) {
+      const sourceId = "route-fast";
+      if (map.getSource(sourceId)) {
+        map.getSource(sourceId).setData(fastRouteData);
+      } else {
+        map.addSource(sourceId, {
+          type: "geojson",
+          data: fastRouteData,
+        });
       }
+
+      // Wait for source to be ready
+      await nextTick();
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const fastRouteLayers = addRouteLayers(sourceId, beforeLayer, "fast");
+
+      // Explicitly ensure all layers are visible
+      fastRouteLayers.forEach((layerId) => {
+        if (map.getLayer(layerId)) {
+          map.setLayoutProperty(layerId, "visibility", "visible");
+        }
+      });
+    }
+
+    // Add bright route if available
+    if (
+      brightRouteData &&
+      brightRouteData.features &&
+      brightRouteData.features.length > 0
+    ) {
+      const sourceId = "route-bright";
+      if (map.getSource(sourceId)) {
+        map.getSource(sourceId).setData(brightRouteData);
+      } else {
+        map.addSource(sourceId, {
+          type: "geojson",
+          data: brightRouteData,
+        });
+      }
+
+      // Wait for source to be ready
+      await nextTick();
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const brightRouteLayers = addRouteLayers(sourceId, beforeLayer, "bright");
+
+      // Explicitly ensure all layers are visible
+      brightRouteLayers.forEach((layerId) => {
+        if (map.getLayer(layerId)) {
+          map.setLayoutProperty(layerId, "visibility", "visible");
+        }
+      });
+    }
+
+    // Collect all route layers for positioning
+    const allRouteLayers = [];
+    ["route-fast", "route-bright"].forEach((sourceId) => {
+      ["glow", "line", "highlight"].forEach((suffix) => {
+        const layerId = `${sourceId}-${suffix}`;
+        if (map.getLayer(layerId)) {
+          allRouteLayers.push(layerId);
+        }
+      });
     });
+
     console.log("Route layers visibility set to visible");
 
-    // Verify the layer exists and is visible
-    const routeLayer = map.getLayer("route-line");
-    if (routeLayer) {
-      const visibility = map.getLayoutProperty("route-line", "visibility");
-      console.log("Route layer exists, visibility:", visibility);
-    } else {
-      console.error("Route layer does not exist after creation!");
-    }
-
-    // Move route layers to be above hex layers but below hubs (if not already positioned)
+    // Move route layers to be above hex layers but below hubs
     if (map.getLayer("hubs-circles")) {
       try {
         // Move in reverse order to maintain correct stacking
-        routeLayers.reverse().forEach((layerId) => {
+        allRouteLayers.reverse().forEach((layerId) => {
           if (map.getLayer(layerId)) {
             map.moveLayer(layerId, "hubs-circles");
           }
@@ -1692,22 +1782,23 @@ async function loadAndDisplayRoute(fromId, toId) {
     // Ensure hubs are always on top after routes are added
     ensureHubsOnTop();
 
-    currentRouteSource = routeUrl;
-    console.log(`✅ Route successfully loaded: ${routeFileName}`);
+    currentRouteSource = fastRouteUrl; // Store fast route URL as primary
+    console.log(
+      `✅ Routes successfully loaded: ${fastRouteFileName} and ${brightRouteFileName}`
+    );
 
-    // Force a repaint to ensure route is visible
+    // Force a repaint to ensure routes are visible
     map.triggerRepaint();
 
-    // Zoom and center map on the route
-    if (route_geom && route_geom.coords && route_geom.coords.length > 0) {
-      // Calculate bounding box of the route
-      const coords = route_geom.coords;
-      let minLng = coords[0][0];
-      let maxLng = coords[0][0];
-      let minLat = coords[0][1];
-      let maxLat = coords[0][1];
+    // Zoom and center map on the routes (using all coordinates from both routes)
+    if (allCoords.length > 0) {
+      // Calculate bounding box of all routes
+      let minLng = allCoords[0][0];
+      let maxLng = allCoords[0][0];
+      let minLat = allCoords[0][1];
+      let maxLat = allCoords[0][1];
 
-      coords.forEach((coord) => {
+      allCoords.forEach((coord) => {
         const [lng, lat] = coord;
         minLng = Math.min(minLng, lng);
         maxLng = Math.max(maxLng, lng);
@@ -1715,11 +1806,11 @@ async function loadAndDisplayRoute(fromId, toId) {
         maxLat = Math.max(maxLat, lat);
       });
 
-      // Add padding around the route (in degrees)
-      const padding = 0.01; // Adjust this value to control how much padding around the route
+      // Add padding around the routes (in degrees)
+      const padding = 0.01;
       const bounds = [
-        [minLng - padding, minLat - padding], // Southwest corner
-        [maxLng + padding, maxLat + padding], // Northeast corner
+        [minLng - padding, minLat - padding],
+        [maxLng + padding, maxLat + padding],
       ];
 
       // Get current pitch and bearing to preserve them
@@ -1729,20 +1820,7 @@ async function loadAndDisplayRoute(fromId, toId) {
       // Create LngLatBounds object
       const routeBounds = new mapboxgl.LngLatBounds(bounds[0], bounds[1]);
 
-      // Calculate the center point
-      const center = routeBounds.getCenter();
-
-      // Calculate zoom level manually based on bounds
-      // This is a simplified calculation - fitBounds does this more accurately
-      // but we'll use a reasonable approximation
-      const ne = routeBounds.getNorthEast();
-      const sw = routeBounds.getSouthWest();
-      const latDiff = ne.lat - sw.lat;
-      const lngDiff = ne.lng - sw.lng;
-      const maxDiff = Math.max(latDiff, lngDiff);
-
-      // Estimate zoom level (this is approximate, fitBounds does it better)
-      // We'll use fitBounds with duration 0 to get accurate zoom, then animate
+      // Calculate optimal zoom and center
       const originalCenter = map.getCenter();
       const originalZoom = map.getZoom();
 
@@ -1768,15 +1846,15 @@ async function loadAndDisplayRoute(fromId, toId) {
       map.easeTo({
         center: targetCenter,
         zoom: targetZoom,
-        pitch: currentPitch, // Preserve current pitch (inclination)
-        bearing: currentBearing, // Preserve current bearing
+        pitch: currentPitch,
+        bearing: currentBearing,
         duration: 1500,
         easing(t) {
           return t * (2 - t); // ease-out easing
         },
       });
 
-      console.log("✅ Map zoomed and centered on route");
+      console.log("✅ Map zoomed and centered on routes");
     }
 
     // Show route statistics popup after a short delay
@@ -1786,7 +1864,7 @@ async function loadAndDisplayRoute(fromId, toId) {
       }
     }, 300);
   } catch (error) {
-    console.error(`Error loading route ${routeFileName}:`, error);
+    console.error(`Error loading routes:`, error);
   }
 }
 
@@ -2011,7 +2089,7 @@ function showRouteStatsPopup(routeGeom) {
   }, 10);
 }
 
-// Clear the displayed route
+// Clear the displayed routes (both fast and bright)
 function clearRoute() {
   if (!map || !map.isStyleLoaded()) return;
 
@@ -2025,20 +2103,26 @@ function clearRoute() {
   currentRouteStats = null;
   routePopupGeom = null;
 
-  // Hide all route layers
-  const routeLayers = ["route-line-glow", "route-line", "route-line-highlight"];
-  routeLayers.forEach((layerId) => {
-    if (map.getLayer(layerId)) {
-      map.setLayoutProperty(layerId, "visibility", "none");
-    }
+  // Hide all route layers (both fast and bright)
+  const routeSources = ["route-fast", "route-bright"];
+  routeSources.forEach((sourceId) => {
+    ["glow", "line", "highlight"].forEach((suffix) => {
+      const layerId = `${sourceId}-${suffix}`;
+      if (map.getLayer(layerId)) {
+        map.setLayoutProperty(layerId, "visibility", "none");
+      }
+    });
   });
 
-  if (map.getSource("route")) {
-    map.getSource("route").setData({
-      type: "FeatureCollection",
-      features: [],
-    });
-  }
+  // Clear route sources
+  routeSources.forEach((sourceId) => {
+    if (map.getSource(sourceId)) {
+      map.getSource(sourceId).setData({
+        type: "FeatureCollection",
+        features: [],
+      });
+    }
+  });
 
   currentRouteSource = null;
 }

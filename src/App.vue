@@ -70,7 +70,7 @@
           <button
             class="sidebar-icon-btn"
             :class="{ active: activeSidebarTab === 'routing' }"
-            @click.stop="activeSidebarTab = 'routing'"
+            @click.stop="handleIconClick('routing')"
             aria-label="Routing"
           >
             <svg
@@ -91,7 +91,7 @@
           <button
             class="sidebar-icon-btn"
             :class="{ active: activeSidebarTab === 'layers' }"
-            @click.stop="activeSidebarTab = 'layers'"
+            @click.stop="handleIconClick('layers')"
             aria-label="Layers"
           >
             <svg
@@ -113,7 +113,7 @@
           <button
             class="sidebar-icon-btn"
             :class="{ active: activeSidebarTab === 'route-history' }"
-            @click.stop="activeSidebarTab = 'route-history'"
+            @click.stop="handleIconClick('route-history')"
             aria-label="Route History"
           >
             <svg
@@ -134,7 +134,7 @@
           <button
             class="sidebar-icon-btn sidebar-icon-btn--settings"
             :class="{ active: activeSidebarTab === 'settings' }"
-            @click.stop="activeSidebarTab = 'settings'"
+            @click.stop="handleIconClick('settings')"
             aria-label="Settings"
           >
             <svg
@@ -1126,8 +1126,12 @@
             <div
               :key="activeBasketApp"
               class="app-basket-content-scrollable-wrapper"
+              :class="{ 'route-already-shown': activeBasketApp === 'chat' && isCurrentRouteAlreadyShown }"
             >
-              <div class="app-basket-content-scrollable">
+              <div 
+                class="app-basket-content-scrollable"
+                ref="chatScrollableRef"
+              >
               <!-- Chat App Content -->
               <div 
                 v-if="activeBasketApp === 'chat'" 
@@ -1207,12 +1211,16 @@
                 </div>
                 
                 <!-- User message bubble (shown after user sends) -->
-                <div v-if="userMessageSent && sentUserMessage" class="route-details-user-message">
+                <div v-if="userMessageSent && sentUserMessage && isCurrentRouteMessages" class="route-details-user-message">
                   {{ sentUserMessage }}
                 </div>
                 
                 <!-- Response bubbles (shown after user sends message) -->
-                <div v-if="userMessageSent" class="route-details-response-section">
+                <div 
+                  v-if="userMessageSent && isCurrentRouteMessages" 
+                  class="route-details-response-section"
+                  :class="{ 'response-already-shown': shouldSkipResponseAnimations }"
+                >
                   <div class="route-details-response-bubble">
                     No worries!
                   </div>
@@ -1559,7 +1567,9 @@ const isLoadingFromHistory = ref(false); // Flag to prevent adding history route
 const isHandlingHubClicks = ref(false); // Flag to prevent watcher from triggering when handling hub clicks
 const routeDetailsPopupVisible = ref(false);
 // Track which routes have been shown in the chat app before
-const routesShownInChat = ref(new Set());
+const routesShownInChat = ref([]);
+// Track which routes have shown response bubbles (to skip animations on subsequent messages)
+const routesWithResponseShown = ref([]);
 // Track timeout for marking route as shown (to allow animations to complete)
 let markRouteShownTimeout = null;
 const legendPopupVisible = ref(false);
@@ -1568,6 +1578,8 @@ const userMessage = ref("");
 const sentUserMessage = ref("");
 const userMessageSent = ref(false);
 const showInput = ref(false);
+// Track which route the current messages belong to
+const messagesRouteKey = ref(null);
 const mapControlsExpanded = ref(false);
 
 // Track which app is currently active in the basket
@@ -1582,11 +1594,24 @@ const isBasketExpanded = computed(() => {
 
 // Computed to check if current route has been shown in chat before
 const isCurrentRouteAlreadyShown = computed(() => {
-  // Only check if chat app is active and we have route stats
-  if (activeBasketApp.value !== 'chat' || !currentRouteStats.value) return false;
-  if (!startHub.value || !endHub.value) return false;
+  if (activeBasketApp.value !== 'chat') return false;
+  if (!currentRouteStats.value || !startHub.value || !endHub.value) return false;
   const routeKey = `${startHub.value}-${endHub.value}`;
-  return routesShownInChat.value.has(routeKey);
+  return routesShownInChat.value.includes(routeKey);
+});
+
+// Computed to check if current messages belong to the current route
+const isCurrentRouteMessages = computed(() => {
+  if (!startHub.value || !endHub.value) return false;
+  const currentRouteKey = `${startHub.value}-${endHub.value}`;
+  return messagesRouteKey.value === currentRouteKey;
+});
+
+// Computed to check if response bubbles should skip animations (already shown for this route)
+const shouldSkipResponseAnimations = computed(() => {
+  if (!startHub.value || !endHub.value) return false;
+  const currentRouteKey = `${startHub.value}-${endHub.value}`;
+  return routesWithResponseShown.value.includes(currentRouteKey);
 });
 
 // Helper function to close basket (clears previous state to prevent auto-reopen)
@@ -1875,6 +1900,7 @@ function handleMapMove(event) {
 
 // Scrollbar visibility
 const scrollableRef = ref(null);
+const chatScrollableRef = ref(null);
 const isScrolling = ref(false);
 let scrollTimeout = null;
 
@@ -2081,6 +2107,7 @@ function closeRouteDetailsPopup() {
   sentUserMessage.value = "";
   userMessageSent.value = false;
   showInput.value = false;
+  messagesRouteKey.value = null;
 }
 
 // Open input box
@@ -2094,21 +2121,49 @@ function openInput() {
   });
 }
 
+// Function to scroll chat to bottom
+function scrollChatToBottom() {
+  nextTick(() => {
+    // Find the scrollable wrapper (parent of chatScrollableRef)
+    const wrapper = chatScrollableRef.value?.parentElement;
+    if (wrapper) {
+      wrapper.scrollTo({
+        top: wrapper.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
+  });
+}
+
 // Handle sending a message
 function handleSendMessage() {
   const message = userMessage.value.trim();
-  if (message) {
+  if (message && startHub.value && endHub.value) {
+    // Store the route key for this message
+    const routeKey = `${startHub.value}-${endHub.value}`;
+    messagesRouteKey.value = routeKey;
     sentUserMessage.value = message;
     userMessageSent.value = true;
     userMessage.value = "";
     showInput.value = false;
-    // Scroll to bottom to show response
+    
+    // Mark route as having shown responses (after animations complete)
+    // The longest animation is safety bubble: 1.2s delay + 0.5s duration = 1.7s
+    // Wait 2 seconds to ensure all animations complete
+    if (!routesWithResponseShown.value.includes(routeKey)) {
+      setTimeout(() => {
+        if (!routesWithResponseShown.value.includes(routeKey)) {
+          routesWithResponseShown.value.push(routeKey);
+        }
+      }, 2000);
+    }
+    
+    // Scroll to bottom after message is sent
+    scrollChatToBottom();
+    // Also scroll after response appears (with delay for animation)
     setTimeout(() => {
-      const content = document.querySelector('.route-details-popup-content');
-      if (content) {
-        content.scrollTop = content.scrollHeight;
-      }
-    }, 100);
+      scrollChatToBottom();
+    }, 500);
   }
 }
 
@@ -2303,6 +2358,20 @@ watch(
   { deep: true }
 );
 
+// Watch for route changes and clear messages if route changed
+watch(
+  [startHub, endHub],
+  ([newStart, newEnd], [oldStart, oldEnd]) => {
+    // If route changed (and both hubs are set), clear messages
+    if (newStart && newEnd && (newStart !== oldStart || newEnd !== oldEnd)) {
+      sentUserMessage.value = "";
+      userMessageSent.value = false;
+      messagesRouteKey.value = null;
+      // Note: We don't clear routesWithResponseShown so responses appear instantly for routes that had responses before
+    }
+  }
+);
+
 // Watch for chat app opening and mark route as shown (after animations complete)
 watch(
   [activeBasketApp, startHub, endHub, currentRouteStats],
@@ -2320,12 +2389,30 @@ watch(
       // Only mark as shown if it hasn't been shown before
       // The longest animation is footer bubble: 1.3s delay + 0.5s duration = 1.8s
       // Wait 2.5 seconds to ensure all animations complete
-      if (!routesShownInChat.value.has(routeKey)) {
+      if (!routesShownInChat.value.includes(routeKey)) {
         markRouteShownTimeout = setTimeout(() => {
-          routesShownInChat.value.add(routeKey);
+          // Add route key to array if not already present
+          if (!routesShownInChat.value.includes(routeKey)) {
+            routesShownInChat.value.push(routeKey);
+          }
           markRouteShownTimeout = null;
         }, 2500);
       }
+    }
+  }
+);
+
+// Watch for messages and auto-scroll chat
+watch(
+  [userMessageSent, sentUserMessage, activeBasketApp],
+  ([newSent, newMessage, newApp]) => {
+    // Auto-scroll when message is sent or when chat is opened with existing messages
+    if (newApp === 'chat' && newSent && newMessage) {
+      scrollChatToBottom();
+      // Also scroll after a delay to catch response animations
+      setTimeout(() => {
+        scrollChatToBottom();
+      }, 800);
     }
   }
 );
@@ -2688,6 +2775,22 @@ function handleSidebarToggleLeave() {
   }
 }
 
+// Handle icon click - open sidebar if collapsed and set the active tab
+function handleIconClick(tab) {
+  // If sidebar is collapsed, open it immediately
+  if (sidebarCollapsed.value) {
+    // Clear any hover timer
+    if (hoverTimer) {
+      clearTimeout(hoverTimer);
+      hoverTimer = null;
+    }
+    // Open sidebar instantly
+    sidebarCollapsed.value = false;
+  }
+  // Set the active tab
+  activeSidebarTab.value = tab;
+}
+
 // Handle sidebar click - open if collapsed (unless clicking on button or resize handle)
 function handleSidebarClick(e) {
   // Only open if collapsed
@@ -2823,9 +2926,9 @@ textarea:focus-visible {
   transform: translateX(0);
   visibility: visible;
   transition:
-    opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.1s,
-    transform 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.1s,
-    visibility 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.1s; /* Smooth fade-in with slight delay */
+    opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0s,
+    transform 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0s,
+    visibility 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0s;
 }
 
 /* Hide sidebar-main content when collapsed */
@@ -6049,8 +6152,8 @@ textarea:focus-visible {
 
 /* Disable animations when route has been shown before */
 .route-already-shown .route-details-intro-greeting {
-  animation: none;
-  opacity: 1;
+  animation: none !important;
+  opacity: 1 !important;
 }
 
 .route-details-greeting-bold {
@@ -6087,8 +6190,8 @@ textarea:focus-visible {
 }
 
 .route-already-shown .route-details-intro-text {
-  animation: none;
-  opacity: 1;
+  animation: none !important;
+  opacity: 1 !important;
 }
 
 .route-details-tip {
@@ -6181,8 +6284,8 @@ textarea:focus-visible {
 }
 
 .route-already-shown .route-details-document {
-  animation: none;
-  opacity: 1;
+  animation: none !important;
+  opacity: 1 !important;
 }
 
 .route-details-document-header {
@@ -6431,8 +6534,8 @@ textarea:focus-visible {
 }
 
 .route-already-shown .route-details-footer-bubble {
-  animation: none;
-  opacity: 1;
+  animation: none !important;
+  opacity: 1 !important;
 }
 
 .route-details-response-section {
@@ -6468,13 +6571,14 @@ textarea:focus-visible {
   box-shadow: none;
   font-weight: 400;
   letter-spacing: 0.01em;
-  animation: chatBubbleAppear 0.5s ease-out 0.4s forwards;
+  animation: chatBubbleAppear 0.5s ease-out 0.6s forwards;
   opacity: 0;
 }
 
-.route-already-shown .route-details-response-bubble {
-  animation: none;
-  opacity: 1;
+/* Disable animations when response was already shown for this route */
+.response-already-shown .route-details-response-bubble {
+  animation: none !important;
+  opacity: 1 !important;
 }
 
 .route-details-safety-bubble {
@@ -6502,14 +6606,14 @@ textarea:focus-visible {
   box-shadow: none;
   font-weight: 400;
   letter-spacing: 0.01em;
-  opacity: 0.9;
-  animation: chatBubbleAppear 0.5s ease-out 0.7s forwards;
+  animation: chatBubbleAppear 0.5s ease-out 1.2s forwards;
   opacity: 0;
 }
 
-.route-already-shown .route-details-safety-bubble {
-  animation: none;
-  opacity: 1;
+/* Disable animations when response was already shown for this route */
+.response-already-shown .route-details-safety-bubble {
+  animation: none !important;
+  opacity: 1 !important;
 }
 
 .route-details-input-container {
@@ -6612,8 +6716,8 @@ textarea:focus-visible {
 }
 
 .route-already-shown .route-details-user-message {
-  animation: none;
-  opacity: 1;
+  animation: none !important;
+  opacity: 1 !important;
 }
 
 .route-details-empty {

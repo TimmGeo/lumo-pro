@@ -20,7 +20,7 @@ import pyproj
 # Configuration - paths relative to script location
 SCRIPT_DIR = Path(__file__).parent
 DATA_DIR = SCRIPT_DIR.parent
-ROUTES_DIR = DATA_DIR / "routes"
+ROUTES_DIR = DATA_DIR / "routes_wgs84"
 POIS_FILE = DATA_DIR / "vibrancy_points.geojson"
 
 # Constants
@@ -279,8 +279,8 @@ def main():
     else:
         print("  No POI data available")
     
-    # Find all route files
-    route_files = sorted(ROUTES_DIR.glob("*.geojson"))
+    # Find all route files (both fast _f and bright _b routes)
+    route_files = sorted(ROUTES_DIR.glob("*_f.geojson")) + sorted(ROUTES_DIR.glob("*_b.geojson"))
     print(f"\nFound {len(route_files)} route files to process")
     
     if not route_files:
