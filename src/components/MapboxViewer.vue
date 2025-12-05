@@ -1283,6 +1283,191 @@ function setHubsVisibility(visible) {
   }
 }
 
+// Filter hubs to show only selected ones when a route is active
+function filterHubsByRoute(hubId1, hubId2, retryCount = 0) {
+  const MAX_RETRIES = 10;
+  const RETRY_DELAY = 50;
+
+  if (!map) {
+    if (retryCount < MAX_RETRIES) {
+      console.log(
+        `Map not initialized, retrying filter (${retryCount + 1}/${MAX_RETRIES})...`
+      );
+      setTimeout(
+        () => filterHubsByRoute(hubId1, hubId2, retryCount + 1),
+        RETRY_DELAY
+      );
+      return;
+    }
+    console.warn("Cannot filter hubs: map not initialized after retries");
+    return;
+  }
+
+  if (!map.isStyleLoaded()) {
+    if (retryCount < MAX_RETRIES) {
+      console.log(
+        `Map style not loaded, retrying filter (${retryCount + 1}/${MAX_RETRIES})...`
+      );
+      setTimeout(
+        () => filterHubsByRoute(hubId1, hubId2, retryCount + 1),
+        RETRY_DELAY
+      );
+      return;
+    }
+    console.warn("Cannot filter hubs: map style not loaded after retries");
+    return;
+  }
+
+  // Check if layers exist
+  if (!map.getLayer("hubs-circles") || !map.getLayer("hubs-labels")) {
+    if (retryCount < MAX_RETRIES) {
+      console.log(
+        `Hub layers not found, retrying filter (${retryCount + 1}/${MAX_RETRIES})...`
+      );
+      setTimeout(
+        () => filterHubsByRoute(hubId1, hubId2, retryCount + 1),
+        RETRY_DELAY
+      );
+      return;
+    }
+    console.warn("Cannot filter hubs: layers not found after retries");
+    return;
+  }
+
+  // If no route is active, show all hubs
+  if (hubId1 === null && hubId2 === null) {
+    // Show all hubs - remove filter or use a filter that always passes
+    const showAllFilter = ["!", ["has", "point_count"]]; // Original filter for unclustered hubs
+
+    // Show clusters when route is cleared
+    map.setLayoutProperty("hubs-clusters", "visibility", "visible");
+    map.setLayoutProperty("hubs-cluster-count", "visibility", "visible");
+
+    // Show all unclustered hubs
+    if (map.getLayer("hubs-circles")) {
+      map.setFilter("hubs-circles", showAllFilter);
+      // Reset opacity to always visible (no route, so no zoom-based hiding)
+      map.setPaintProperty("hubs-circles", "circle-opacity", 1);
+      console.log("Showing all hubs - filter reset");
+    }
+    if (map.getLayer("hubs-labels")) {
+      map.setFilter("hubs-labels", showAllFilter);
+      // Reset label minzoom to original value (no route, so no zoom-based hiding)
+      map.setLayoutProperty("hubs-labels", "minzoom", 12);
+      console.log("Showing all hub labels - filter reset");
+    }
+    // Force a repaint
+    map.triggerRepaint();
+    return;
+  }
+
+  // When route is active, hide clusters and show only the two selected hubs
+  // Ensure IDs are numbers for comparison
+  const selectedIds = [];
+  if (hubId1 !== null) {
+    const id1 = typeof hubId1 === "string" ? parseInt(hubId1, 10) : hubId1;
+    selectedIds.push(id1);
+  }
+  if (hubId2 !== null) {
+    const id2 = typeof hubId2 === "string" ? parseInt(hubId2, 10) : hubId2;
+    selectedIds.push(id2);
+  }
+
+  // Debug: Check what hub IDs exist in the data
+  if (hubsData && hubsData.features) {
+    const allHubIds = hubsData.features
+      .filter((f) => !f.properties.point_count)
+      .map((f) => f.properties.id);
+    console.log("All hub IDs in data:", allHubIds);
+  }
+
+  console.log(
+    "Filtering hubs to show only:",
+    selectedIds,
+    "from input:",
+    hubId1,
+    hubId2
+  );
+
+  // Hide clusters when route is active
+  if (map.getLayer("hubs-clusters")) {
+    map.setLayoutProperty("hubs-clusters", "visibility", "none");
+  }
+  if (map.getLayer("hubs-cluster-count")) {
+    map.setLayoutProperty("hubs-cluster-count", "visibility", "none");
+  }
+
+  // Filter to show only selected hubs
+  // Use "any" with multiple equality checks
+  if (selectedIds.length === 1) {
+    // Single hub selected
+    const routeFilter = [
+      "all",
+      ["!", ["has", "point_count"]], // Not a cluster
+      ["==", ["get", "id"], selectedIds[0]], // ID matches
+    ];
+    console.log("Applying filter (single hub):", routeFilter);
+    if (map.getLayer("hubs-circles")) {
+      map.setFilter("hubs-circles", routeFilter);
+      // Reset opacity to always visible (no route, so no zoom-based hiding)
+      map.setPaintProperty("hubs-circles", "circle-opacity", 1);
+    }
+    if (map.getLayer("hubs-labels")) {
+      map.setFilter("hubs-labels", routeFilter);
+      // Reset label visibility (no route, so no zoom-based hiding)
+      map.setLayoutProperty("hubs-labels", "minzoom", 12);
+    }
+  } else if (selectedIds.length === 2) {
+    // Two hubs selected - add zoom-based visibility to match route disappearance
+    const routeFilter = [
+      "all",
+      ["!", ["has", "point_count"]], // Not a cluster
+      [
+        "any",
+        ["==", ["get", "id"], selectedIds[0]], // ID matches first hub
+        ["==", ["get", "id"], selectedIds[1]], // ID matches second hub
+      ],
+    ];
+    console.log("Applying filter (two hubs):", routeFilter);
+    try {
+      if (map.getLayer("hubs-circles")) {
+        map.setFilter("hubs-circles", routeFilter);
+        // Add zoom-based opacity to match route disappearance (disappears at zoom 10.9, same as route)
+        map.setPaintProperty("hubs-circles", "circle-opacity", [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          10.9,
+          0, // Invisible at zoom 10.9 and below (same as route)
+          11,
+          1, // Fully visible at zoom 11 and above
+        ]);
+        const currentFilter = map.getFilter("hubs-circles");
+        console.log(
+          "Filter applied to hubs-circles. Current filter:",
+          currentFilter
+        );
+      }
+      if (map.getLayer("hubs-labels")) {
+        map.setFilter("hubs-labels", routeFilter);
+        // Set minzoom to match route disappearance (disappears at zoom 10.9, same as route)
+        map.setLayoutProperty("hubs-labels", "minzoom", 11);
+        const currentFilter = map.getFilter("hubs-labels");
+        console.log(
+          "Filter applied to hubs-labels. Current filter:",
+          currentFilter
+        );
+      }
+      // Force a repaint to ensure filter is visible
+      map.triggerRepaint();
+    } catch (error) {
+      console.error("Error applying filter:", error);
+    }
+  } else {
+    console.warn("No selected IDs to filter:", selectedIds);
+  }
+}
+
 // Handle hub click - select first hub, then second hub to show route
 function handleHubClick(hubId) {
   if (!map || !map.isStyleLoaded()) return;
@@ -1294,7 +1479,7 @@ function handleHubClick(hubId) {
   if (selectedHubId1 === id) {
     selectedHubId1 = null;
     selectedHubId2 = null;
-    clearRoute();
+    clearRoute(); // This will show all hubs immediately
     updateHubColors();
     return;
   }
@@ -1302,7 +1487,7 @@ function handleHubClick(hubId) {
   // If clicking the second selected hub, deselect it
   if (selectedHubId2 === id) {
     selectedHubId2 = null;
-    clearRoute();
+    clearRoute(); // This will show only selectedHubId1 if it exists, or all hubs if null
     updateHubColors();
     return;
   }
@@ -1311,7 +1496,7 @@ function handleHubClick(hubId) {
   if (selectedHubId1 === null) {
     selectedHubId1 = id;
     selectedHubId2 = null;
-    clearRoute();
+    clearRoute(); // This will show all hubs (only one hub selected, not a route)
     updateHubColors();
     return;
   }
@@ -1329,7 +1514,7 @@ function handleHubClick(hubId) {
   // If both hubs are selected, replace first with this one
   selectedHubId1 = id;
   selectedHubId2 = null;
-  clearRoute();
+  clearRoute(); // This will show all hubs (only one hub selected, not a route)
   updateHubColors();
 }
 
@@ -1588,8 +1773,8 @@ async function loadAndDisplayRoute(fromId, toId) {
   );
 
   try {
-    // Clear existing routes first
-    clearRoute();
+    // Clear existing routes first (but don't reset hub filter - we'll set it after loading)
+    clearRoute(true);
 
     // Load both route files in parallel
     const [fastResponse, brightResponse] = await Promise.all([
@@ -1877,6 +2062,11 @@ async function loadAndDisplayRoute(fromId, toId) {
       console.log("✅ Map zoomed and centered on routes");
     }
 
+    // Filter hubs to show only the two selected hubs immediately
+    // Use the global selectedHubId variables to ensure consistency
+    // Apply filter immediately - retry logic in filterHubsByRoute will handle if map isn't ready
+    filterHubsByRoute(selectedHubId1, selectedHubId2);
+
     // Show route statistics popups after a short delay
     setTimeout(() => {
       // Show popup for fast route if available
@@ -2016,18 +2206,18 @@ function showRouteStatsPopup(routeGeom, stats, routeType = "fast") {
   html += '<div class="route-stats-popup-top-line">';
   html += `
     <span class="route-stats-popup-icon">
-      <img src="${walkingIconUrl}" alt="Walking" width="20" height="20" />
+      <img src="${walkingIconUrl}" alt="Walking" width="14" height="14" />
     </span>
   `;
   if (duration !== null) {
-    html += `<span class="route-stats-popup-duration" style="color: #000000 !important; font-weight: 800 !important; font-size: 22px !important;">${duration} min</span>`;
+    html += `<span class="route-stats-popup-duration" style="color: #ffffff !important; font-weight: 800 !important; font-size: 16px !important;">${duration} min</span>`;
   }
   html += "</div>";
 
   // Second row: Distance below, aligned with duration text
   if (distance !== null) {
     html += `<div class="route-stats-popup-bottom-line">`;
-    html += `<span class="route-stats-popup-distance" style="color: #000000 !important;">${distance} km</span>`;
+    html += `<span class="route-stats-popup-distance" style="color: #ffffff !important;">${distance} km</span>`;
     html += `</div>`;
   }
 
@@ -2115,36 +2305,57 @@ function showRouteStatsPopup(routeGeom, stats, routeType = "fast") {
       `.route-stats-map-popup--${routeType} .mapboxgl-popup-content`
     );
     if (popupContentEl) {
-      popupContentEl.style.background = "rgba(255, 255, 255, 0.25)";
-      popupContentEl.style.backgroundColor = "rgba(255, 255, 255, 0.25)";
-      popupContentEl.style.backdropFilter = "blur(20px) saturate(180%)";
-      popupContentEl.style.webkitBackdropFilter = "blur(20px) saturate(180%)";
-      popupContentEl.style.boxShadow = "0 8px 32px 0 rgba(0, 0, 0, 0.1)";
+      // Use more translucent glassmorphic effect - blue tint for bright route, neutral for fast route
+      if (routeType === "bright") {
+        popupContentEl.style.background = "rgba(100, 180, 255, 0.15)";
+        popupContentEl.style.backgroundColor = "rgba(100, 180, 255, 0.15)";
+      } else {
+        popupContentEl.style.background = "rgba(255, 255, 255, 0.1)";
+        popupContentEl.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+      }
+      popupContentEl.style.border = "none";
+      popupContentEl.style.backdropFilter = "blur(30px) saturate(180%)";
+      popupContentEl.style.webkitBackdropFilter = "blur(30px) saturate(180%)";
+      popupContentEl.style.boxShadow = "0 8px 32px 0 rgba(0, 0, 0, 0.37)";
+      popupContentEl.style.borderRadius = "8px";
       popupContentEl.style.transition =
-        "transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, border-color 0.2s ease";
+        "transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease";
 
       // Add hover event listeners to manually change styles (since CSS hover might be overridden)
       popupContentEl.addEventListener("mouseenter", () => {
-        popupContentEl.style.background = "rgba(255, 255, 255, 0.5)";
-        popupContentEl.style.backgroundColor = "rgba(255, 255, 255, 0.5)";
-        popupContentEl.style.borderColor = "rgba(255, 255, 255, 0.5)";
+        if (routeType === "bright") {
+          popupContentEl.style.background = "rgba(100, 180, 255, 0.22)";
+          popupContentEl.style.backgroundColor = "rgba(100, 180, 255, 0.22)";
+        } else {
+          popupContentEl.style.background = "rgba(255, 255, 255, 0.18)";
+          popupContentEl.style.backgroundColor = "rgba(255, 255, 255, 0.18)";
+        }
         popupContentEl.style.transform = "scale(1.08)";
-        popupContentEl.style.boxShadow = "0 12px 40px 0 rgba(0, 0, 0, 0.2)";
+        popupContentEl.style.boxShadow = "0 12px 40px 0 rgba(0, 0, 0, 0.4)";
       });
 
       popupContentEl.addEventListener("mouseleave", () => {
-        popupContentEl.style.background = "rgba(255, 255, 255, 0.25)";
-        popupContentEl.style.backgroundColor = "rgba(255, 255, 255, 0.25)";
-        popupContentEl.style.borderColor = "rgba(255, 255, 255, 0.18)";
+        if (routeType === "bright") {
+          popupContentEl.style.background = "rgba(100, 180, 255, 0.15)";
+          popupContentEl.style.backgroundColor = "rgba(100, 180, 255, 0.15)";
+        } else {
+          popupContentEl.style.background = "rgba(255, 255, 255, 0.1)";
+          popupContentEl.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+        }
         popupContentEl.style.transform = "scale(1)";
-        popupContentEl.style.boxShadow = "0 8px 32px 0 rgba(0, 0, 0, 0.1)";
+        popupContentEl.style.boxShadow = "0 8px 32px 0 rgba(0, 0, 0, 0.37)";
       });
     }
     const popupTip = document.querySelector(
       `.route-stats-map-popup--${routeType} .mapboxgl-popup-tip`
     );
     if (popupTip) {
-      popupTip.style.borderTopColor = "rgba(255, 255, 255, 0.25)";
+      // Use blue tint for bright route tip, neutral for fast route tip
+      if (routeType === "bright") {
+        popupTip.style.borderTopColor = "rgba(100, 180, 255, 0.15)";
+      } else {
+        popupTip.style.borderTopColor = "rgba(255, 255, 255, 0.1)";
+      }
       popupTip.style.borderTopWidth = "6px";
       popupTip.style.borderLeft = "6px solid transparent";
       popupTip.style.borderRight = "6px solid transparent";
@@ -2165,7 +2376,7 @@ function showRouteStatsPopup(routeGeom, stats, routeType = "fast") {
 }
 
 // Clear the displayed routes (both fast and bright)
-function clearRoute() {
+function clearRoute(skipHubFilter = false) {
   if (!map || !map.isStyleLoaded()) return;
 
   // Remove popups if they exist
@@ -2213,6 +2424,19 @@ function clearRoute() {
   });
 
   currentRouteSource = null;
+
+  // Show all hubs again when route is cleared (only if not skipping filter)
+  // Only filter when both hubs are selected (active route). Otherwise show all hubs.
+  if (!skipHubFilter) {
+    if (selectedHubId1 === null && selectedHubId2 === null) {
+      // No hubs selected - show all hubs immediately
+      filterHubsByRoute(null, null);
+    } else if (selectedHubId1 !== null && selectedHubId2 === null) {
+      // Only one hub selected - show all hubs (not a complete route yet)
+      filterHubsByRoute(null, null);
+    }
+    // If both hubs are selected, filter will be set by loadAndDisplayRoute
+  }
 }
 
 // Fetch locality names for hubs using reverse geocoding
@@ -2349,19 +2573,33 @@ defineExpose({
       } else {
         // Just update colors without loading route
         console.log("Not loading route, just updating colors");
-        clearRoute();
+        clearRoute(true); // Skip filter update, we'll do it here
+        // Show only the two selected hubs (both are selected, so filter them)
+        setTimeout(() => {
+          filterHubsByRoute(id1, id2);
+        }, 10);
       }
       updateHubColors();
     } else if (id1) {
       selectedHubId1 = id1;
       selectedHubId2 = null;
-      clearRoute();
+      clearRoute(true); // Skip filter update in clearRoute, we'll do it here
       updateHubColors();
+      // Show all hubs when only one hub is selected (not a complete route)
+      // Use setTimeout to ensure clearRoute has finished
+      setTimeout(() => {
+        filterHubsByRoute(null, null);
+      }, 10);
     } else {
       selectedHubId1 = null;
       selectedHubId2 = null;
-      clearRoute();
+      clearRoute(true); // Skip filter update in clearRoute, we'll do it here
       updateHubColors();
+      // Show all hubs immediately (with retry logic)
+      // Use setTimeout to ensure clearRoute has finished
+      setTimeout(() => {
+        filterHubsByRoute(null, null);
+      }, 10);
     }
   },
   getHubs: () => {
@@ -2825,20 +3063,20 @@ onBeforeUnmount(() => {
   height: 16px;
 }
 
-/* Route Stats Popup - Glassmorphism style */
+/* Route Stats Popup - Glassmorphism style (more translucent) */
 .route-stats-map-popup .mapboxgl-popup-content {
-  background: rgba(255, 255, 255, 0.25) !important;
-  background-color: rgba(255, 255, 255, 0.25) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  background-color: rgba(255, 255, 255, 0.1) !important;
   color: #000000 !important;
-  padding: 5px 8px !important;
-  border-radius: 6px !important;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1) !important;
-  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  padding: 1px 3px !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37) !important;
+  border: none !important;
   min-width: auto !important;
   max-width: none !important;
   width: auto !important;
-  backdrop-filter: blur(20px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  backdrop-filter: blur(30px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(30px) saturate(180%) !important;
   opacity: 1 !important;
   cursor: pointer !important;
   transition:
@@ -2850,16 +3088,30 @@ onBeforeUnmount(() => {
 
 .route-stats-map-popup .mapboxgl-popup-content:hover {
   transform: scale(1.08) !important;
-  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.2) !important;
-  background-color: rgba(255, 255, 255, 0.5) !important;
-  background: rgba(255, 255, 255, 0.5) !important;
-  border-color: rgba(255, 255, 255, 0.5) !important;
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.4) !important;
+  background-color: rgba(255, 255, 255, 0.18) !important;
+  background: rgba(255, 255, 255, 0.18) !important;
 }
 
 .route-stats-map-popup .mapboxgl-popup-content.route-popup-clicked {
   transform: scale(0.95) !important;
-  background-color: rgba(255, 255, 255, 0.4) !important;
-  box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.25) !important;
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Bright route popup - slight bright blue tint */
+.route-stats-map-popup--bright .mapboxgl-popup-content {
+  background: rgba(100, 180, 255, 0.15) !important;
+  background-color: rgba(100, 180, 255, 0.15) !important;
+}
+
+.route-stats-map-popup--bright .mapboxgl-popup-content:hover {
+  background-color: rgba(100, 180, 255, 0.22) !important;
+  background: rgba(100, 180, 255, 0.22) !important;
+}
+
+.route-stats-map-popup--bright .mapboxgl-popup-content.route-popup-clicked {
+  background-color: rgba(100, 180, 255, 0.2) !important;
 }
 
 .route-stats-map-popup .mapboxgl-popup-tip {
@@ -2880,6 +3132,11 @@ onBeforeUnmount(() => {
   z-index: 1 !important;
   box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.1) !important;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1)) !important;
+}
+
+/* Bright route popup tip - slight bright blue tint */
+.route-stats-map-popup--bright .mapboxgl-popup-tip {
+  border-top-color: rgba(100, 180, 255, 0.15) !important;
 }
 
 /* Fade transitions for route popup - matching zurich time display */
@@ -2908,11 +3165,11 @@ onBeforeUnmount(() => {
 }
 
 .route-stats-map-popup .mapboxgl-popup-content * {
-  color: #000000 !important;
+  color: #ffffff !important;
 }
 
 .route-stats-map-popup .mapboxgl-popup-tip {
-  border-top-color: #ffffff !important;
+  border-top-color: rgba(255, 255, 255, 0.1) !important;
 }
 
 .route-stats-popup {
@@ -2934,46 +3191,57 @@ onBeforeUnmount(() => {
 .route-stats-popup-top-line {
   display: inline-flex !important;
   align-items: center !important;
-  gap: 6px !important;
-  color: #000000 !important;
-  line-height: 1.2 !important;
+  gap: 3px !important;
+  color: #ffffff !important;
+  line-height: 1.1 !important;
   white-space: nowrap !important;
   vertical-align: top !important;
 }
 
+.route-stats-popup-label {
+  display: block !important;
+  color: #ffffff !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  line-height: 1.1 !important;
+  margin-bottom: 2px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+}
+
 .route-stats-popup-bottom-line {
   display: block !important;
-  color: #000000 !important;
-  line-height: 1.2 !important;
+  color: #ffffff !important;
+  line-height: 1.1 !important;
   margin-top: 1px !important;
-  padding-left: 22px !important;
+  padding-left: 17px !important;
 }
 
 .route-stats-popup-icon {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  color: #000000 !important;
+  color: #ffffff !important;
   flex-shrink: 0 !important;
-  width: 20px !important;
-  height: 20px !important;
+  width: 14px !important;
+  height: 14px !important;
   vertical-align: middle !important;
 }
 
 .route-stats-popup-icon svg {
-  width: 20px !important;
-  height: 20px !important;
-  fill: #000000 !important;
-  color: #000000 !important;
+  width: 14px !important;
+  height: 14px !important;
+  fill: #ffffff !important;
+  color: #ffffff !important;
   display: block !important;
 }
 
 .route-stats-popup-icon img {
-  width: 20px !important;
-  height: 20px !important;
+  width: 14px !important;
+  height: 14px !important;
   display: block !important;
   object-fit: contain !important;
-  filter: brightness(0) !important; /* Make icon black */
+  filter: brightness(0) invert(1) !important; /* Make icon white */
 }
 
 .route-stats-popup-text {
@@ -2981,16 +3249,16 @@ onBeforeUnmount(() => {
   flex-direction: column !important;
   align-items: flex-start !important;
   line-height: 1.2 !important;
-  color: #000000 !important;
+  color: #ffffff !important;
 }
 
 .route-stats-popup-duration,
 .route-stats-map-popup .route-stats-popup-duration,
 .route-stats-popup .route-stats-popup-duration {
-  font-size: 22px !important;
+  font-size: 16px !important;
   font-weight: 800 !important;
-  color: #000000 !important;
-  line-height: 1.2 !important;
+  color: #ffffff !important;
+  line-height: 1.1 !important;
   margin: 0 !important;
   padding: 0 !important;
   display: inline !important;
@@ -3001,10 +3269,10 @@ onBeforeUnmount(() => {
 .route-stats-popup-distance,
 .route-stats-map-popup .route-stats-popup-distance,
 .route-stats-popup .route-stats-popup-distance {
-  font-size: 12px !important;
+  font-size: 9px !important;
   font-weight: 400 !important;
-  color: #000000 !important;
-  line-height: 1.2 !important;
+  color: #ffffff !important;
+  line-height: 1.1 !important;
   margin: 0 !important;
   padding: 0 !important;
   display: inline !important;

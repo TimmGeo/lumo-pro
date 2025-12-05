@@ -263,9 +263,25 @@
                           >From</label
                         >
                         <div class="route-select-wrapper">
-                          <select v-model="startHub" class="route-select">
+                          <select
+                            ref="startHubSelectRef"
+                            v-model="startHub"
+                            class="route-select"
+                            @change="handleHubSelectChange($event, 'start')"
+                            @blur="handleSelectBlur"
+                          >
                             <option disabled value=""></option>
-                            <option v-for="h in hubs" :key="h.id" :value="h.id">
+                            <option
+                              v-for="h in displayedHubs"
+                              :key="h.id"
+                              :value="h.id"
+                              :class="{
+                                'option-show-more': h.id === 'show_more',
+                              }"
+                              :style="
+                                h.id === 'show_more' ? 'font-weight: bold;' : ''
+                              "
+                            >
                               {{ h.name }}
                             </option>
                           </select>
@@ -329,9 +345,25 @@
                           >To</label
                         >
                         <div class="route-select-wrapper">
-                          <select v-model="endHub" class="route-select">
+                          <select
+                            ref="endHubSelectRef"
+                            v-model="endHub"
+                            class="route-select"
+                            @change="handleHubSelectChange($event, 'end')"
+                            @blur="handleSelectBlur"
+                          >
                             <option disabled value=""></option>
-                            <option v-for="h in hubs" :key="h.id" :value="h.id">
+                            <option
+                              v-for="h in displayedHubs"
+                              :key="h.id"
+                              :value="h.id"
+                              :class="{
+                                'option-show-more': h.id === 'show_more',
+                              }"
+                              :style="
+                                h.id === 'show_more' ? 'font-weight: bold;' : ''
+                              "
+                            >
                               {{ h.name }}
                             </option>
                           </select>
@@ -1657,7 +1689,32 @@ const mode = computed(() => {
 const startHub = ref("");
 const endHub = ref("");
 const hubs = ref([]);
+const showAllHubs = ref(false); // Track if "show more" is clicked
+const startHubSelectRef = ref(null);
+const endHubSelectRef = ref(null);
 const routeHistory = ref([]);
+
+// Computed property for limited hub list (4 hubs + "show more" option)
+const displayedHubs = computed(() => {
+  if (showAllHubs.value) {
+    // When "show more" is clicked, show all hubs (without "Show more" option)
+    return hubs.value;
+  }
+
+  // Collapsed state: Always return first 4 hubs + selected hubs (if not in first 4) + "Show more"
+  const firstFour = hubs.value.slice(0, 4);
+  const selectedHubIds = [startHub.value, endHub.value].filter(Boolean);
+  const selectedHubs = selectedHubIds
+    .map((id) => hubs.value.find((h) => h.id === id))
+    .filter((h) => h && !firstFour.find((f) => f.id === h.id)); // Only include if not already in first 4
+
+  // Combine first 4, selected hubs (if any), and "Show more"
+  return [
+    ...firstFour,
+    ...selectedHubs,
+    { id: "show_more", name: "Show more" },
+  ];
+});
 const currentRouteStats = ref(null);
 const isLoadingFromHistory = ref(false); // Flag to prevent adding history routes to history
 const isHandlingHubClicks = ref(false); // Flag to prevent watcher from triggering when handling hub clicks
@@ -2085,6 +2142,53 @@ function loadHubs() {
   }
 }
 
+// Handle select blur - reset to collapsed state when dropdown closes
+function handleSelectBlur() {
+  // Reset to collapsed state (first 4 + "Show more") when dropdown closes
+  // This ensures the dropdown always starts in collapsed state when reopened
+  showAllHubs.value = false;
+}
+
+// Handle hub select change - detect "show more" click
+function handleHubSelectChange(event, type) {
+  const value = type === "start" ? startHub.value : endHub.value;
+
+  // Check if "show_more" was selected
+  if (value === "show_more") {
+    // Show all hubs immediately - this will update displayedHubs computed property
+    showAllHubs.value = true;
+
+    // Reset the selection immediately
+    if (type === "start") {
+      startHub.value = "";
+    } else {
+      endHub.value = "";
+    }
+
+    // Use nextTick to ensure the DOM updates with new options, then try to reopen
+    nextTick(() => {
+      const selectRef =
+        type === "start" ? startHubSelectRef.value : endHubSelectRef.value;
+      if (selectRef) {
+        // Try to reopen the dropdown by focusing and clicking
+        // This works on some browsers but not all (native select limitation)
+        selectRef.focus();
+        setTimeout(() => {
+          // Dispatch a mousedown event to simulate reopening
+          const mouseEvent = new MouseEvent("mousedown", {
+            bubbles: true,
+            cancelable: true,
+            view: window,
+          });
+          selectRef.dispatchEvent(mouseEvent);
+          // Also try a click event
+          selectRef.click();
+        }, 5);
+      }
+    });
+  }
+}
+
 // Handle hubs updated event (when locality names are fetched)
 function handleHubsUpdated() {
   loadHubs();
@@ -2399,6 +2503,11 @@ watch(
   ([newStart, newEnd], [oldStart, oldEnd]) => {
     // Skip if handling hub clicks (route is already loaded on map)
     if (isHandlingHubClicks.value) return;
+
+    // Ignore "show_more" value - it's handled by handleHubSelectChange
+    if (newStart === "show_more" || newEnd === "show_more") {
+      return;
+    }
 
     // Ensure API is available - try to get it from ref if not set
     if (!api && mapboxViewerRef.value) {
@@ -4125,10 +4234,12 @@ textarea:focus-visible {
     sans-serif;
   min-height: 48px;
   box-sizing: border-box;
+  overflow: visible; /* Ensure text is not clipped */
+  text-overflow: clip; /* Prevent ellipsis truncation */
 }
 
 .route-select-wrapper:has(.route-select-clear) .route-select {
-  padding-right: 36px;
+  padding-right: 48px; /* Increased from 36px to accommodate clear button (16px button + 4px right + 28px space) */
   background-position:
     calc(100% - 24px) calc(50% - 1px),
     calc(100% - 18px) calc(50% + 1px);
@@ -4189,7 +4300,7 @@ textarea:focus-visible {
 .route-input-content:has(.route-select:focus)
   .route-select-wrapper:has(.route-select-clear)
   .route-select {
-  padding-right: 36px;
+  padding-right: 48px; /* Increased from 36px to accommodate clear button */
 }
 
 .route-input-content:has(.route-select:focus) .route-label-float {
@@ -4209,6 +4320,16 @@ textarea:focus-visible {
   border-color: rgba(255, 255, 255, 0.2);
   outline: none;
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+}
+
+/* Make "Show more" option bold */
+.route-select option.option-show-more {
+  font-weight: bold !important;
+}
+
+/* Alternative approach for browsers that support it */
+.route-select option[value="show_more"] {
+  font-weight: bold !important;
 }
 
 .route-swap-btn {
