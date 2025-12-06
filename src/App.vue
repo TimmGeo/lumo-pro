@@ -18,11 +18,18 @@
       @hubsUpdated="handleHubsUpdated"
       @routePopupClicked="handleRoutePopupClicked"
       @hubsSelected="handleHubsSelected"
+      @polygonClicked="handlePolygonClicked"
     />
 
     <!-- Sidebar controls -->
     <aside
-      :class="['sidebar', { 'sidebar--collapsed': sidebarCollapsed }]"
+      :class="[
+        'sidebar',
+        {
+          'sidebar--collapsed': sidebarCollapsed,
+          'sidebar--highlight': sidebarHighlight,
+        },
+      ]"
       :style="!sidebarCollapsed ? { width: sidebarWidth + 'px' } : {}"
       @mouseenter="handleSidebarMouseEnter"
       @mouseleave="handleMouseLeave"
@@ -458,19 +465,19 @@
                     :class="{ active: lightingVisible }"
                     @click="selectLayer('lighting')"
                   >
-                    Lighting
+                    Lighting Intensity
                   </button>
                   <button
                     :class="{ active: vibrancyVisible }"
                     @click="selectLayer('vibrancy')"
                   >
-                    Vibrancy
+                    Urban Vibrancy
                   </button>
                   <button
                     :class="{ active: combinedVisible }"
                     @click="selectLayer('combined')"
                   >
-                    Combined
+                    Combined Score
                   </button>
                 </div>
               </div>
@@ -1075,12 +1082,9 @@
             stroke-linecap="round"
             stroke-linejoin="round"
           >
-            <line x1="8" y1="6" x2="21" y2="6"></line>
-            <line x1="8" y1="12" x2="21" y2="12"></line>
-            <line x1="8" y1="18" x2="21" y2="18"></line>
-            <line x1="3" y1="6" x2="3.01" y2="6"></line>
-            <line x1="3" y1="12" x2="3.01" y2="12"></line>
-            <line x1="3" y1="18" x2="3.01" y2="18"></line>
+            <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+            <path d="M2 17l10 5 10-5"></path>
+            <path d="M2 12l10 5 10-5"></path>
           </svg>
         </button>
 
@@ -1352,7 +1356,12 @@
                   v-else-if="activeBasketApp === 'legend'"
                   class="app-basket-app-section"
                 >
-                  <Legend :mode="mode" :in-box="true" :dragged-out="false" />
+                  <Legend
+                    :mode="mode"
+                    :in-box="true"
+                    :dragged-out="false"
+                    @openLayersSection="handleOpenLayersSection"
+                  />
                 </div>
 
                 <!-- Phone App Content -->
@@ -1816,6 +1825,7 @@ const mapboxViewerRef = ref(null);
 const sidebarCollapsed = ref(true);
 const sidebarWidth =
   ref(336); /* Default sidebar width - matches app basket width */
+const sidebarHighlight = ref(false);
 const isResizing = ref(false);
 const isHovering = ref(false);
 const showWalkthrough = ref(true);
@@ -2291,6 +2301,14 @@ function handleClearRoute() {
 }
 
 // Handle route popup click - toggle route details popup
+function handlePolygonClicked(event) {
+  // Open legend basket when a polygon is clicked
+  if (activeBasketApp.value !== "legend") {
+    previousBasketApp.value = null;
+    activeBasketApp.value = "legend";
+  }
+}
+
 function handleRoutePopupClicked() {
   // If chat is open, close it; otherwise open chat
   if (activeBasketApp.value === "chat") {
@@ -3032,6 +3050,18 @@ function handleIconClick(tab) {
   activeSidebarTab.value = tab;
 }
 
+function handleOpenLayersSection() {
+  // Check if layers section is already open
+  if (activeSidebarTab.value === "layers" && !sidebarCollapsed.value) {
+    // Add visual feedback by brightening the sidebar
+    sidebarHighlight.value = true;
+    setTimeout(() => {
+      sidebarHighlight.value = false;
+    }, 300); // Quick highlight animation
+  }
+  handleIconClick("layers");
+}
+
 // Handle sidebar click - open if collapsed (unless clicking on button or resize handle)
 function handleSidebarClick(e) {
   // Only open if collapsed
@@ -3137,6 +3167,11 @@ textarea:focus-visible {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
   z-index: 10;
   border-radius: 16px;
+  transition: background-color 0.3s ease;
+}
+
+.sidebar--highlight {
+  background: #1f1f22;
 }
 
 .sidebar:not(.sidebar--collapsed) {
@@ -3151,8 +3186,11 @@ textarea:focus-visible {
   transition:
     width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
     padding 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-    background 0.3s ease,
-    box-shadow 0.3s ease;
+    background 0.3s ease;
+}
+
+.sidebar:not(.sidebar--collapsed).sidebar--highlight {
+  background: rgba(35, 35, 38, 0.85);
 }
 
 /* Sidebar main content wrapper */

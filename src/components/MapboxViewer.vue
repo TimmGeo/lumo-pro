@@ -232,6 +232,7 @@ const emit = defineEmits([
   "hubsUpdated",
   "routePopupClicked",
   "hubsSelected",
+  "polygonClicked",
 ]);
 
 const sceneEl = ref(null);
@@ -713,6 +714,17 @@ onMounted(async () => {
           "visibility",
           props.lightingVisible ? "visible" : "none"
         );
+
+        // Add click handler for hex polygons (lighting layer)
+        map.on("click", "hex-layer", (e) => {
+          if (e.features && e.features.length > 0) {
+            emit("polygonClicked", {
+              type: "lighting",
+              feature: e.features[0],
+            });
+          }
+        });
+
         setHubsVisibility(props.showHubs);
         hubsLoaded = true;
 
@@ -767,6 +779,16 @@ onMounted(async () => {
             "visibility",
             props.vibrancyVisible ? "visible" : "none"
           );
+
+          // Add click handler for vibrancy polygons
+          map.on("click", "hex-vibrancy-layer", (e) => {
+            if (e.features && e.features.length > 0) {
+              emit("polygonClicked", {
+                type: "vibrancy",
+                feature: e.features[0],
+              });
+            }
+          });
 
           // --- Load and add Vibrancy POI Points (visible when zoomed in) ---
           try {
@@ -903,38 +925,6 @@ onMounted(async () => {
             },
           });
 
-          // Add line layer for thicker, transparent white contours
-          map.addLayer({
-            id: "hex-combined-outline",
-            type: "line",
-            source: "hex-combined",
-            filter: [">", ["get", "combined_score"], 0], // Only show hexagons with combined_score > 0
-            paint: {
-              "line-color": "#ffffff", // White
-              "line-width": [
-                "interpolate",
-                ["linear"],
-                ["zoom"],
-                15,
-                2, // At zoom 15, width 2
-                15.3,
-                2.5, // At zoom 15.3+, width 2.5 (thicker)
-              ],
-              // Fade in outline as zoom increases - very transparent and discrete
-              "line-opacity": [
-                "interpolate",
-                ["linear"],
-                ["zoom"],
-                15,
-                0, // At zoom 15, opacity 0 (invisible)
-                15.15,
-                0.15, // At zoom 15.15, opacity 0.15 (very subtle)
-                15.3,
-                0.25, // At zoom 15.3+, opacity 0.25 (transparent, discrete)
-              ],
-            },
-          });
-
           // Add 3D extruded hexagon layer for combined (height based on combined_score)
           map.addLayer({
             id: "hex-combined-layer",
@@ -987,15 +977,29 @@ onMounted(async () => {
             props.combinedVisible ? "visible" : "none"
           );
           map.setLayoutProperty(
-            "hex-combined-outline",
-            "visibility",
-            props.combinedVisible ? "visible" : "none"
-          );
-          map.setLayoutProperty(
             "hex-combined-layer",
             "visibility",
             props.combinedVisible ? "visible" : "none"
           );
+
+          // Add click handlers for combined polygons (both fill and 3D layers)
+          map.on("click", "hex-combined-fill", (e) => {
+            if (e.features && e.features.length > 0) {
+              emit("polygonClicked", {
+                type: "combined",
+                feature: e.features[0],
+              });
+            }
+          });
+
+          map.on("click", "hex-combined-layer", (e) => {
+            if (e.features && e.features.length > 0) {
+              emit("polygonClicked", {
+                type: "combined",
+                feature: e.features[0],
+              });
+            }
+          });
         } catch (error) {
           console.error("Failed to load vibrancy GeoJSON data:", error);
         }
@@ -1079,7 +1083,6 @@ watch(
         if (isVisible) {
           updateLayerVisibility("hex-vibrancy-layer", false);
           updateLayerVisibility("hex-combined-fill", false);
-          updateLayerVisibility("hex-combined-outline", false);
           updateLayerVisibility("hex-combined-layer", false);
           updateLayerVisibility("vibrancy-points-layer", false);
         }
@@ -1128,7 +1131,6 @@ watch(
         if (isVisible) {
           updateLayerVisibility("hex-layer", false);
           updateLayerVisibility("hex-combined-fill", false);
-          updateLayerVisibility("hex-combined-outline", false);
           updateLayerVisibility("hex-combined-layer", false);
         }
 
@@ -1163,13 +1165,9 @@ watch(
           return;
         }
 
-        // Show/hide 2D, outline, and 3D combined layers when combined layer is selected
+        // Show/hide 2D and 3D combined layers when combined layer is selected
         const fillLayerUpdated = updateLayerVisibility(
           "hex-combined-fill",
-          isVisible
-        );
-        const outlineLayerUpdated = updateLayerVisibility(
-          "hex-combined-outline",
           isVisible
         );
         const extrusionLayerUpdated = updateLayerVisibility(
@@ -1178,11 +1176,7 @@ watch(
         );
 
         // If layers don't exist yet, retry after a short delay
-        if (
-          !fillLayerUpdated ||
-          !outlineLayerUpdated ||
-          !extrusionLayerUpdated
-        ) {
+        if (!fillLayerUpdated || !extrusionLayerUpdated) {
           setTimeout(updateVisibility, 100);
           return;
         }

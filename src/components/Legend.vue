@@ -1,8 +1,14 @@
 <template>
-  <div class="legend-container">
+  <div class="legend-container" :class="{ 'legend-container--empty': !mode }">
     <!-- Empty state when no layer is selected -->
     <div v-if="!mode" class="legend-empty-state">
-      <div class="empty-message">Select a layer to see its legend</div>
+      <div class="empty-message">
+        Select a layer in the "Layers" section of the left sidebar to view its
+        legend
+      </div>
+      <button class="open-layers-button" @click="openLayersSection">
+        Open layers section
+      </button>
     </div>
 
     <!-- Lighting Layer Legend -->
@@ -20,7 +26,26 @@
             </div>
           </div>
           <div class="legend-item-description">
-            Color shows lighting intensity
+            <span v-if="!lightingExpanded">
+              The <strong>color gradient</strong> represents lighting intensity
+              across Zurich.
+              <button class="show-more-button" @click="lightingExpanded = true">
+                Show more
+              </button>
+            </span>
+            <span v-else>
+              The <strong>color gradient</strong> represents lighting intensity
+              across Zurich. <em>Darker areas</em> indicate lower lighting
+              levels, while <em>brighter areas</em> show higher intensity. Use
+              this layer to identify <strong>well-lit routes</strong> for safer
+              nighttime navigation.
+              <button
+                class="show-more-button"
+                @click="lightingExpanded = false"
+              >
+                Show less
+              </button>
+            </span>
           </div>
         </div>
       </div>
@@ -72,19 +97,7 @@
     <div v-else-if="mode === 'vibrancy'" class="legend-simple">
       <div class="legend-item">
         <div class="legend-item-header">
-          <div class="legend-item-icon legend-icon-vibrancy">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path d="M12 2v20M2 12h20" />
-            </svg>
-          </div>
-          <div class="legend-item-title">Vibrancy</div>
+          <div class="legend-item-title">Urban Vibrancy</div>
         </div>
         <div class="legend-item-content">
           <div class="legend-simple-scale">
@@ -100,7 +113,63 @@
               <span>High</span>
             </div>
           </div>
-          <div class="legend-item-description">Height shows POI density</div>
+          <div class="legend-item-description">
+            <span v-if="!vibrancyExpanded">
+              The <strong>height of the 3D bars</strong> represents the density
+              of Points of Interest.
+              <button class="show-more-button" @click="vibrancyExpanded = true">
+                Show more
+              </button>
+            </span>
+            <span v-else>
+              The <strong>height of the 3D bars</strong> represents the density
+              of Points of Interest, including restaurants, cafes, bars, and
+              entertainment venues. <em>Taller bars</em> indicate areas with
+              higher urban vibrancy and more activity. This layer helps you find
+              <strong>lively and engaging routes</strong> through Zurich's most
+              vibrant neighborhoods.
+              <button
+                class="show-more-button"
+                @click="vibrancyExpanded = false"
+              >
+                Show less
+              </button>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vibrancy Locations -->
+      <div v-if="vibrancyLocations" class="lighting-locations">
+        <div class="locations-section">
+          <div class="locations-section-title">Zurich's Vibrancy Hot-Spots</div>
+          <div class="locations-list">
+            <div
+              v-for="(loc, index) in vibrancyLocations.highest.slice(0, 3)"
+              :key="index"
+              class="location-button"
+            >
+              <div class="location-button-image-wrapper">
+                <div
+                  class="location-button-image-placeholder"
+                  :style="{
+                    background: `linear-gradient(135deg, #6b7280 0%, #4b5563 100%)`,
+                  }"
+                >
+                  <div
+                    class="location-button-color-indicator"
+                    style="background-color: #6b7280"
+                  ></div>
+                </div>
+              </div>
+              <div class="location-button-content">
+                <div class="location-button-name">{{ loc.location }}</div>
+                <div v-if="loc.description" class="location-button-description">
+                  {{ loc.description }}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -144,7 +213,64 @@
             </div>
           </div>
           <div class="legend-item-description">
-            Combines lighting color and vibrancy height
+            <span v-if="!combinedExpanded">
+              This layer <strong>combines lighting intensity</strong> (shown by
+              color) <em>and</em> <strong>urban vibrancy</strong> (shown by
+              height) into a single visualization.
+              <button class="show-more-button" @click="combinedExpanded = true">
+                Show more
+              </button>
+            </span>
+            <span v-else>
+              This layer <strong>combines lighting intensity</strong> (shown by
+              color) <em>and</em> <strong>urban vibrancy</strong> (shown by
+              height) into a single visualization. It identifies areas that
+              offer both <em>good lighting for safety</em> and
+              <em>high activity for an engaging experience</em>. The
+              <strong>generated routes</strong> in this application are based on
+              this combined score, making it ideal for finding the
+              <strong>best balanced routes</strong>.
+              <button
+                class="show-more-button"
+                @click="combinedExpanded = false"
+              >
+                Show less
+              </button>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Combined Locations -->
+      <div v-if="combinedLocations" class="lighting-locations">
+        <div class="locations-section">
+          <div class="locations-section-title">Highest Combined Score</div>
+          <div class="locations-list">
+            <div
+              v-for="(loc, index) in combinedLocations.highest.slice(0, 3)"
+              :key="index"
+              class="location-button"
+            >
+              <div class="location-button-image-wrapper">
+                <div
+                  class="location-button-image-placeholder"
+                  :style="{
+                    background: `linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%)`,
+                  }"
+                >
+                  <div
+                    class="location-button-color-indicator"
+                    style="background-color: #60a5fa"
+                  ></div>
+                </div>
+              </div>
+              <div class="location-button-content">
+                <div class="location-button-name">{{ loc.location }}</div>
+                <div v-if="loc.description" class="location-button-description">
+                  {{ loc.description }}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -161,12 +287,23 @@ const props = defineProps({
   inBox: { type: Boolean, default: false },
 });
 
+const emit = defineEmits(["openLayersSection"]);
+
+function openLayersSection() {
+  emit("openLayersSection");
+}
+
 const lightingLocations = ref(null);
+const vibrancyLocations = ref(null);
+const combinedLocations = ref(null);
+
+const lightingExpanded = ref(false);
+const vibrancyExpanded = ref(false);
+const combinedExpanded = ref(false);
 
 async function loadLightingLocations() {
   try {
     const BASE = import.meta.env.BASE_URL || "/";
-    // Add cache-busting parameter to ensure fresh data
     const url = `${BASE}data/lighting_locations.json?v=${Date.now()}`.replace(
       /\/{2,}/g,
       "/"
@@ -174,12 +311,47 @@ async function loadLightingLocations() {
     const response = await fetch(url);
     const data = await response.json();
 
-    // Ensure we only use top 3
     lightingLocations.value = {
       highest: data.highest ? data.highest.slice(0, 3) : [],
     };
   } catch (error) {
     console.error("Failed to load lighting locations:", error);
+  }
+}
+
+async function loadVibrancyLocations() {
+  try {
+    const BASE = import.meta.env.BASE_URL || "/";
+    const url = `${BASE}data/vibrancy_locations.json?v=${Date.now()}`.replace(
+      /\/{2,}/g,
+      "/"
+    );
+    const response = await fetch(url);
+    const data = await response.json();
+
+    vibrancyLocations.value = {
+      highest: data.highest ? data.highest.slice(0, 3) : [],
+    };
+  } catch (error) {
+    console.error("Failed to load vibrancy locations:", error);
+  }
+}
+
+async function loadCombinedLocations() {
+  try {
+    const BASE = import.meta.env.BASE_URL || "/";
+    const url = `${BASE}data/combined_locations.json?v=${Date.now()}`.replace(
+      /\/{2,}/g,
+      "/"
+    );
+    const response = await fetch(url);
+    const data = await response.json();
+
+    combinedLocations.value = {
+      highest: data.highest ? data.highest.slice(0, 3) : [],
+    };
+  } catch (error) {
+    console.error("Failed to load combined locations:", error);
   }
 }
 
@@ -211,6 +383,8 @@ function adjustColorBrightness(hex, percent) {
 
 onMounted(() => {
   loadLightingLocations();
+  loadVibrancyLocations();
+  loadCombinedLocations();
 });
 </script>
 
@@ -223,6 +397,12 @@ onMounted(() => {
   padding: 0;
   box-sizing: border-box;
   position: relative;
+}
+
+.legend-container--empty {
+  align-items: center;
+  min-height: 100%;
+  height: 100%;
 }
 
 .legend-simple {
@@ -368,8 +548,8 @@ onMounted(() => {
 }
 
 .legend-item-description {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.6);
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
   font-family:
     "SF Pro Display",
     "SF Pro Text",
@@ -377,7 +557,43 @@ onMounted(() => {
     BlinkMacSystemFont,
     system-ui,
     sans-serif;
-  line-height: 1.4;
+  line-height: 1.5;
+}
+
+.legend-item-description strong {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.legend-item-description em {
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.show-more-button {
+  background: none;
+  border: none;
+  color: rgba(147, 197, 253, 0.9);
+  font-size: 13px;
+  font-weight: 600;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  cursor: pointer;
+  padding: 0;
+  margin: 0 4px;
+  text-decoration: none;
+  transition: color 0.2s ease;
+  display: inline;
+  white-space: nowrap;
+}
+
+.show-more-button:hover {
+  color: rgba(147, 197, 253, 1);
 }
 
 /* Lighting Locations */
@@ -514,10 +730,14 @@ onMounted(() => {
 .legend-empty-state {
   width: 100%;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
   padding: 40px 20px;
+  flex: 1;
+  min-height: 300px;
+  gap: 16px;
 }
 
 .empty-message {
@@ -533,5 +753,35 @@ onMounted(() => {
     sans-serif;
   font-weight: 500;
   letter-spacing: 0.01em;
+  margin: 0;
+}
+
+.open-layers-button {
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 12px;
+  font-weight: 500;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.open-layers-button:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+}
+
+.open-layers-button:active {
+  transform: translateY(0);
 }
 </style>
