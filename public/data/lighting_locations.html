@@ -1,0 +1,131 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Zurich Lighting Intensity Analysis</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        h1 { color: #fff; }
+        .section {
+            margin: 30px 0;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .location-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px;
+            margin: 8px 0;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 6px;
+        }
+        .color-box {
+            width: 40px;
+            height: 40px;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .location-info {
+            flex: 1;
+        }
+        .location-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .location-coords {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 4px;
+        }
+        .intensity-value {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <h1>Zurich Lighting Intensity Analysis</h1>
+    
+    <div class="section">
+        <h2>Highest Intensity Locations (Top 10)</h2>
+        
+            <div class="location-item">
+                <div class="color-box" style="background-color: #f3efff"></div>
+                <div class="location-info">
+                    <div class="location-name">Escher Wyss</div>
+                    <div class="location-coords">47.3681, 8.4955</div>
+                </div>
+                <div class="intensity-value">0.8801</div>
+            </div>
+            
+            <div class="location-item">
+                <div class="color-box" style="background-color: #f3efff"></div>
+                <div class="location-info">
+                    <div class="location-name">Oerlikon</div>
+                    <div class="location-coords">47.4206, 8.5091</div>
+                </div>
+                <div class="intensity-value">0.8801</div>
+            </div>
+            
+            <div class="location-item">
+                <div class="color-box" style="background-color: #f3efff"></div>
+                <div class="location-info">
+                    <div class="location-name">Hardbrücke</div>
+                    <div class="location-coords">47.3828, 8.5153</div>
+                </div>
+                <div class="intensity-value">0.8801</div>
+            </div>
+            
+    </div>
+    
+    <div class="section">
+        <h2>Lowest Intensity Locations (Bottom 10)</h2>
+        
+            <div class="location-item">
+                <div class="color-box" style="background-color: #050316"></div>
+                <div class="location-info">
+                    <div class="location-name">East Zurich</div>
+                    <div class="location-coords">47.3547, 8.6247</div>
+                </div>
+                <div class="intensity-value">0.0016</div>
+            </div>
+            
+            <div class="location-item">
+                <div class="color-box" style="background-color: #050316"></div>
+                <div class="location-info">
+                    <div class="location-name">East Zurich</div>
+                    <div class="location-coords">47.3543, 8.6236</div>
+                </div>
+                <div class="intensity-value">0.0016</div>
+            </div>
+            
+            <div class="location-item">
+                <div class="color-box" style="background-color: #050316"></div>
+                <div class="location-info">
+                    <div class="location-name">East Zurich</div>
+                    <div class="location-coords">47.3552, 8.6236</div>
+                </div>
+                <div class="intensity-value">0.0016</div>
+            </div>
+            
+    </div>
+    
+    <div class="section">
+        <h3>Statistics</h3>
+        <p>Total locations analyzed: 10451</p>
+        <p>Average intensity: 0.0155</p>
+        <p>Maximum intensity: 0.8801</p>
+        <p>Minimum intensity: 0.0016</p>
+    </div>
+</body>
+</html>

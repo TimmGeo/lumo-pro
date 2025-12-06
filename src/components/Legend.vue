@@ -1,43 +1,66 @@
 <template>
   <div class="legend-container">
-
     <!-- Empty state when no layer is selected -->
     <div v-if="!mode" class="legend-empty-state">
-      <div class="empty-message">No layer selected</div>
+      <div class="empty-message">Select a layer to see its legend</div>
     </div>
 
     <!-- Lighting Layer Legend -->
-    <div v-else-if="mode === 'lighting'" class="legend-content legend-lighting">
-      <div class="legend-header">
-        <div class="legend-title">Lighting Distribution</div>
-        <div class="legend-subtitle">Color intensity represents lighting levels</div>
-      </div>
-      <div class="legend-card">
-        <div class="legend-vertical-wrapper">
-          <div class="legend-labels-vertical">
-            <span class="label-max">
-              <span class="label-text">High</span>
-            </span>
-            <span class="label-min">
-              <span class="label-text">Low</span>
-            </span>
+    <div v-else-if="mode === 'lighting'" class="legend-simple">
+      <div class="legend-item">
+        <div class="legend-item-header">
+          <div class="legend-item-title">Lighting Intensity</div>
+        </div>
+        <div class="legend-item-content">
+          <div class="legend-simple-scale">
+            <div class="scale-gradient scale-gradient-lighting"></div>
+            <div class="scale-labels">
+              <span>Low</span>
+              <span>High</span>
+            </div>
           </div>
-          <div
-            class="histogram-container-vertical"
-            v-if="colorHistogram.length > 0"
-          >
+          <div class="legend-item-description">
+            Color shows lighting intensity
+          </div>
+        </div>
+      </div>
+
+      <!-- Lighting Locations -->
+      <div v-if="lightingLocations" class="lighting-locations">
+        <!-- Highest Intensity -->
+        <div class="locations-section">
+          <div class="locations-section-title">Highest Intensity</div>
+          <div class="locations-list">
             <div
-              class="histogram-bar-vertical"
-              v-for="(item, index) in colorHistogram"
+              v-for="(loc, index) in lightingLocations.highest.slice(0, 3)"
               :key="index"
-              :style="{
-                width: item.height + '%',
-                backgroundColor: item.color,
-              }"
-              :title="`${item.color}: ${item.count} hexagons`"
+              class="location-button"
             >
-              <div class="bar-label-vertical" v-if="item.height > 10">
-                {{ item.count }}
+              <div class="location-button-image-wrapper">
+                <img
+                  v-if="getLocationImage(loc.location)"
+                  :src="getLocationImage(loc.location)"
+                  :alt="loc.location"
+                  class="location-button-image"
+                />
+                <div
+                  v-else
+                  class="location-button-image-placeholder"
+                  :style="{
+                    background: `linear-gradient(135deg, ${loc.color} 0%, ${adjustColorBrightness(loc.color, -20)} 100%)`,
+                  }"
+                >
+                  <div
+                    class="location-button-color-indicator"
+                    :style="{ backgroundColor: loc.color }"
+                  ></div>
+                </div>
+              </div>
+              <div class="location-button-content">
+                <div class="location-button-name">{{ loc.location }}</div>
+                <div v-if="loc.description" class="location-button-description">
+                  {{ loc.description }}
+                </div>
               </div>
             </div>
           </div>
@@ -46,121 +69,82 @@
     </div>
 
     <!-- Vibrancy Layer Legend -->
-    <div v-else-if="mode === 'vibrancy'" class="legend-content legend-vibrancy">
-      <div class="legend-header">
-        <div class="legend-title">Vibrancy (POI Density)</div>
-        <div class="legend-subtitle">Height represents point of interest density</div>
-      </div>
-      <div class="legend-card">
-        <div class="legend-vertical-wrapper">
-          <div class="legend-labels-vertical">
-            <span class="label-max">
-              <span class="label-text">High</span>
-            </span>
-            <span class="label-min">
-              <span class="label-text">Low</span>
-            </span>
-          </div>
-          <div class="legend-bars-vertical">
-            <div
-              class="legend-bar-vertical"
-              v-for="(bar, index) in vibrancyBars"
-              :key="index"
-              :style="{ height: bar.height + '%' }"
+    <div v-else-if="mode === 'vibrancy'" class="legend-simple">
+      <div class="legend-item">
+        <div class="legend-item-header">
+          <div class="legend-item-icon legend-icon-vibrancy">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
             >
-              <div class="bar-fill-vertical"></div>
+              <path d="M12 2v20M2 12h20" />
+            </svg>
+          </div>
+          <div class="legend-item-title">Vibrancy</div>
+        </div>
+        <div class="legend-item-content">
+          <div class="legend-simple-scale">
+            <div class="scale-bars">
+              <div class="scale-bar" style="height: 20%"></div>
+              <div class="scale-bar" style="height: 40%"></div>
+              <div class="scale-bar" style="height: 60%"></div>
+              <div class="scale-bar" style="height: 80%"></div>
+              <div class="scale-bar" style="height: 100%"></div>
+            </div>
+            <div class="scale-labels">
+              <span>Low</span>
+              <span>High</span>
             </div>
           </div>
+          <div class="legend-item-description">Height shows POI density</div>
         </div>
-      </div>
-      <div class="legend-note">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
-        </svg>
-        Height = POI Count
       </div>
     </div>
 
     <!-- Combined Layer Legend -->
-    <div v-else-if="mode === 'combined'" class="legend-content legend-combined">
-      <div class="legend-header">
-        <div class="legend-title">Combined View</div>
-        <div class="legend-subtitle">Lighting color + Vibrancy height</div>
-      </div>
-      <div class="combined-legend">
-        <div class="combined-section">
-          <div class="section-header">
-            <div class="section-icon">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/>
-                <path d="M12 6v6l4 2"/>
-              </svg>
-            </div>
-            <div class="section-label">Color = Lighting</div>
+    <div v-else-if="mode === 'combined'" class="legend-simple">
+      <div class="legend-item">
+        <div class="legend-item-header">
+          <div class="legend-item-icon legend-icon-combined">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <path d="M3 9h18M9 3v18" />
+            </svg>
           </div>
-          <div class="legend-card">
-            <div class="legend-vertical-wrapper">
-              <div class="legend-labels-vertical">
-                <span class="label-max">
-                  <span class="label-text">High</span>
-                </span>
-                <span class="label-min">
-                  <span class="label-text">Low</span>
-                </span>
-              </div>
-              <div
-                class="histogram-container-vertical"
-                v-if="colorHistogram.length > 0"
-              >
-                <div
-                  class="histogram-bar-vertical"
-                  v-for="(item, index) in colorHistogram"
-                  :key="index"
-                  :style="{
-                    width: item.height + '%',
-                    backgroundColor: item.color,
-                  }"
-                  :title="`${item.color}: ${item.count} hexagons`"
-                >
-                  <div class="bar-label-vertical" v-if="item.height > 10">
-                    {{ item.count }}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <div class="legend-item-title">Combined</div>
         </div>
-        <div class="section-divider"></div>
-        <div class="combined-section">
-          <div class="section-header">
-            <div class="section-icon">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 2v20M2 12h20"/>
-              </svg>
+        <div class="legend-item-content">
+          <div class="legend-simple-scale">
+            <div class="scale-combined">
+              <div class="scale-combined-color">
+                <div class="scale-gradient scale-gradient-lighting"></div>
+                <span>Color = Lighting</span>
+              </div>
+              <div class="scale-combined-height">
+                <div class="scale-bars">
+                  <div class="scale-bar" style="height: 20%"></div>
+                  <div class="scale-bar" style="height: 40%"></div>
+                  <div class="scale-bar" style="height: 60%"></div>
+                  <div class="scale-bar" style="height: 80%"></div>
+                  <div class="scale-bar" style="height: 100%"></div>
+                </div>
+                <span>Height = Vibrancy</span>
+              </div>
             </div>
-            <div class="section-label">Height = Vibrancy</div>
           </div>
-          <div class="legend-card">
-            <div class="legend-vertical-wrapper">
-              <div class="legend-labels-vertical">
-                <span class="label-max">
-                  <span class="label-text">High</span>
-                </span>
-                <span class="label-min">
-                  <span class="label-text">Low</span>
-                </span>
-              </div>
-            <div class="legend-bars-vertical">
-              <div
-                class="legend-bar-vertical"
-                v-for="(bar, index) in vibrancyBars"
-                :key="index"
-                :style="{ height: bar.height + '%' }"
-              >
-                <div class="bar-fill-vertical"></div>
-              </div>
-            </div>
-            </div>
+          <div class="legend-item-description">
+            Combines lighting color and vibrancy height
           </div>
         </div>
       </div>
@@ -169,7 +153,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { ref, onMounted } from "vue";
 
 const props = defineProps({
   mode: { type: String, required: false, default: null },
@@ -177,114 +161,116 @@ const props = defineProps({
   inBox: { type: Boolean, default: false },
 });
 
-const hexData = ref(null);
-const colorHistogram = ref([]);
+const lightingLocations = ref(null);
 
-// Load hex data to calculate color distribution
-async function loadHexData() {
+async function loadLightingLocations() {
   try {
     const BASE = import.meta.env.BASE_URL || "/";
-    const hexUrl = `${BASE}data/hex_light_100m.geojson`.replace(/\/{2,}/g, "/");
-    const response = await fetch(hexUrl);
+    // Add cache-busting parameter to ensure fresh data
+    const url = `${BASE}data/lighting_locations.json?v=${Date.now()}`.replace(
+      /\/{2,}/g,
+      "/"
+    );
+    const response = await fetch(url);
     const data = await response.json();
-    hexData.value = data;
 
-    // Calculate color histogram
-    const colorCounts = new Map();
-    if (data.features) {
-      data.features.forEach((feature) => {
-        const color = feature.properties?.color || "#969696";
-        colorCounts.set(color, (colorCounts.get(color) || 0) + 1);
-      });
-    }
-
-    // Convert to array and sort by count (descending)
-    const sortedColors = Array.from(colorCounts.entries())
-      .map(([color, count]) => ({ color, count }))
-      .sort((a, b) => b.count - a.count);
-
-    // Calculate max count for normalization
-    const maxCount = Math.max(...sortedColors.map((item) => item.count));
-
-    // Create histogram data with normalized heights
-    colorHistogram.value = sortedColors.map((item) => ({
-      color: item.color,
-      count: item.count,
-      height: (item.count / maxCount) * 100,
-    }));
+    // Ensure we only use top 3
+    lightingLocations.value = {
+      highest: data.highest ? data.highest.slice(0, 3) : [],
+    };
   } catch (error) {
-    console.error("Failed to load hex data for legend:", error);
+    console.error("Failed to load lighting locations:", error);
   }
 }
 
-onMounted(() => {
-  loadHexData();
-});
+function getLocationImage(locationName) {
+  // Map location names to image paths
+  const BASE = import.meta.env.BASE_URL || "/";
+  const imageMap = {
+    "Escher Wyss": `${BASE}images/locations/escher-wyss.jpg`,
+    Oerlikon: `${BASE}images/locations/oerlikon.jpg`,
+    Hardbrücke: `${BASE}images/locations/hardbruecke.jpg`,
+    Bahnhofstrasse: `${BASE}images/locations/bahnhofstrasse.jpg`,
+    Limmatquai: `${BASE}images/locations/limmatquai.jpg`,
+    Paradeplatz: `${BASE}images/locations/paradeplatz.jpg`,
+  };
 
-// Vibrancy bars - showing height progression
-const vibrancyBars = computed(() => {
-  return [
-    { height: 20 },
-    { height: 40 },
-    { height: 60 },
-    { height: 80 },
-    { height: 100 },
-  ];
+  // Return image path if exists, otherwise null
+  // For now, return null to use placeholder
+  return null;
+}
+
+function adjustColorBrightness(hex, percent) {
+  // Simple function to adjust color brightness
+  const num = parseInt(hex.replace("#", ""), 16);
+  const r = Math.max(0, Math.min(255, (num >> 16) + percent));
+  const g = Math.max(0, Math.min(255, ((num >> 8) & 0x00ff) + percent));
+  const b = Math.max(0, Math.min(255, (num & 0x0000ff) + percent));
+  return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+}
+
+onMounted(() => {
+  loadLightingLocations();
 });
 </script>
 
 <style scoped>
 .legend-container {
   width: 100%;
-  min-height: 300px;
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: 20px 0;
+  padding: 0;
   box-sizing: border-box;
   position: relative;
-  transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
-.legend-content {
+.legend-simple {
   width: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
-  align-items: stretch;
-  gap: 20px;
+  gap: 24px;
   padding: 0;
-  box-sizing: border-box;
-  animation: fadeIn 0.4s ease-out;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.legend-header {
+.legend-item {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-bottom: 16px;
-  padding-bottom: 0;
+  gap: 12px;
 }
 
-.legend-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 1);
-  text-align: left;
-  margin: 0;
-  padding: 0;
-  letter-spacing: -0.01em;
+.legend-item-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-item-icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.8);
+  flex-shrink: 0;
+}
+
+.legend-icon-lighting {
+  color: #fbbf24;
+}
+
+.legend-icon-vibrancy {
+  color: #6b7280;
+}
+
+.legend-icon-combined {
+  color: #60a5fa;
+}
+
+.legend-item-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
   font-family:
     "SF Pro Display",
     "SF Pro Text",
@@ -292,18 +278,98 @@ const vibrancyBars = computed(() => {
     BlinkMacSystemFont,
     system-ui,
     sans-serif;
-  width: 100%;
-  box-sizing: border-box;
+  letter-spacing: -0.01em;
 }
 
-.legend-subtitle {
-  font-size: 11px;
-  font-weight: 400;
+.legend-item-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.legend-simple-scale {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.scale-gradient {
+  height: 24px;
+  border-radius: 4px;
+  width: 100%;
+}
+
+.scale-gradient-lighting {
+  background: linear-gradient(
+    to right,
+    #1e293b 0%,
+    #334155 25%,
+    #475569 50%,
+    #64748b 75%,
+    #94a3b8 100%
+  );
+}
+
+.scale-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 60px;
+}
+
+.scale-bar {
+  flex: 1;
+  background: linear-gradient(to top, #9ca3af 0%, #6b7280 100%);
+  border-radius: 2px 2px 0 0;
+  min-width: 8px;
+  min-height: 4px;
+}
+
+.scale-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
   color: rgba(255, 255, 255, 0.6);
-  text-align: left;
-  margin: 0;
-  padding: 0;
-  letter-spacing: 0.01em;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  font-weight: 500;
+}
+
+.scale-combined {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.scale-combined-color,
+.scale-combined-height {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.scale-combined-color span,
+.scale-combined-height span {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.7);
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  font-weight: 500;
+}
+
+.legend-item-description {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
   font-family:
     "SF Pro Display",
     "SF Pro Text",
@@ -314,222 +380,124 @@ const vibrancyBars = computed(() => {
   line-height: 1.4;
 }
 
-.legend-card {
-  background: transparent;
-  border: none;
-  border-radius: 0;
-  padding: 0;
-  box-shadow: none;
-  transition: none;
-}
-
-/* Vertical Legend Wrapper */
-.legend-vertical-wrapper {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  width: 100%;
-  min-height: 200px;
-  max-width: 100%;
-  padding: 12px 0;
-  box-sizing: border-box;
-  transition: all 0.3s ease;
-}
-
-.legend-labels-vertical {
+/* Lighting Locations */
+.lighting-locations {
+  margin-top: 24px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.75);
-  font-family:
-    "SF Pro Display",
-    "SF Pro Text",
-    -apple-system,
-    BlinkMacSystemFont,
-    system-ui,
-    sans-serif;
-  min-height: 200px;
-  padding: 8px 0;
-  box-sizing: border-box;
-  flex-shrink: 0;
-  font-weight: 500;
-  letter-spacing: 0.02em;
+  gap: 16px;
 }
 
-.label-min,
-.label-max {
-  font-weight: 600;
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  transition: color 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-}
-
-.label-text {
-  display: inline-block;
-  padding: 0;
-  background: transparent;
-  border-radius: 0;
-}
-
-/* Vertical Histogram for Lighting/Combined */
-.histogram-container-vertical {
+.locations-section {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  width: auto;
-  min-width: 90px;
-  gap: 4px;
-  margin: 0;
-  padding: 0;
-  background: transparent;
-  border-radius: 0;
-  border: none;
-  flex: 1;
-  min-height: 200px;
-  max-height: 100%;
-  box-sizing: border-box;
-  overflow: hidden;
-  transition: none;
-  box-shadow: none;
+  gap: 8px;
 }
 
-.histogram-bar-vertical {
-  flex: 1;
-  min-height: 8px;
-  max-height: 100%;
-  border-radius: 0 4px 4px 0;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  padding-left: 5px;
-  transition: opacity 0.2s ease;
-  border: none;
-  box-shadow: none;
-  min-width: 14px;
-  box-sizing: border-box;
-}
-
-.histogram-bar-vertical:hover {
-  opacity: 0.9;
-}
-
-.bar-label-vertical {
-  font-size: 9px;
-  color: rgba(255, 255, 255, 0.95);
-  font-weight: 600;
-  text-shadow:
-    0 1px 4px rgba(0, 0, 0, 0.9),
-    0 0 3px rgba(0, 0, 0, 0.6);
-  font-family:
-    "SF Pro Display",
-    "SF Pro Text",
-    -apple-system,
-    BlinkMacSystemFont,
-    system-ui,
-    sans-serif;
-  white-space: nowrap;
-  letter-spacing: 0.01em;
-}
-
-.label-min,
-.label-max {
-  font-weight: 600;
-}
-
-/* Lighting Legend */
-.legend-lighting {
-  justify-content: flex-start;
-  align-items: stretch;
-}
-
-/* Vibrancy Legend */
-.legend-vibrancy {
-  justify-content: flex-start;
-  align-items: stretch;
-}
-
-.legend-bars-vertical {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-end;
-  width: auto;
-  min-width: 90px;
-  gap: 4px;
-  margin: 0;
-  padding: 0;
-  flex: 1;
-  min-height: 200px;
-  max-height: 100%;
-  background: transparent;
-  border-radius: 0;
-  border: none;
-  box-sizing: border-box;
-  overflow: hidden;
-  transition: none;
-  box-shadow: none;
-}
-
-.legend-bar-vertical {
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-start;
-  min-height: 8px;
-  width: 100%;
-  transition: opacity 0.2s ease;
-  flex-shrink: 0;
-}
-
-.bar-fill-vertical {
-  height: 100%;
-  width: 100%;
-  background: linear-gradient(to right, #9ca3af 0%, #6b7280 40%, #4b5563 80%, #374151 100%);
-  border-radius: 0 4px 4px 0;
-  min-width: 8px;
-  opacity: 0.85;
-  transition: opacity 0.2s ease;
-  box-shadow: none;
-  border: none;
-}
-
-.bar-fill-vertical:hover {
-  opacity: 1;
-}
-
-.legend-bar {
-  flex: 1;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  min-width: 8px;
-}
-
-.bar-fill {
-  width: 100%;
-  background: linear-gradient(to top, #9ca3af 0%, #6b7280 100%);
-  border-radius: 2px 2px 0 0;
-  min-height: 4px;
-  opacity: 0.8;
-}
-
-.legend-note {
+.locations-section-title {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.6);
-  text-align: center;
-  margin-top: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+}
+
+.locations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.location-button {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
   padding: 0;
-  background: transparent;
-  border-radius: 0;
-  border: none;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+  overflow: hidden;
+  cursor: pointer;
+  min-height: 100px;
+}
+
+.location-button:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.location-button-image-wrapper {
+  width: 120px;
+  min-width: 120px;
+  height: 100px;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.location-button-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.location-button-image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.location-button-color-indicator {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 1;
+}
+
+.location-button-content {
+  flex: 1;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.location-button-name {
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.95);
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.location-button-description {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
   font-family:
     "SF Pro Display",
     "SF Pro Text",
@@ -538,126 +506,18 @@ const vibrancyBars = computed(() => {
     system-ui,
     sans-serif;
   font-weight: 400;
-  letter-spacing: 0.01em;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-}
-
-.legend-note svg {
-  opacity: 0.6;
-  flex-shrink: 0;
-}
-
-/* Combined Legend */
-.legend-combined {
-  justify-content: flex-start;
-  align-items: stretch;
-  gap: 0;
-}
-
-.combined-legend {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  flex: 1;
-  justify-content: flex-start;
-  align-items: stretch;
-  width: 100%;
-  padding: 8px 0;
-}
-
-.combined-section {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  align-items: stretch;
-  justify-content: flex-start;
-  width: 100%;
-  max-width: 100%;
-  flex: 1;
-  padding: 0;
-  box-sizing: border-box;
-  overflow: hidden;
-}
-
-.section-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
-  padding-bottom: 0;
-}
-
-.section-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  color: rgba(255, 255, 255, 0.7);
-  flex-shrink: 0;
-}
-
-.section-icon svg {
-  width: 100%;
-  height: 100%;
-}
-
-.section-label {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.9);
-  text-align: left;
-  font-weight: 600;
-  padding: 0;
+  line-height: 1.5;
   margin: 0;
-  font-family:
-    "SF Pro Display",
-    "SF Pro Text",
-    -apple-system,
-    BlinkMacSystemFont,
-    system-ui,
-    sans-serif;
-  flex: 1;
-  box-sizing: border-box;
-  letter-spacing: 0.01em;
-}
-
-.section-divider {
-  height: 0;
-  background: transparent;
-  margin: 16px 0;
-  flex-shrink: 0;
-}
-
-.combined-section .histogram-wrapper {
-  min-width: 150px;
-}
-
-.combined-section .histogram-container-vertical {
-  width: auto;
-  min-width: 50px;
-  height: 100%;
-  flex: 1;
-}
-
-.combined-section .legend-bars-vertical {
-  width: auto;
-  min-width: 50px;
-  height: 100%;
-  flex: 1;
 }
 
 /* Empty state */
 .legend-empty-state {
   width: 100%;
-  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 0 20px;
+  padding: 40px 20px;
 }
 
 .empty-message {
@@ -673,6 +533,5 @@ const vibrancyBars = computed(() => {
     sans-serif;
   font-weight: 500;
   letter-spacing: 0.01em;
-  padding: 40px 20px;
 }
 </style>

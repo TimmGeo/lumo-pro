@@ -979,7 +979,13 @@
     <GuidedTour v-if="showGuidedTour" @close="finishTour" />
 
     <!-- Scale indicator -->
-    <div class="map-scale" :class="{ 'map-scale--visible': mapZoom >= 12.5 }">
+    <div
+      class="map-scale"
+      :class="{
+        'map-scale--visible': mapZoom >= 12.5,
+        'map-scale--basket-expanded': isBasketExpanded,
+      }"
+    >
       <div class="scale-line"></div>
       <div class="scale-label">{{ scaleText }}</div>
     </div>
@@ -1808,7 +1814,8 @@ const mapboxViewerRef = ref(null);
 
 // sidebar collapse state
 const sidebarCollapsed = ref(true);
-const sidebarWidth = ref(320); /* Default sidebar width */
+const sidebarWidth =
+  ref(336); /* Default sidebar width - matches app basket width */
 const isResizing = ref(false);
 const isHovering = ref(false);
 const showWalkthrough = ref(true);
@@ -3124,7 +3131,7 @@ textarea:focus-visible {
   top: 30px;
   left: 30px;
   bottom: 30px;
-  width: 320px; /* Default sidebar width */
+  width: 336px; /* Default sidebar width - matches app basket width */
   padding: 0;
   background: #151517;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
@@ -5235,7 +5242,7 @@ textarea:focus-visible {
 
 .app-basket--expanded {
   width: 336px; /* 5 apps (56px each) + 4 gaps (8px each) + padding (12px each side) = 280 + 32 + 24 = 336px */
-  height: 600px; /* Tall enough for chat content */
+  height: 900px; /* Tall enough for chat content */
   max-height: calc(100vh - 60px); /* Don't exceed viewport */
   padding: 12px; /* Consistent padding when expanded */
 }
@@ -5844,8 +5851,8 @@ textarea:focus-visible {
 }
 
 .app-basket--expanded .chat-app-button {
-  width: 56px;
-  height: 56px;
+  width: 60px;
+  height: 56px; /* Rectangular - slightly wider than tall */
 }
 
 .chat-app-button:hover {
@@ -6095,12 +6102,17 @@ textarea:focus-visible {
   transform: translateY(10px);
   transition:
     opacity 0.4s ease,
-    transform 0.4s ease;
+    transform 0.4s ease,
+    right 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
 }
 
 .map-scale--visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+.map-scale--basket-expanded {
+  right: 386px; /* 336px (basket width) + 30px (original right) + 20px (padding) */
 }
 
 .scale-line {
