@@ -233,6 +233,7 @@ const emit = defineEmits([
   "routePopupClicked",
   "hubsSelected",
   "polygonClicked",
+  "mapClicked",
 ]);
 
 const sceneEl = ref(null);
@@ -1006,6 +1007,27 @@ onMounted(async () => {
 
         // Ensure hubs are always on top of all other layers
         ensureHubsOnTop();
+
+        // Add general map click handler (for empty map area clicks)
+        // This fires when clicking on empty map space (not on features)
+        map.on("click", (e) => {
+          // Check if clicking on any interactive features
+          const features = map.queryRenderedFeatures(e.point, {
+            layers: [
+              "hubs-circles",
+              "hubs-clusters",
+              "hex-layer",
+              "hex-vibrancy-layer",
+              "hex-combined-fill",
+              "hex-combined-layer",
+              "vibrancy-points-layer",
+            ],
+          });
+          // Only emit if no interactive features are clicked
+          if (features.length === 0) {
+            emit("mapClicked");
+          }
+        });
 
         // Debug
         window.map = map;

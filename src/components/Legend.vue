@@ -409,14 +409,14 @@ onMounted(() => {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 28px;
   padding: 0;
 }
 
 .legend-item {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
 
 .legend-item-header {
@@ -464,18 +464,18 @@ onMounted(() => {
 .legend-item-content {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
 
 .legend-simple-scale {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .scale-gradient {
-  height: 24px;
-  border-radius: 4px;
+  height: 26px;
+  border-radius: 6px;
   width: 100%;
 }
 
@@ -493,23 +493,24 @@ onMounted(() => {
 .scale-bars {
   display: flex;
   align-items: flex-end;
-  gap: 4px;
-  height: 60px;
+  gap: 5px;
+  height: 64px;
 }
 
 .scale-bar {
   flex: 1;
   background: linear-gradient(to top, #9ca3af 0%, #6b7280 100%);
-  border-radius: 2px 2px 0 0;
+  border-radius: 3px 3px 0 0;
   min-width: 8px;
   min-height: 4px;
+  transition: opacity 0.2s ease;
 }
 
 .scale-labels {
   display: flex;
   justify-content: space-between;
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.6);
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.65);
   font-family:
     "SF Pro Display",
     "SF Pro Text",
@@ -518,6 +519,7 @@ onMounted(() => {
     system-ui,
     sans-serif;
   font-weight: 500;
+  letter-spacing: 0.01em;
 }
 
 .scale-combined {
@@ -549,7 +551,7 @@ onMounted(() => {
 
 .legend-item-description {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.75);
   font-family:
     "SF Pro Display",
     "SF Pro Text",
@@ -557,7 +559,8 @@ onMounted(() => {
     BlinkMacSystemFont,
     system-ui,
     sans-serif;
-  line-height: 1.5;
+  line-height: 1.6;
+  letter-spacing: 0.01em;
 }
 
 .legend-item-description strong {
@@ -598,10 +601,10 @@ onMounted(() => {
 
 /* Lighting Locations */
 .lighting-locations {
-  margin-top: 24px;
+  margin-top: 8px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 }
 
 .locations-section {
@@ -628,7 +631,7 @@ onMounted(() => {
 .locations-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 .location-button {
@@ -636,20 +639,19 @@ onMounted(() => {
   align-items: stretch;
   gap: 0;
   padding: 0;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 14px;
+  border: none;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
   cursor: pointer;
   min-height: 100px;
 }
 
 .location-button:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  background: rgba(255, 255, 255, 0.07);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
 }
 
 .location-button-image-wrapper {
@@ -681,7 +683,7 @@ onMounted(() => {
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  border: 3px solid rgba(255, 255, 255, 0.3);
+  border: none;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   z-index: 1;
 }
@@ -698,7 +700,7 @@ onMounted(() => {
 
 .location-button-name {
   font-size: 15px;
-  color: rgba(255, 255, 255, 0.95);
+  color: rgba(255, 255, 255, 0.98);
   font-family:
     "SF Pro Display",
     "SF Pro Text",
@@ -707,13 +709,14 @@ onMounted(() => {
     system-ui,
     sans-serif;
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
   margin: 0;
+  line-height: 1.3;
 }
 
 .location-button-description {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.72);
   font-family:
     "SF Pro Display",
     "SF Pro Text",
@@ -722,8 +725,9 @@ onMounted(() => {
     system-ui,
     sans-serif;
   font-weight: 400;
-  line-height: 1.5;
+  line-height: 1.55;
   margin: 0;
+  letter-spacing: 0.01em;
 }
 
 /* Empty state */

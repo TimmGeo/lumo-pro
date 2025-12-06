@@ -1,5 +1,5 @@
 <template>
-  <div class="app">
+  <div class="app" @click="handleAppClick">
     <!-- Main map viewer -->
     <MapboxViewer
       ref="mapboxViewerRef"
@@ -19,6 +19,7 @@
       @routePopupClicked="handleRoutePopupClicked"
       @hubsSelected="handleHubsSelected"
       @polygonClicked="handlePolygonClicked"
+      @mapClicked="handleMapClicked"
     />
 
     <!-- Sidebar controls -->
@@ -33,7 +34,7 @@
       :style="!sidebarCollapsed ? { width: sidebarWidth + 'px' } : {}"
       @mouseenter="handleSidebarMouseEnter"
       @mouseleave="handleMouseLeave"
-      @click="handleSidebarClick"
+      @click.stop="handleSidebarClick"
     >
       <!-- Resize handle -->
       <div
@@ -1082,9 +1083,9 @@
             stroke-linecap="round"
             stroke-linejoin="round"
           >
-            <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
-            <path d="M2 17l10 5 10-5"></path>
-            <path d="M2 12l10 5 10-5"></path>
+            <line x1="18" y1="20" x2="18" y2="10"></line>
+            <line x1="12" y1="20" x2="12" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="14"></line>
           </svg>
         </button>
 
@@ -3060,6 +3061,39 @@ function handleOpenLayersSection() {
     }, 300); // Quick highlight animation
   }
   handleIconClick("layers");
+}
+
+function handleMapClicked() {
+  // Close sidebar instantly when map is clicked
+  closeSidebarInstantly();
+}
+
+function handleAppClick(e) {
+  // Close sidebar if clicking outside of it
+  // Check if click is outside the sidebar
+  const sidebar = e.target.closest(".sidebar");
+  const appBasket = e.target.closest(".app-basket");
+  // Don't close if clicking on sidebar or app basket
+  if (!sidebar && !appBasket && !sidebarCollapsed.value) {
+    closeSidebarInstantly();
+  }
+}
+
+function closeSidebarInstantly() {
+  // Close sidebar instantly (if not already collapsed)
+  if (!sidebarCollapsed.value) {
+    // Clear any hover or close timers
+    if (hoverTimer) {
+      clearTimeout(hoverTimer);
+      hoverTimer = null;
+    }
+    if (sidebarCloseTimer) {
+      clearTimeout(sidebarCloseTimer);
+      sidebarCloseTimer = null;
+    }
+    // Close instantly
+    sidebarCollapsed.value = true;
+  }
 }
 
 // Handle sidebar click - open if collapsed (unless clicking on button or resize handle)
