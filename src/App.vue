@@ -22,6 +22,49 @@
       @mapClicked="handleMapClicked"
     />
 
+    <!-- Clear Route Button (Top Center) -->
+    <button
+      v-if="currentRouteStats && mapZoom >= 11.5"
+      class="clear-route-top-button"
+      @click.stop="handleClearRoute"
+      aria-label="Clear route"
+    >
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path
+          d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+        />
+      </svg>
+      <span>Route</span>
+    </button>
+
+    <!-- Route Saved to History Message -->
+    <div v-if="showRouteSavedMessage" class="route-saved-message">
+      <span class="route-saved-text">Route saved to history</span>
+      <div class="route-saved-actions">
+        <button
+          class="route-saved-button route-saved-button--close"
+          @click.stop="showRouteSavedMessage = false"
+        >
+          Ok
+        </button>
+        <button
+          class="route-saved-button route-saved-button--open"
+          @click.stop="openHistorySection"
+        >
+          Open History
+        </button>
+      </div>
+    </div>
+
     <!-- Sidebar controls -->
     <aside
       :class="[
@@ -137,6 +180,7 @@
               <circle cx="12" cy="12" r="10" />
               <polyline points="12 6 12 12 16 14" />
             </svg>
+            <span v-if="showHistoryIndicator" class="history-indicator"></span>
             <span class="sidebar-icon-tooltip">Route History</span>
           </button>
           <button
@@ -524,6 +568,9 @@
           >
             <div class="section-content">
               <div class="route-history-container">
+                <div v-if="routeHistory.length > 0" class="route-history-title">
+                  Today
+                </div>
                 <div class="route-history-list">
                   <div
                     v-if="routeHistory.length === 0"
@@ -556,7 +603,9 @@
                       </svg>
                       <span class="route-history-to">{{ entry.toName }}</span>
                     </div>
-                    <div class="route-history-date">{{ entry.date }}</div>
+                    <div class="route-history-date">
+                      {{ entry.time || formatTimeOnly(entry.date) }}
+                    </div>
                   </div>
                 </div>
                 <div class="route-history-clear-header">
@@ -1829,6 +1878,9 @@ const sidebarWidth =
 const sidebarHighlight = ref(false);
 const isResizing = ref(false);
 const isHovering = ref(false);
+const showHistoryIndicator = ref(false);
+const showRouteSavedMessage = ref(false);
+const isFirstRouteCleared = ref(true);
 const showWalkthrough = ref(true);
 const routingHubsVisible = ref(true);
 const showGuidedTour = ref(false);
@@ -2244,30 +2296,7 @@ function handleHubsSelected({ hubId1, hubId2 }) {
       }
     }
 
-    // Add to history (route is already loaded, so we just add the history entry)
-    if (currentRouteStats.value) {
-      const fromHub = hubs.value.find((h) => h.id === hubId1);
-      const toHub = hubs.value.find((h) => h.id === hubId2);
-      if (fromHub && toHub) {
-        const historyEntry = {
-          fromId: hubId1,
-          toId: hubId2,
-          fromName: fromHub.name,
-          toName: toHub.name,
-          date: new Date().toLocaleString("en-US", {
-            month: "short",
-            day: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-        };
-        routeHistory.value.unshift(historyEntry);
-        // Limit history to last 50 entries
-        if (routeHistory.value.length > 50) {
-          routeHistory.value = routeHistory.value.slice(0, 50);
-        }
-      }
-    }
+    // Don't add to history here - routes are only added when cleared
 
     // Reset flags
     isLoadingFromHistory.value = false;
@@ -2277,6 +2306,48 @@ function handleHubsSelected({ hubId1, hubId2 }) {
 
 // Handle clear route button click
 function handleClearRoute() {
+  // Save route to history before clearing
+  if (currentRouteStats.value && startHub.value && endHub.value) {
+    const fromHub = displayedHubs.value.find((h) => h.id === startHub.value);
+    const toHub = displayedHubs.value.find((h) => h.id === endHub.value);
+
+    if (fromHub && toHub) {
+      const historyEntry = {
+        fromId: startHub.value,
+        toId: endHub.value,
+        fromName: fromHub.name,
+        toName: toHub.name,
+        date: new Date().toLocaleString("en-US", {
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        time: new Date().toLocaleString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      };
+      routeHistory.value.unshift(historyEntry);
+      // Limit history to last 50 entries
+      if (routeHistory.value.length > 50) {
+        routeHistory.value = routeHistory.value.slice(0, 50);
+      }
+
+      // Show indicator for 3 seconds
+      showHistoryIndicator.value = true;
+      setTimeout(() => {
+        showHistoryIndicator.value = false;
+      }, 3000);
+
+      // Show message at top center only for the first route cleared
+      if (isFirstRouteCleared.value) {
+        showRouteSavedMessage.value = true;
+        isFirstRouteCleared.value = false;
+      }
+    }
+  }
+
   // Clear route on map
   const routeApi = api || mapboxViewerRef.value;
   if (routeApi && routeApi.clearRoute) {
@@ -2492,23 +2563,7 @@ function route(event) {
         const fromHub = hubs.value.find((h) => h.id === startHub.value);
         const toHub = hubs.value.find((h) => h.id === endHub.value);
         if (fromHub && toHub) {
-          const historyEntry = {
-            fromId: startHub.value,
-            toId: endHub.value,
-            fromName: fromHub.name,
-            toName: toHub.name,
-            date: new Date().toLocaleString("en-US", {
-              month: "short",
-              day: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-          };
-          routeHistory.value.unshift(historyEntry); // Add to beginning
-          // Limit history to last 50 entries
-          if (routeHistory.value.length > 50) {
-            routeHistory.value = routeHistory.value.slice(0, 50);
-          }
+          // Don't add to history here - routes are only added when cleared
         }
       }
 
@@ -2699,6 +2754,15 @@ function formatPoiType(poiType) {
     MusicVenue: "Music Venues",
   };
   return typeMap[poiType] || poiType;
+}
+
+// Format time only from date string
+function formatTimeOnly(dateString) {
+  if (!dateString) return "";
+  // Extract time from date string (format: "Dec 6, 11:03 PM" -> "11:03 PM")
+  // Handle both "Dec 6, 11:03 PM" and "Dec 6 at 11:03 PM" formats
+  const match = dateString.match(/(\d{1,2}:\d{2}\s*(?:AM|PM))/i);
+  return match ? match[1] : dateString;
 }
 
 // Get hub name from ID
@@ -3096,6 +3160,17 @@ function closeSidebarInstantly() {
   }
 }
 
+function openHistorySection() {
+  // Close the message
+  showRouteSavedMessage.value = false;
+  // Open sidebar if collapsed
+  if (sidebarCollapsed.value) {
+    sidebarCollapsed.value = false;
+  }
+  // Switch to history tab
+  handleIconClick("route-history");
+}
+
 // Handle sidebar click - open if collapsed (unless clicking on button or resize handle)
 function handleSidebarClick(e) {
   // Only open if collapsed
@@ -3166,6 +3241,52 @@ body,
   position: relative;
   height: 100%;
   overflow: hidden;
+}
+
+/* Clear Route Button (Top Center) */
+.clear-route-top-button {
+  position: absolute;
+  top: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  background: rgba(26, 27, 30, 0.15);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: none;
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+  font-weight: 500;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: none;
+}
+
+.clear-route-top-button:hover {
+  background: rgba(26, 27, 30, 0.6);
+  color: rgba(255, 255, 255, 0.9);
+  transform: translateX(-50%) translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.clear-route-top-button:active {
+  transform: translateX(-50%) translateY(0);
+}
+
+.clear-route-top-button svg {
+  flex-shrink: 0;
 }
 
 /* Remove blue focus outlines globally */
@@ -3316,6 +3437,7 @@ textarea:focus-visible {
 }
 
 .sidebar-icon-btn {
+  position: relative;
   width: 40px;
   height: 40px;
   border: none;
@@ -3360,6 +3482,124 @@ textarea:focus-visible {
   background: transparent !important; /* Transparent to adapt to bar color */
   background-color: transparent !important;
   color: #ffffff; /* SVG turns white on hover */
+}
+
+/* History Indicator */
+.history-indicator {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 8px;
+  height: 8px;
+  background: #60a5fa;
+  border-radius: 50%;
+  border: 1.5px solid #1a1b1e;
+  z-index: 10;
+  animation: historyIndicatorPulse 0.3s ease-out;
+  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.3);
+}
+
+@keyframes historyIndicatorPulse {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Route Saved Message */
+.route-saved-message {
+  position: absolute;
+  top: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 20px;
+  background: rgba(26, 27, 30, 0.85);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: none;
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  font-weight: 500;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  animation: routeSavedMessageAppear 0.3s ease-out;
+}
+
+@keyframes routeSavedMessageAppear {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.route-saved-text {
+  white-space: nowrap;
+}
+
+.route-saved-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.route-saved-button {
+  padding: 6px 14px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.route-saved-button--close {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.route-saved-button--close:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.route-saved-button--open {
+  background: #ffffff;
+  color: #000000;
+}
+
+.route-saved-button--open:hover {
+  background: rgba(255, 255, 255, 0.9);
+  color: #000000;
 }
 
 /* Override hover for opened sidebar non-active icons */
@@ -4833,6 +5073,39 @@ textarea:focus-visible {
   padding: 16px;
   display: flex;
   flex-direction: column;
+  gap: 12px;
+}
+
+.route-history-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  margin-bottom: 4px;
+}
+
+.route-history-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  margin-bottom: 4px;
   gap: 12px;
 }
 
