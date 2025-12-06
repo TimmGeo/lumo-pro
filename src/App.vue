@@ -558,6 +558,7 @@
                     @click.stop="clearHistory"
                     type="button"
                     title="Clear history"
+                    aria-label="Clear history"
                   >
                     <svg
                       width="14"
@@ -573,7 +574,6 @@
                         d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
                       />
                     </svg>
-                    Clear
                   </button>
                 </div>
               </div>
@@ -3853,7 +3853,7 @@ textarea:focus-visible {
 }
 
 .sidebar button.active {
-  background: #1c1e21;
+  background-color: rgba(255, 255, 255, 0.06);
 }
 .sidebar button .button-icon {
   width: 18px;
@@ -3868,7 +3868,7 @@ textarea:focus-visible {
   object-fit: contain;
 }
 .sidebar button:not(.sidebar-toggle):hover {
-  background: #2a2f34;
+  background-color: rgba(255, 255, 255, 0.08);
 }
 
 /* header with square toggle */
@@ -4085,8 +4085,8 @@ textarea:focus-visible {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 48px;
+  height: 48px;
   padding: 0;
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.15);
@@ -4094,11 +4094,12 @@ textarea:focus-visible {
   color: rgba(255, 255, 255, 0.7);
   cursor: pointer;
   transition: all 0.2s ease;
+  box-sizing: border-box;
 }
 
 .route-clear-button:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.25);
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: transparent;
   color: rgba(255, 255, 255, 0.9);
 }
 
@@ -4108,8 +4109,8 @@ textarea:focus-visible {
 }
 
 .route-clear-button svg {
-  width: 18px;
-  height: 18px;
+  width: 14px;
+  height: 14px;
   stroke: currentColor;
   display: block;
 }
@@ -4321,7 +4322,7 @@ textarea:focus-visible {
 
 .route-select:hover {
   background-color: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.15);
+  border-color: transparent;
 }
 
 .route-select:focus {
@@ -4767,22 +4768,26 @@ textarea:focus-visible {
 .route-history-clear-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
+  justify-content: center;
+  gap: 0;
+  padding: 6px;
   background: rgba(255, 255, 255, 0.05);
   color: #b8bcc0;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid transparent;
   border-radius: 6px;
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  width: 48px;
+  height: 48px;
+  box-sizing: border-box;
 }
 
 .route-history-clear-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
-  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: transparent;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .route-history-clear-btn svg {
@@ -4797,30 +4802,38 @@ textarea:focus-visible {
   gap: 8px;
   max-height: 300px;
   overflow-y: auto;
+  min-height: 200px;
 }
 
 .route-history-empty {
   color: rgba(255, 255, 255, 0.4);
   font-size: 13px;
   text-align: center;
-  padding: 16px 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-height: 200px;
 }
 
 .route-history-item {
   padding: 10px 12px;
   background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid transparent;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  min-height: 48px;
+  box-sizing: border-box;
 }
 
 .route-history-item:hover {
   background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.15);
+  border-color: transparent;
 }
 
 .route-history-route {

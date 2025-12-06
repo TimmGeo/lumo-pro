@@ -683,9 +683,6 @@ onMounted(async () => {
           },
           paint: {
             "text-color": "#ffffff", // Pure white text
-            "text-halo-color": "#0b0b0c", // Dark background matching map
-            "text-halo-width": 2.5, // Moderate width for subtle background
-            "text-halo-blur": 3, // Smooth blur for techy, glassmorphic effect
           },
         });
 
