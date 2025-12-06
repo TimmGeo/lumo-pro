@@ -148,7 +148,7 @@
               stroke-linejoin="round"
             >
               <path
-                d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"
+                d="M11.52 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"
               />
               <circle cx="12" cy="12" r="3" />
             </svg>
@@ -979,7 +979,7 @@
     <GuidedTour v-if="showGuidedTour" @close="finishTour" />
 
     <!-- Scale indicator -->
-    <div class="map-scale" :class="{ 'map-scale--visible': mapZoom >= 11 }">
+    <div class="map-scale" :class="{ 'map-scale--visible': mapZoom >= 12.5 }">
       <div class="scale-line"></div>
       <div class="scale-label">{{ scaleText }}</div>
     </div>
@@ -1021,7 +1021,7 @@
               stroke-linejoin="round"
             >
               <path
-                d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"
+                d="M11.52 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"
               />
               <circle cx="12" cy="12" r="3" />
             </svg>
@@ -1105,7 +1105,7 @@
         <div class="zurich-app-button" @click.stop="closeBasket">
           <!-- Zoom to Zurich Button (shown when zoomed out) -->
           <button
-            v-if="mapZoom < 11"
+            v-if="mapZoom < 11.5"
             class="zurich-app-button-inner"
             @click="focusZurich(true)"
             aria-label="Zoom to Zurich"
@@ -1126,7 +1126,7 @@
 
           <!-- Location & Time Display (shown when zoomed in) -->
           <div
-            v-else-if="mapZoom >= 11 && locationText"
+            v-else-if="mapZoom >= 11.5 && locationText"
             class="zurich-app-location"
           >
             <div class="zurich-app-location-name">{{ locationText }}</div>
@@ -2014,7 +2014,7 @@ function calculateScale(zoom, center) {
 
 function updateLocation(zoom) {
   // Simply show "Zürich" when zoomed in enough
-  if (zoom >= 11) {
+  if (zoom >= 11.5) {
     locationText.value = "Zürich";
   } else {
     locationText.value = "";
@@ -2030,8 +2030,8 @@ function handleMapZoom(event) {
   ]);
   updateLocation(event.zoom);
 
-  // Close app basket when zoomed out (same threshold as route fade: 11)
-  const zoomThreshold = 11;
+  // Close app basket when zoomed out (same threshold as route fade: 11.5)
+  const zoomThreshold = 11.5;
   if (event.zoom < zoomThreshold) {
     // Store current app state before closing
     if (activeBasketApp.value !== null) {
@@ -2263,6 +2263,11 @@ function handleClearRoute() {
   const routeApi = api || mapboxViewerRef.value;
   if (routeApi && routeApi.clearRoute) {
     routeApi.clearRoute();
+  }
+
+  // Reset selected hubs to ensure colors update back to grey
+  if (routeApi && routeApi.selectHubs) {
+    routeApi.selectHubs(null, null);
   }
 
   // Clear sidebar inputs

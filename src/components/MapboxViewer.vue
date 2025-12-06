@@ -600,8 +600,8 @@ onMounted(async () => {
           source: "hubs",
           filter: ["!", ["has", "point_count"]],
           paint: {
-            "circle-radius": 6,
-            "circle-color": "#ffffff", // White for all hubs
+            "circle-radius": 8,
+            "circle-color": "#888888", // Medium gray for unselected hubs (more contrast)
             "circle-stroke-color": "#0b0b0c",
             "circle-stroke-width": 0,
             "circle-opacity": 1,
@@ -660,7 +660,7 @@ onMounted(async () => {
           id: "hubs-labels",
           type: "symbol",
           source: "hubs",
-          minzoom: 12, // Show labels at moderate zoom level
+          minzoom: 11.5, // Show labels at same threshold as routes (disappear when zoomed out)
           layout: {
             "text-field": [
               "coalesce",
@@ -668,15 +668,24 @@ onMounted(async () => {
               ["get", "neighborhood"],
               "Hub",
             ],
-            "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
-            "text-size": 14,
+            "text-font": [
+              "SF Pro Text Medium",
+              "SF Pro Display Medium",
+              "-apple-system",
+              "BlinkMacSystemFont",
+              "Helvetica Neue",
+              "Arial Unicode MS Regular",
+            ],
+            "text-size": 15, // Larger font size for better visibility
             "text-offset": [0, -1.5], // Position above point (negative Y moves up)
             "text-anchor": "bottom", // Anchor at bottom of text
+            "text-letter-spacing": 0.05, // Tighter letter spacing for techy look
           },
           paint: {
-            "text-color": "#e9f7f2",
-            "text-halo-color": "#0b0b0c",
-            "text-halo-width": 2,
+            "text-color": "#ffffff", // Pure white text
+            "text-halo-color": "#0b0b0c", // Dark background matching map
+            "text-halo-width": 2.5, // Moderate width for subtle background
+            "text-halo-blur": 3, // Smooth blur for techy, glassmorphic effect
           },
         });
 
@@ -1352,8 +1361,8 @@ function filterHubsByRoute(hubId1, hubId2, retryCount = 0) {
     }
     if (map.getLayer("hubs-labels")) {
       map.setFilter("hubs-labels", showAllFilter);
-      // Reset label minzoom to original value (no route, so no zoom-based hiding)
-      map.setLayoutProperty("hubs-labels", "minzoom", 12);
+      // Reset label minzoom to match route threshold (disappear when zoomed out below 11.5)
+      map.setLayoutProperty("hubs-labels", "minzoom", 11.5);
       console.log("Showing all hub labels - filter reset");
     }
     // Force a repaint
@@ -1414,8 +1423,8 @@ function filterHubsByRoute(hubId1, hubId2, retryCount = 0) {
     }
     if (map.getLayer("hubs-labels")) {
       map.setFilter("hubs-labels", routeFilter);
-      // Reset label visibility (no route, so no zoom-based hiding)
-      map.setLayoutProperty("hubs-labels", "minzoom", 12);
+      // Set label minzoom to match route threshold (disappear when zoomed out below 11.5)
+      map.setLayoutProperty("hubs-labels", "minzoom", 11.5);
     }
   } else if (selectedIds.length === 2) {
     // Two hubs selected - add zoom-based visibility to match route disappearance
@@ -1432,15 +1441,15 @@ function filterHubsByRoute(hubId1, hubId2, retryCount = 0) {
     try {
       if (map.getLayer("hubs-circles")) {
         map.setFilter("hubs-circles", routeFilter);
-        // Add zoom-based opacity to match route disappearance (disappears at zoom 10.9, same as route)
+        // Add zoom-based opacity to match route disappearance (smooth fade like route)
         map.setPaintProperty("hubs-circles", "circle-opacity", [
           "interpolate",
           ["linear"],
           ["zoom"],
-          10.9,
-          0, // Invisible at zoom 10.9 and below (same as route)
-          11,
-          1, // Fully visible at zoom 11 and above
+          11.4,
+          0, // Invisible at zoom 11.4 and below
+          11.5,
+          1, // Fully visible at zoom 11.5 and above
         ]);
         const currentFilter = map.getFilter("hubs-circles");
         console.log(
@@ -1448,10 +1457,13 @@ function filterHubsByRoute(hubId1, hubId2, retryCount = 0) {
           currentFilter
         );
       }
+      if (map.getLayer("hubs-label-connectors")) {
+        map.setFilter("hubs-label-connectors", routeFilter);
+      }
       if (map.getLayer("hubs-labels")) {
         map.setFilter("hubs-labels", routeFilter);
-        // Set minzoom to match route disappearance (disappears at zoom 10.9, same as route)
-        map.setLayoutProperty("hubs-labels", "minzoom", 11);
+        // Set minzoom to match route disappearance (disappears at zoom 12, same as route)
+        map.setLayoutProperty("hubs-labels", "minzoom", 11.5);
         const currentFilter = map.getFilter("hubs-labels");
         console.log(
           "Filter applied to hubs-labels. Current filter:",
@@ -1520,33 +1532,55 @@ function handleHubClick(hubId) {
 
 // Update hub colors - ensure all hubs have the same default green color
 function updateHubColors() {
-  if (!map || !map.isStyleLoaded() || !hubsData) return;
+  if (!map || !map.isStyleLoaded() || !hubsData) {
+    // Retry if map isn't ready yet
+    setTimeout(() => updateHubColors(), 50);
+    return;
+  }
 
   const layer = map.getLayer("hubs-circles");
-  if (!layer) return;
+  if (!layer) {
+    // Retry if layer isn't ready yet
+    setTimeout(() => updateHubColors(), 50);
+    return;
+  }
 
-  // Remove any selectedColor property from all hubs to ensure uniform coloring
-  const updatedFeatures = hubsData.features.map((feature) => {
-    const newProperties = { ...feature.properties };
-    // Remove selectedColor to ensure all hubs use default green
-    delete newProperties.selectedColor;
+  // Build match expression for selected hubs (white) vs unselected (light gray)
+  const selectedIds = [];
+  if (selectedHubId1 !== null) selectedIds.push(selectedHubId1);
+  if (selectedHubId2 !== null) selectedIds.push(selectedHubId2);
 
-    return {
-      ...feature,
-      properties: newProperties,
-    };
-  });
-
-  // Update the source with new data
-  const updatedData = {
-    ...hubsData,
-    features: updatedFeatures,
-  };
-
-  map.getSource("hubs").setData(updatedData);
-
-  // Set paint property to use white for all hubs
-  map.setPaintProperty("hubs-circles", "circle-color", "#ffffff");
+  try {
+    // Create match expression: white for selected hubs, medium gray for others
+    if (selectedIds.length === 0) {
+      // No hubs selected - all medium gray
+      map.setPaintProperty("hubs-circles", "circle-color", "#888888");
+    } else if (selectedIds.length === 1) {
+      // One hub selected
+      map.setPaintProperty("hubs-circles", "circle-color", [
+        "match",
+        ["get", "id"],
+        selectedIds[0],
+        "#ffffff", // White for selected hub
+        "#888888", // Medium gray for others (more contrast)
+      ]);
+    } else {
+      // Two hubs selected
+      map.setPaintProperty("hubs-circles", "circle-color", [
+        "match",
+        ["get", "id"],
+        selectedIds[0],
+        "#ffffff", // White for first selected hub
+        selectedIds[1],
+        "#ffffff", // White for second selected hub
+        "#888888", // Medium gray for others (more contrast)
+      ]);
+    }
+    // Force repaint after color update
+    map.triggerRepaint();
+  } catch (error) {
+    console.warn("Error updating hub colors:", error);
+  }
 }
 
 // Helper function to add route layers for a given source
@@ -1587,10 +1621,10 @@ function addRouteLayers(sourceId, beforeLayer, routeType = "bright") {
             "interpolate",
             ["linear"],
             ["zoom"],
-            10.9,
-            0,
-            11,
-            0.4,
+            11.4,
+            0, // Invisible at zoom 11.4 and below
+            11.5,
+            0.4, // Fully visible at zoom 11.5 and above
           ],
           "line-blur": 10,
         },
@@ -1638,7 +1672,15 @@ function addRouteLayers(sourceId, beforeLayer, routeType = "bright") {
             18,
             10,
           ],
-          "line-opacity": ["interpolate", ["linear"], ["zoom"], 10.9, 0, 11, 1],
+          "line-opacity": [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            11.4,
+            0, // Invisible at zoom 11.4 and below
+            11.5,
+            1, // Fully visible at zoom 11.5 and above
+          ],
         },
         layout: {
           "line-join": "round",
@@ -1688,10 +1730,10 @@ function addRouteLayers(sourceId, beforeLayer, routeType = "bright") {
             "interpolate",
             ["linear"],
             ["zoom"],
-            10.9,
-            0,
-            11,
-            0.6,
+            11.4,
+            0, // Invisible at zoom 11.4 and below
+            11.5,
+            0.6, // Fully visible at zoom 11.5 and above
           ],
           "line-gap-width": [
             "interpolate",
@@ -2088,7 +2130,7 @@ async function loadAndDisplayRoute(fromId, toId) {
 function handleRoutePopupVisibility(zoom) {
   if (!map) return;
 
-  const shouldShow = zoom >= 11;
+  const shouldShow = zoom >= 11.5;
 
   // Handle fast route popup
   if (shouldShow && fastRouteGeom && fastRouteStats) {
@@ -2425,6 +2467,17 @@ function clearRoute(skipHubFilter = false) {
 
   currentRouteSource = null;
 
+  // If both hubs were selected (full route), reset them when route is actually deleted
+  // Only reset when skipHubFilter is false (real deletion), not during route loading (skipHubFilter = true)
+  // This ensures colors update back to unselected state only when route is deleted, not during generation
+  if (selectedHubId1 !== null && selectedHubId2 !== null && !skipHubFilter) {
+    selectedHubId1 = null;
+    selectedHubId2 = null;
+  }
+
+  // Update hub colors - will keep selected hubs white during route loading, or reset to grey when route is deleted
+  updateHubColors();
+
   // Show all hubs again when route is cleared (only if not skipping filter)
   // Only filter when both hubs are selected (active route). Otherwise show all hubs.
   if (!skipHubFilter) {
@@ -2594,11 +2647,14 @@ defineExpose({
       selectedHubId1 = null;
       selectedHubId2 = null;
       clearRoute(true); // Skip filter update in clearRoute, we'll do it here
+      // Update colors immediately
       updateHubColors();
       // Show all hubs immediately (with retry logic)
       // Use setTimeout to ensure clearRoute has finished
       setTimeout(() => {
         filterHubsByRoute(null, null);
+        // Update colors again after filter is applied to ensure they're correct
+        updateHubColors();
       }, 10);
     }
   },
