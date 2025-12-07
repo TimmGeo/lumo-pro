@@ -221,37 +221,47 @@
               <div class="poi-color-item">
                 <div
                   class="poi-color-circle"
-                  style="background-color: #ff4444"
+                  style="background-color: #ff6348"
                 ></div>
-                <span class="poi-color-label">Bar or Pub</span>
+                <span class="poi-color-label"
+                  >Bar or Pub ({{ poiCounts.BarOrPub }})</span
+                >
               </div>
               <div class="poi-color-item">
                 <div
                   class="poi-color-circle"
-                  style="background-color: #ffaa00"
+                  style="background-color: #ffa502"
                 ></div>
-                <span class="poi-color-label">Cafe or Coffee Shop</span>
+                <span class="poi-color-label"
+                  >Cafe or Coffee Shop ({{ poiCounts.CafeOrCoffeeShop }})</span
+                >
               </div>
               <div class="poi-color-item">
                 <div
                   class="poi-color-circle"
-                  style="background-color: #00ff88"
+                  style="background-color: #00d2d3"
                 ></div>
-                <span class="poi-color-label">Restaurant</span>
+                <span class="poi-color-label"
+                  >Restaurant ({{ poiCounts.Restaurant }})</span
+                >
               </div>
               <div class="poi-color-item">
                 <div
                   class="poi-color-circle"
-                  style="background-color: #aa44ff"
+                  style="background-color: #5f27cd"
                 ></div>
-                <span class="poi-color-label">Music Venue</span>
+                <span class="poi-color-label"
+                  >Music Venue ({{ poiCounts.MusicVenue }})</span
+                >
               </div>
               <div class="poi-color-item">
                 <div
                   class="poi-color-circle"
-                  style="background-color: #ff44aa"
+                  style="background-color: #ff1493"
                 ></div>
-                <span class="poi-color-label">Night Club</span>
+                <span class="poi-color-label"
+                  >Night Club ({{ poiCounts.NightClub }})</span
+                >
               </div>
             </div>
           </div>
@@ -538,6 +548,15 @@ const lightingHotspots = ref(null);
 const vibrancyHotspots = ref(null);
 const combinedHotspots = ref(null);
 
+// POI counts
+const poiCounts = ref({
+  BarOrPub: 0,
+  CafeOrCoffeeShop: 0,
+  Restaurant: 0,
+  MusicVenue: 0,
+  NightClub: 0,
+});
+
 const lightingExpanded = ref(false);
 const vibrancyExpanded = ref(false);
 const combinedExpanded = ref(false);
@@ -590,6 +609,40 @@ async function loadCombinedHotspots() {
   }
 }
 
+// Load and count POI points
+async function loadPoiCounts() {
+  try {
+    const BASE = import.meta.env.BASE_URL || "/";
+    const url = `${BASE}data/vibrancy_points.geojson?v=${Date.now()}`.replace(
+      /\/{2,}/g,
+      "/"
+    );
+    const response = await fetch(url);
+    const data = await response.json();
+
+    // Reset counts
+    poiCounts.value = {
+      BarOrPub: 0,
+      CafeOrCoffeeShop: 0,
+      Restaurant: 0,
+      MusicVenue: 0,
+      NightClub: 0,
+    };
+
+    // Count POIs by type
+    if (data && data.features && Array.isArray(data.features)) {
+      data.features.forEach((feature) => {
+        const poiType = feature.properties?.Type;
+        if (poiType && poiCounts.value.hasOwnProperty(poiType)) {
+          poiCounts.value[poiType]++;
+        }
+      });
+    }
+  } catch (error) {
+    console.error("Failed to load POI counts:", error);
+  }
+}
+
 function getHubName(hubId) {
   const hubNames = {
     1: "Wollishofen",
@@ -633,6 +686,7 @@ onMounted(() => {
   loadLightingHotspots();
   loadVibrancyHotspots();
   loadCombinedHotspots();
+  loadPoiCounts();
 });
 </script>
 

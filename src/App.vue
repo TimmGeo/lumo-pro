@@ -86,7 +86,11 @@
 
     <!-- Hotspot Name Pop-up -->
     <transition name="hotspot-name-fade">
-      <div v-if="displayedHotspotName" class="hotspot-name-popup">
+      <div
+        v-if="displayedHotspotName"
+        class="hotspot-name-popup"
+        :class="{ 'hotspot-name-popup--faded': hotspotNameFaded }"
+      >
         {{ displayedHotspotName }}
       </div>
     </transition>

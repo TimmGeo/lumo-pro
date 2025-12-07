@@ -817,13 +817,13 @@ onMounted(async () => {
               data: vibrancyPointsData,
             });
 
-            // Color mapping for different POI types (bright, shining colors)
+            // Color mapping for different POI types (bright, luminous, highly differentiable)
             const typeColors = {
-              BarOrPub: "#ff4444", // Bright red
-              CafeOrCoffeeShop: "#ffaa00", // Bright amber/orange
-              Restaurant: "#00ff88", // Bright green
-              MusicVenue: "#aa44ff", // Bright purple
-              NightClub: "#ff44aa", // Bright pink/magenta
+              BarOrPub: "#ff6348", // Bright coral/orange-red - warmer, more orange
+              CafeOrCoffeeShop: "#ffa502", // Bright orange - distinct warm tone
+              Restaurant: "#00d2d3", // Bright teal/cyan - cool green-blue
+              MusicVenue: "#5f27cd", // Bright purple/violet - distinct purple
+              NightClub: "#ff1493", // Deep pink/hot pink - distinct from red/coral
             };
 
             // Add circle layer for POI points
