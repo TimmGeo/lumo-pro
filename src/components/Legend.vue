@@ -357,19 +357,6 @@
       <div v-if="mode === 'combined'" :key="'combined'" class="legend-simple">
         <div class="legend-item">
           <div class="legend-item-header">
-            <div class="legend-item-icon legend-icon-combined">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <rect x="3" y="3" width="18" height="18" rx="2" />
-                <path d="M3 9h18M9 3v18" />
-              </svg>
-            </div>
             <div class="legend-item-title">Combined</div>
           </div>
           <div class="legend-item-content">
@@ -914,6 +901,7 @@ onMounted(() => {
 
 .location-button {
   display: flex;
+  flex-direction: column;
   align-items: stretch;
   gap: 0;
   padding: 0;
@@ -923,7 +911,9 @@ onMounted(() => {
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
   cursor: pointer;
-  min-height: 100px;
+  position: relative;
+  aspect-ratio: 1;
+  width: 100%;
 }
 
 .location-button:hover {
@@ -933,12 +923,12 @@ onMounted(() => {
 }
 
 .location-button-image-wrapper {
-  width: 120px;
-  min-width: 120px;
-  height: 100px;
+  width: 100%;
+  flex: 1;
   flex-shrink: 0;
   position: relative;
   overflow: hidden;
+  min-height: 0;
 }
 
 .location-button-image {
@@ -967,13 +957,14 @@ onMounted(() => {
 }
 
 .location-button-content {
-  flex: 1;
+  width: 100%;
   padding: 16px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   gap: 6px;
   min-width: 0;
+  background: rgba(26, 27, 30, 0.6);
+  backdrop-filter: blur(10px);
 }
 
 .location-button-name {
