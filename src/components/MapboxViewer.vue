@@ -665,10 +665,26 @@ onMounted(async () => {
           minzoom: 11.5, // Show labels at same threshold as routes (disappear when zoomed out)
           layout: {
             "text-field": [
-              "coalesce",
-              ["get", "locality"],
-              ["get", "neighborhood"],
-              "Hub",
+              "case",
+              ["==", ["get", "id"], 1],
+              "Wollishofen",
+              ["==", ["get", "id"], 2],
+              "Friesenberg",
+              ["==", ["get", "id"], 3],
+              "Albisrieden",
+              ["==", ["get", "id"], 4],
+              "Höngg",
+              ["==", ["get", "id"], 5],
+              "Affoltern",
+              ["==", ["get", "id"], 6],
+              "Oerlikon",
+              ["==", ["get", "id"], 7],
+              "Schwamendingen Mitte",
+              ["==", ["get", "id"], 8],
+              "Seefeld",
+              ["==", ["get", "id"], 9],
+              "Stampfenbachplatz",
+              ["concat", "Hub ", ["to-string", ["get", "id"]]],
             ],
             "text-font": [
               "SF Pro Text Medium",
@@ -2676,13 +2692,21 @@ defineExpose({
       console.warn("getHubs: hubsData not available");
       return [];
     }
+    const hubNames = {
+      1: "Wollishofen",
+      2: "Friesenberg",
+      3: "Albisrieden",
+      4: "Höngg",
+      5: "Affoltern",
+      6: "Oerlikon",
+      7: "Schwamendingen Mitte",
+      8: "Seefeld",
+      9: "Stampfenbachplatz",
+    };
     const hubList = hubsData.features.map((feature) => {
       const id = feature.properties.id;
-      // Use locality name if available, otherwise use a fallback
-      const name =
-        feature.properties.locality ||
-        feature.properties.neighborhood ||
-        `Hub ${id}`;
+      // Use predefined hub names
+      const name = hubNames[id] || `Hub ${id}`;
       return { id, name };
     });
     console.log("getHubs returning:", hubList);
@@ -2700,6 +2724,18 @@ defineExpose({
   toggleTilt,
   getIsTilted: () => isTilted.value,
   clearRoute,
+  zoomToCoordinates: (lon, lat, zoom = 15) => {
+    if (!map || !map.isStyleLoaded()) {
+      console.warn("Map not ready for zoom");
+      return;
+    }
+    map.flyTo({
+      center: [lon, lat],
+      zoom: zoom,
+      duration: 2000, // 2 seconds for smooth animation
+      essential: true,
+    });
+  },
 });
 
 function requestZurichFocus(key) {

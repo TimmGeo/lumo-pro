@@ -1,0 +1,56 @@
+[
+  {
+    "name": "Altstetten",
+    "fid": 4,
+    "coordinates": [
+      8.491520344724726,
+      47.392336438945755
+    ],
+    "lon": 8.491520344724726,
+    "lat": 47.392336438945755,
+    "nearest_hub": {
+      "id": 4,
+      "name": null,
+      "distance": "102m",
+      "distance_km": 0.102,
+      "time": "1min",
+      "time_minutes": 1
+    }
+  },
+  {
+    "name": "Oerlikon",
+    "fid": 1,
+    "coordinates": [
+      8.545016242054988,
+      47.41124108986018
+    ],
+    "lon": 8.545016242054988,
+    "lat": 47.41124108986018,
+    "nearest_hub": {
+      "id": 5,
+      "name": null,
+      "distance": "931m",
+      "distance_km": 0.931,
+      "time": "11min",
+      "time_minutes": 11
+    }
+  },
+  {
+    "name": "Zürich Niederdörfli",
+    "fid": 3,
+    "coordinates": [
+      8.543976769977238,
+      47.36985028068529
+    ],
+    "lon": 8.543976769977238,
+    "lat": 47.36985028068529,
+    "nearest_hub": {
+      "id": 8,
+      "name": null,
+      "distance": "1.0km",
+      "distance_km": 1.01,
+      "time": "12min",
+      "time_minutes": 12
+    }
+  }
+]

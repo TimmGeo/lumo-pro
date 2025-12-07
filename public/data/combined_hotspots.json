@@ -1,0 +1,56 @@
+[
+  {
+    "name": "Zürich Enge",
+    "fid": 2,
+    "coordinates": [
+      8.531088505038708,
+      47.36710558721236
+    ],
+    "lon": 8.531088505038708,
+    "lat": 47.36710558721236,
+    "nearest_hub": {
+      "id": 8,
+      "name": null,
+      "distance": "707m",
+      "distance_km": 0.707,
+      "time": "8min",
+      "time_minutes": 8
+    }
+  },
+  {
+    "name": "Zürich Central",
+    "fid": 1,
+    "coordinates": [
+      8.54492747307736,
+      47.37272825667126
+    ],
+    "lon": 8.54492747307736,
+    "lat": 47.37272825667126,
+    "nearest_hub": {
+      "id": 8,
+      "name": null,
+      "distance": "1.0km",
+      "distance_km": 1.002,
+      "time": "12min",
+      "time_minutes": 12
+    }
+  },
+  {
+    "name": "Zürich Hardbrücke",
+    "fid": 3,
+    "coordinates": [
+      8.519470168387468,
+      47.38724356548752
+    ],
+    "lon": 8.519470168387468,
+    "lat": 47.38724356548752,
+    "nearest_hub": {
+      "id": 8,
+      "name": null,
+      "distance": "1.8km",
+      "distance_km": 1.788,
+      "time": "21min",
+      "time_minutes": 21
+    }
+  }
+]

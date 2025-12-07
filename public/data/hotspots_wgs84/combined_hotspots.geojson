@@ -1,0 +1,10 @@
+{
+"type": "FeatureCollection",
+"name": "combined_hotspots",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "fid": 1, "name": "Zürich Central" }, "geometry": { "type": "Point", "coordinates": [ 8.54492747307736, 47.372728256671259 ] } },
+{ "type": "Feature", "properties": { "fid": 2, "name": "Zürich Enge" }, "geometry": { "type": "Point", "coordinates": [ 8.531088505038708, 47.367105587212357 ] } },
+{ "type": "Feature", "properties": { "fid": 3, "name": "Zürich Hardbrücke" }, "geometry": { "type": "Point", "coordinates": [ 8.519470168387468, 47.387243565487523 ] } }
+]
+}

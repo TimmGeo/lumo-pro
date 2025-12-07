@@ -50,41 +50,92 @@
         </div>
       </div>
 
-      <!-- Lighting Locations -->
-      <div v-if="lightingLocations" class="lighting-locations">
-        <!-- Highest Intensity -->
+      <!-- Lighting Hotspots -->
+      <div
+        v-if="lightingHotspots && lightingHotspots.length > 0"
+        class="lighting-locations"
+      >
         <div class="locations-section">
-          <div class="locations-section-title">Highest Intensity</div>
+          <div class="locations-section-title">Hotspot Explorer</div>
+          <div class="locations-section-subtitle">
+            Discover Lighting Intensity hotspots - click to zoom in and explore
+          </div>
           <div class="locations-list">
             <div
-              v-for="(loc, index) in lightingLocations.highest.slice(0, 3)"
+              v-for="(hotspot, index) in lightingHotspots"
               :key="index"
               class="location-button"
+              @click="handleHotspotClick(hotspot)"
             >
               <div class="location-button-image-wrapper">
                 <img
-                  v-if="getLocationImage(loc.location)"
-                  :src="getLocationImage(loc.location)"
-                  :alt="loc.location"
+                  v-if="getLocationImage(hotspot.name)"
+                  :src="getLocationImage(hotspot.name)"
+                  :alt="hotspot.name"
                   class="location-button-image"
                 />
                 <div
                   v-else
                   class="location-button-image-placeholder"
                   :style="{
-                    background: `linear-gradient(135deg, ${loc.color} 0%, ${adjustColorBrightness(loc.color, -20)} 100%)`,
+                    background: `linear-gradient(135deg, #f3efff 0%, #e0d5ff 100%)`,
                   }"
                 >
                   <div
                     class="location-button-color-indicator"
-                    :style="{ backgroundColor: loc.color }"
+                    style="background-color: #f3efff"
                   ></div>
                 </div>
               </div>
               <div class="location-button-content">
-                <div class="location-button-name">{{ loc.location }}</div>
-                <div v-if="loc.description" class="location-button-description">
-                  {{ loc.description }}
+                <div class="location-button-name">{{ hotspot.name }}</div>
+                <div
+                  v-if="hotspot.nearest_hub"
+                  class="location-button-hub-info"
+                >
+                  <div class="location-button-hub-label">
+                    <span class="location-button-hub-id"
+                      >Nearest to
+                      {{ getHubName(hotspot.nearest_hub.id) }} Hub</span
+                    >
+                  </div>
+                  <div class="location-button-hub-metrics">
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path
+                        d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"
+                      ></path>
+                      <circle cx="12" cy="10" r="3"></circle>
+                    </svg>
+                    <span class="location-button-hub-distance">{{
+                      hotspot.nearest_hub.distance
+                    }}</span>
+                    <span class="location-button-hub-separator">•</span>
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    <span class="location-button-hub-time">{{
+                      hotspot.nearest_hub.time
+                    }}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -139,18 +190,32 @@
         </div>
       </div>
 
-      <!-- Vibrancy Locations -->
-      <div v-if="vibrancyLocations" class="lighting-locations">
+      <!-- Vibrancy Hotspots -->
+      <div
+        v-if="vibrancyHotspots && vibrancyHotspots.length > 0"
+        class="lighting-locations"
+      >
         <div class="locations-section">
-          <div class="locations-section-title">Zurich's Vibrancy Hot-Spots</div>
+          <div class="locations-section-title">Hotspot Explorer</div>
+          <div class="locations-section-subtitle">
+            Explore Urban Vibrancy hotspots - click to zoom in and discover
+          </div>
           <div class="locations-list">
             <div
-              v-for="(loc, index) in vibrancyLocations.highest.slice(0, 3)"
+              v-for="(hotspot, index) in vibrancyHotspots"
               :key="index"
               class="location-button"
+              @click="handleHotspotClick(hotspot)"
             >
               <div class="location-button-image-wrapper">
+                <img
+                  v-if="getLocationImage(hotspot.name)"
+                  :src="getLocationImage(hotspot.name)"
+                  :alt="hotspot.name"
+                  class="location-button-image"
+                />
                 <div
+                  v-else
                   class="location-button-image-placeholder"
                   :style="{
                     background: `linear-gradient(135deg, #6b7280 0%, #4b5563 100%)`,
@@ -163,9 +228,54 @@
                 </div>
               </div>
               <div class="location-button-content">
-                <div class="location-button-name">{{ loc.location }}</div>
-                <div v-if="loc.description" class="location-button-description">
-                  {{ loc.description }}
+                <div class="location-button-name">{{ hotspot.name }}</div>
+                <div
+                  v-if="hotspot.nearest_hub"
+                  class="location-button-hub-info"
+                >
+                  <div class="location-button-hub-label">
+                    <span class="location-button-hub-id"
+                      >Nearest to
+                      {{ getHubName(hotspot.nearest_hub.id) }} Hub</span
+                    >
+                  </div>
+                  <div class="location-button-hub-metrics">
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path
+                        d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"
+                      ></path>
+                      <circle cx="12" cy="10" r="3"></circle>
+                    </svg>
+                    <span class="location-button-hub-distance">{{
+                      hotspot.nearest_hub.distance
+                    }}</span>
+                    <span class="location-button-hub-separator">•</span>
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    <span class="location-button-hub-time">{{
+                      hotspot.nearest_hub.time
+                    }}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -241,18 +351,32 @@
         </div>
       </div>
 
-      <!-- Combined Locations -->
-      <div v-if="combinedLocations" class="lighting-locations">
+      <!-- Combined Hotspots -->
+      <div
+        v-if="combinedHotspots && combinedHotspots.length > 0"
+        class="lighting-locations"
+      >
         <div class="locations-section">
-          <div class="locations-section-title">Highest Combined Score</div>
+          <div class="locations-section-title">Hotspot Explorer</div>
+          <div class="locations-section-subtitle">
+            Find Combined Score hotspots - click to zoom in and explore
+          </div>
           <div class="locations-list">
             <div
-              v-for="(loc, index) in combinedLocations.highest.slice(0, 3)"
+              v-for="(hotspot, index) in combinedHotspots"
               :key="index"
               class="location-button"
+              @click="handleHotspotClick(hotspot)"
             >
               <div class="location-button-image-wrapper">
+                <img
+                  v-if="getLocationImage(hotspot.name)"
+                  :src="getLocationImage(hotspot.name)"
+                  :alt="hotspot.name"
+                  class="location-button-image"
+                />
                 <div
+                  v-else
                   class="location-button-image-placeholder"
                   :style="{
                     background: `linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%)`,
@@ -265,9 +389,54 @@
                 </div>
               </div>
               <div class="location-button-content">
-                <div class="location-button-name">{{ loc.location }}</div>
-                <div v-if="loc.description" class="location-button-description">
-                  {{ loc.description }}
+                <div class="location-button-name">{{ hotspot.name }}</div>
+                <div
+                  v-if="hotspot.nearest_hub"
+                  class="location-button-hub-info"
+                >
+                  <div class="location-button-hub-label">
+                    <span class="location-button-hub-id"
+                      >Nearest to
+                      {{ getHubName(hotspot.nearest_hub.id) }} Hub</span
+                    >
+                  </div>
+                  <div class="location-button-hub-metrics">
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path
+                        d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"
+                      ></path>
+                      <circle cx="12" cy="10" r="3"></circle>
+                    </svg>
+                    <span class="location-button-hub-distance">{{
+                      hotspot.nearest_hub.distance
+                    }}</span>
+                    <span class="location-button-hub-separator">•</span>
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    <span class="location-button-hub-time">{{
+                      hotspot.nearest_hub.time
+                    }}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -287,89 +456,106 @@ const props = defineProps({
   inBox: { type: Boolean, default: false },
 });
 
-const emit = defineEmits(["openLayersSection"]);
+const emit = defineEmits(["openLayersSection", "hotspotClicked"]);
 
 function openLayersSection() {
   emit("openLayersSection");
 }
 
-const lightingLocations = ref(null);
-const vibrancyLocations = ref(null);
-const combinedLocations = ref(null);
+function handleHotspotClick(hotspot) {
+  if (hotspot && hotspot.lon && hotspot.lat) {
+    emit("hotspotClicked", {
+      lon: hotspot.lon,
+      lat: hotspot.lat,
+      layerType: props.mode, // Pass the layer type (lighting, vibrancy, combined)
+    });
+  }
+}
+
+const lightingHotspots = ref(null);
+const vibrancyHotspots = ref(null);
+const combinedHotspots = ref(null);
 
 const lightingExpanded = ref(false);
 const vibrancyExpanded = ref(false);
 const combinedExpanded = ref(false);
 
-async function loadLightingLocations() {
+async function loadLightingHotspots() {
   try {
     const BASE = import.meta.env.BASE_URL || "/";
-    const url = `${BASE}data/lighting_locations.json?v=${Date.now()}`.replace(
+    const url = `${BASE}data/lighting_hotspots.json?v=${Date.now()}`.replace(
       /\/{2,}/g,
       "/"
     );
     const response = await fetch(url);
     const data = await response.json();
 
-    lightingLocations.value = {
-      highest: data.highest ? data.highest.slice(0, 3) : [],
-    };
+    lightingHotspots.value = Array.isArray(data) ? data : [];
   } catch (error) {
-    console.error("Failed to load lighting locations:", error);
+    console.error("Failed to load lighting hotspots:", error);
   }
 }
 
-async function loadVibrancyLocations() {
+async function loadVibrancyHotspots() {
   try {
     const BASE = import.meta.env.BASE_URL || "/";
-    const url = `${BASE}data/vibrancy_locations.json?v=${Date.now()}`.replace(
+    const url = `${BASE}data/vibrancy_hotspots.json?v=${Date.now()}`.replace(
       /\/{2,}/g,
       "/"
     );
     const response = await fetch(url);
     const data = await response.json();
 
-    vibrancyLocations.value = {
-      highest: data.highest ? data.highest.slice(0, 3) : [],
-    };
+    vibrancyHotspots.value = Array.isArray(data) ? data : [];
   } catch (error) {
-    console.error("Failed to load vibrancy locations:", error);
+    console.error("Failed to load vibrancy hotspots:", error);
   }
 }
 
-async function loadCombinedLocations() {
+async function loadCombinedHotspots() {
   try {
     const BASE = import.meta.env.BASE_URL || "/";
-    const url = `${BASE}data/combined_locations.json?v=${Date.now()}`.replace(
+    const url = `${BASE}data/combined_hotspots.json?v=${Date.now()}`.replace(
       /\/{2,}/g,
       "/"
     );
     const response = await fetch(url);
     const data = await response.json();
 
-    combinedLocations.value = {
-      highest: data.highest ? data.highest.slice(0, 3) : [],
-    };
+    combinedHotspots.value = Array.isArray(data) ? data : [];
   } catch (error) {
-    console.error("Failed to load combined locations:", error);
+    console.error("Failed to load combined hotspots:", error);
   }
+}
+
+function getHubName(hubId) {
+  const hubNames = {
+    1: "Wollishofen",
+    2: "Friesenberg",
+    3: "Albisrieden",
+    4: "Höngg",
+    5: "Affoltern",
+    6: "Oerlikon",
+    7: "Schwamendingen Mitte",
+    8: "Seefeld",
+    9: "Stampfenbachplatz",
+  };
+  return hubNames[hubId] || `Hub ${hubId}`;
 }
 
 function getLocationImage(locationName) {
-  // Map location names to image paths
+  if (!locationName) return null;
+
+  // Map location names to image paths in assets folder
   const BASE = import.meta.env.BASE_URL || "/";
   const imageMap = {
-    "Escher Wyss": `${BASE}images/locations/escher-wyss.jpg`,
-    Oerlikon: `${BASE}images/locations/oerlikon.jpg`,
-    Hardbrücke: `${BASE}images/locations/hardbruecke.jpg`,
-    Bahnhofstrasse: `${BASE}images/locations/bahnhofstrasse.jpg`,
-    Limmatquai: `${BASE}images/locations/limmatquai.jpg`,
-    Paradeplatz: `${BASE}images/locations/paradeplatz.jpg`,
+    "Escher Wyss": `${BASE}assets/escher-wyss.jpg`,
+    Oerlikon: `${BASE}assets/oerlikon.jpg`,
+    Hardbrücke: `${BASE}assets/hardbrücke.jpg`,
   };
 
   // Return image path if exists, otherwise null
-  // For now, return null to use placeholder
-  return null;
+  return imageMap[locationName] || null;
 }
 
 function adjustColorBrightness(hex, percent) {
@@ -382,9 +568,9 @@ function adjustColorBrightness(hex, percent) {
 }
 
 onMounted(() => {
-  loadLightingLocations();
-  loadVibrancyLocations();
-  loadCombinedLocations();
+  loadLightingHotspots();
+  loadVibrancyHotspots();
+  loadCombinedHotspots();
 });
 </script>
 
@@ -614,11 +800,11 @@ onMounted(() => {
 }
 
 .locations-section-title {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.7);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.95);
+  text-transform: none;
+  letter-spacing: -0.01em;
   font-family:
     "SF Pro Display",
     "SF Pro Text",
@@ -626,6 +812,23 @@ onMounted(() => {
     BlinkMacSystemFont,
     system-ui,
     sans-serif;
+  margin-bottom: 4px;
+}
+
+.locations-section-subtitle {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: none;
+  letter-spacing: 0.01em;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  margin-bottom: 12px;
 }
 
 .locations-list {
@@ -728,6 +931,72 @@ onMounted(() => {
   line-height: 1.55;
   margin: 0;
   letter-spacing: 0.01em;
+}
+
+.location-button-hub-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.location-button-hub-label {
+  display: flex;
+  align-items: center;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.75);
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.location-button-hub-id {
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 500;
+}
+
+.location-button-hub-metrics {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.65);
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.location-button-hub-metrics svg {
+  width: 13px;
+  height: 13px;
+  stroke-width: 2;
+  color: rgba(255, 255, 255, 0.5);
+  flex-shrink: 0;
+}
+
+.location-button-hub-distance,
+.location-button-hub-time {
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 600;
+}
+
+.location-button-hub-separator {
+  color: rgba(255, 255, 255, 0.3);
+  margin: 0 2px;
 }
 
 /* Empty state */

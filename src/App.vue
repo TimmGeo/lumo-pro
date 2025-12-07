@@ -1410,7 +1410,9 @@
                     :mode="mode"
                     :in-box="true"
                     :dragged-out="false"
+                    :hubs="hubs"
                     @openLayersSection="handleOpenLayersSection"
+                    @hotspotClicked="handleHotspotClick"
                   />
                 </div>
 
@@ -1697,7 +1699,12 @@
           <!-- Legend content -->
           <div class="route-details-popup-content">
             <div class="legend-popup-content">
-              <Legend :mode="mode" :in-box="true" :dragged-out="false" />
+              <Legend
+                :mode="mode"
+                :in-box="true"
+                :dragged-out="false"
+                @hotspotClicked="handleHotspotClick"
+              />
             </div>
           </div>
         </div>
@@ -3010,6 +3017,14 @@ function focusZurich(fromButton = false) {
   zurichFocusKey.value = Date.now();
 }
 
+function handleHotspotClick(hotspot) {
+  if (api && api.zoomToCoordinates && hotspot.lon && hotspot.lat) {
+    // Use higher zoom for vibrancy hotspots to show POI points
+    const zoomLevel = hotspot.layerType === "vibrancy" ? 16 : 15;
+    api.zoomToCoordinates(hotspot.lon, hotspot.lat, zoomLevel);
+  }
+}
+
 function handleMapReady() {
   mapReady.value = true;
   // Try to get API from ref if not already set
@@ -3108,11 +3123,28 @@ function handleIconClick(tab) {
       clearTimeout(hoverTimer);
       hoverTimer = null;
     }
-    // Open sidebar instantly
-    sidebarCollapsed.value = false;
+    // For layers section, delay showing content until sidebar animation completes
+    if (tab === "layers") {
+      activeSidebarTab.value = ""; // Clear active tab first to prevent flicker
+      // Open sidebar
+      sidebarCollapsed.value = false;
+      // Delay showing layers content until sidebar expansion animation completes
+      // Use nextTick to ensure DOM update, then wait for transition
+      nextTick(() => {
+        setTimeout(() => {
+          activeSidebarTab.value = tab;
+        }, 400); // Match sidebar transition duration (0.4s)
+      });
+    } else {
+      // Open sidebar instantly
+      sidebarCollapsed.value = false;
+      // Set the active tab immediately for other sections
+      activeSidebarTab.value = tab;
+    }
+  } else {
+    // Sidebar already open, set tab immediately
+    activeSidebarTab.value = tab;
   }
-  // Set the active tab
-  activeSidebarTab.value = tab;
 }
 
 function handleOpenLayersSection() {
@@ -5572,7 +5604,7 @@ textarea:focus-visible {
   -webkit-backdrop-filter: blur(40px) saturate(200%);
   border: none;
   border-radius: 20px;
-  padding: 8px;
+  padding: 16px; /* Consistent padding */
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
   display: flex;
   flex-direction: column;
@@ -5586,10 +5618,10 @@ textarea:focus-visible {
 }
 
 .app-basket--expanded {
-  width: 336px; /* 5 apps (56px each) + 4 gaps (8px each) + padding (12px each side) = 280 + 32 + 24 = 336px */
+  width: 336px; /* Match left sidebar width */
   height: 900px; /* Tall enough for chat content */
   max-height: calc(100vh - 60px); /* Don't exceed viewport */
-  padding: 12px; /* Consistent padding when expanded */
+  padding: 16px; /* Increased padding when expanded */
 }
 
 .app-basket-apps-container {
@@ -5640,6 +5672,8 @@ textarea:focus-visible {
   grid-template-columns: repeat(5, 56px);
   grid-template-rows: 56px;
   gap: 8px;
+  width: 100%;
+  justify-content: center;
 }
 
 /* Reset grid positions when expanded - all apps in a single row */
@@ -5665,8 +5699,8 @@ textarea:focus-visible {
 
 .app-basket-content-label {
   position: absolute;
-  top: 12px;
-  left: 20px;
+  top: 16px;
+  left: 16px;
   font-size: 12px;
   font-weight: 700;
   color: rgba(255, 255, 255, 0.5);
@@ -5683,8 +5717,8 @@ textarea:focus-visible {
 
 .app-basket-content-close {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  top: 16px;
+  right: 16px;
   width: 24px;
   height: 24px;
   border: none;
@@ -5718,13 +5752,13 @@ textarea:focus-visible {
   overflow-y: auto;
   overflow-x: hidden;
   position: relative;
-  margin-top: 48px; /* Prevent content from scrolling behind header */
+  margin-top: 48px; /* Space for header (label + close button) */
   scroll-padding-top: 48px; /* Additional scroll padding for better behavior */
 }
 
 .app-basket-content-scrollable {
   flex: 1;
-  padding: 20px 20px 80px 20px; /* Content padding, bottom for input */
+  padding: 16px; /* Consistent padding matching basket frame */
   min-height: 0;
 }
 
@@ -5751,7 +5785,7 @@ textarea:focus-visible {
 
 .app-basket-phone-content,
 .app-basket-map-controls-content {
-  padding: 20px;
+  padding: 0; /* Remove padding since scrollable already has it */
   color: rgba(255, 255, 255, 0.9);
 }
 
@@ -6196,8 +6230,8 @@ textarea:focus-visible {
 }
 
 .app-basket--expanded .chat-app-button {
-  width: 60px;
-  height: 56px; /* Rectangular - slightly wider than tall */
+  width: 56px;
+  height: 56px; /* Square to match other apps */
 }
 
 .chat-app-button:hover {
