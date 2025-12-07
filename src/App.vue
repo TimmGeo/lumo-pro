@@ -30,7 +30,6 @@
         'top-center-buttons-container--zurich-message-visible':
           showZurichReturnMessage,
       }"
-      :style="{ left: buttonsCenterPosition + 'px' }"
     >
       <!-- Clear Route Button -->
       <div
@@ -315,8 +314,7 @@
       <div class="sidebar-main">
         <div class="sidebar-header">
           <div class="sidebar-header-content">
-            <h2 class="nowrap">{{ sectionTitle }}</h2>
-            <p class="sidebar-header-hint">{{ sectionHint }}</p>
+            <h2 class="nowrap">Lumo <span class="lumo-pro-thin">Pro</span></h2>
           </div>
 
           <!-- square collapse button (quadratic) - only when expanded -->
@@ -340,6 +338,12 @@
               {{ sidebarCollapsed ? "Open sidebar" : "Close sidebar" }}
             </span>
           </button>
+        </div>
+
+        <!-- Section Title Display -->
+        <div v-if="!sidebarCollapsed" class="sidebar-section-title">
+          <h3 class="sidebar-section-title-text">{{ sectionTitle }}</h3>
+          <p class="sidebar-section-title-hint">{{ sectionHint }}</p>
         </div>
 
         <!-- Scrollable content area -->
@@ -1209,16 +1213,15 @@
     >
       <!-- Apps Container -->
       <div class="app-basket-apps-container">
-        <!-- Map Controls App Button -->
-        <div class="map-controls-app-container">
+        <!-- Animation App Button -->
+        <div class="animation-app-container">
           <button
-            class="map-controls-app-button"
+            class="animation-app-button"
             :class="{
-              'map-controls-app-button--expanded':
-                activeBasketApp === 'map-controls',
+              'animation-app-button--expanded': activeBasketApp === 'animation',
             }"
-            @click.stop="toggleMapControls"
-            aria-label="Map controls"
+            @click.stop="toggleAnimation"
+            aria-label="Animation"
           >
             <svg
               width="20"
@@ -1230,10 +1233,7 @@
               stroke-linecap="round"
               stroke-linejoin="round"
             >
-              <path
-                d="M11.52 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"
-              />
-              <circle cx="12" cy="12" r="3" />
+              <polygon points="5 3 19 12 5 21 5 3" />
             </svg>
           </button>
         </div>
@@ -1355,9 +1355,7 @@
               <span v-if="activeBasketApp === 'chat'">Route Companion</span>
               <span v-else-if="activeBasketApp === 'legend'">Legend</span>
               <span v-else-if="activeBasketApp === 'phone'">Phone</span>
-              <span v-else-if="activeBasketApp === 'map-controls'"
-                >Map Controls</span
-              >
+              <span v-else-if="activeBasketApp === 'animation'">Animation</span>
             </div>
           </transition>
 
@@ -1630,145 +1628,16 @@
                   </div>
                 </div>
 
-                <!-- Map Controls App Content -->
+                <!-- Animation App Content -->
                 <div
-                  v-else-if="activeBasketApp === 'map-controls'"
+                  v-else-if="activeBasketApp === 'animation'"
                   class="app-basket-app-section"
                 >
-                  <div class="app-basket-map-controls-content">
-                    <div class="map-controls-grid">
-                      <button
-                        class="map-control-card zoom-in-card"
-                        @click="handleZoomIn"
-                        aria-label="Zoom in"
-                      >
-                        <div class="map-control-icon">
-                          <svg
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M12 5V19M5 12H19"
-                              stroke="currentColor"
-                              stroke-width="2.5"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                            />
-                          </svg>
-                        </div>
-                        <span class="map-control-label">Zoom In</span>
-                      </button>
-                      <button
-                        class="map-control-card zoom-out-card"
-                        @click="handleZoomOut"
-                        aria-label="Zoom out"
-                      >
-                        <div class="map-control-icon">
-                          <svg
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M5 12H19"
-                              stroke="currentColor"
-                              stroke-width="2.5"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                            />
-                          </svg>
-                        </div>
-                        <span class="map-control-label">Zoom Out</span>
-                      </button>
-                      <button
-                        class="map-control-card north-card"
-                        @click="handleResetNorth"
-                        aria-label="Reset to north"
-                      >
-                        <div class="map-control-icon">
-                          <svg
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M12 2V22M12 2L8 6M12 2L16 6"
-                              stroke="currentColor"
-                              stroke-width="2.5"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                            />
-                          </svg>
-                        </div>
-                        <span class="map-control-label">North</span>
-                      </button>
-                      <button
-                        class="map-control-card tilt-card"
-                        :class="{ active: isTilted }"
-                        @click="handleToggleTilt"
-                        aria-label="Toggle map tilt"
-                      >
-                        <div class="map-control-icon">
-                          <!-- Flat view icon (2D square) -->
-                          <svg
-                            v-if="!isTilted"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M3 3H21V21H3V3Z"
-                              stroke="currentColor"
-                              stroke-width="2.5"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                            />
-                          </svg>
-                          <!-- Tilted view icon (3D perspective) -->
-                          <svg
-                            v-else
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M3 3L12 8L21 3"
-                              stroke="currentColor"
-                              stroke-width="2.5"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                            />
-                            <path
-                              d="M3 21L12 16L21 21"
-                              stroke="currentColor"
-                              stroke-width="2.5"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                            />
-                            <path
-                              d="M3 3V21M21 3V21"
-                              stroke="currentColor"
-                              stroke-width="2.5"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                            />
-                          </svg>
-                        </div>
-                        <span class="map-control-label">{{
-                          isTilted ? "3D" : "2D"
-                        }}</span>
-                      </button>
+                  <div class="app-basket-animation-content">
+                    <div class="animation-content">
+                      <p class="animation-description">
+                        Animation controls and settings will be available here.
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -1984,7 +1853,7 @@ const displayedHotspotName = ref(null);
 let hotspotNameTimeout = null;
 
 // Track which app is currently active in the basket
-const activeBasketApp = ref(null); // 'chat', 'legend', 'phone', 'map-controls', or null
+const activeBasketApp = ref(null); // 'chat', 'legend', 'phone', 'animation', or null
 // Store previous app state to restore when zooming back in
 const previousBasketApp = ref(null);
 
@@ -2023,10 +1892,10 @@ function closeBasket() {
 }
 
 // Handler functions for app buttons that clear previous state on manual interaction
-function toggleMapControls() {
+function toggleAnimation() {
   previousBasketApp.value = null; // Clear previous state on manual interaction
   activeBasketApp.value =
-    activeBasketApp.value === "map-controls" ? null : "map-controls";
+    activeBasketApp.value === "animation" ? null : "animation";
 }
 
 function toggleChat() {
@@ -2099,32 +1968,6 @@ const sectionHint = computed(() => {
     settings: "Legal information, contact details, and help resources",
   };
   return hints[activeSidebarTab.value] || "";
-});
-
-// Window width tracking for adaptive button positioning
-const windowWidth = ref(
-  typeof window !== "undefined" ? window.innerWidth : 1920
-);
-
-// Computed property for center position between sidebar and basket
-const buttonsCenterPosition = computed(() => {
-  const SIDEBAR_ICON_BAR_WIDTH = 64; // Width when collapsed
-  const APP_BASKET_WIDTH = 336; // Width when expanded
-
-  // Calculate left edge of available space (sidebar)
-  const sidebarLeft = sidebarCollapsed.value
-    ? SIDEBAR_ICON_BAR_WIDTH
-    : sidebarWidth.value;
-
-  // Calculate right edge of available space (basket)
-  const basketRight = isBasketExpanded.value
-    ? windowWidth.value - APP_BASKET_WIDTH
-    : windowWidth.value;
-
-  // Center position is the midpoint between sidebar and basket
-  const center = (sidebarLeft + basketRight) / 2;
-
-  return center;
 });
 
 // Section collapse states (kept for backward compatibility, but not used in new structure)
@@ -2250,27 +2093,15 @@ function updateZurichTime() {
 
 // Set up time update interval
 let timeInterval = null;
-// Window resize handler for adaptive button positioning
-let windowResizeHandler = null;
 
 onMounted(() => {
   updateZurichTime();
   timeInterval = setInterval(updateZurichTime, 1000); // Update every second
-
-  // Track window width for adaptive button positioning
-  windowWidth.value = window.innerWidth;
-  windowResizeHandler = () => {
-    windowWidth.value = window.innerWidth;
-  };
-  window.addEventListener("resize", windowResizeHandler);
 });
 
 onBeforeUnmount(() => {
   if (timeInterval) {
     clearInterval(timeInterval);
-  }
-  if (windowResizeHandler) {
-    window.removeEventListener("resize", windowResizeHandler);
   }
 });
 
@@ -3553,6 +3384,7 @@ body,
 .top-center-buttons-container {
   position: absolute;
   top: 30px;
+  left: 50%;
   transform: translateX(-50%);
   z-index: 100;
   display: flex;
@@ -4788,6 +4620,33 @@ textarea:focus-visible {
   color: rgba(255, 255, 255, 0.5);
   font-size: 14px;
   flex-shrink: 0;
+}
+
+.lumo-pro-thin {
+  font-weight: 300;
+}
+
+/* Section Title Display (below header) */
+.sidebar-section-title {
+  padding: 16px 0 12px 0;
+  margin-bottom: 16px;
+}
+
+.sidebar-section-title-text {
+  margin: 0 0 6px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: -0.01em;
+}
+
+.sidebar-section-title-hint {
+  margin: 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 400;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
 }
 
 /* square toggle: same size in expanded & collapsed sidebar */
@@ -6149,6 +6008,13 @@ textarea:focus-visible {
     height 0.3s cubic-bezier(0.16, 0.84, 0.24, 1),
     backdrop-filter 0.3s ease;
   overflow: hidden;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
 }
 
 .app-basket--expanded {
@@ -6172,8 +6038,8 @@ textarea:focus-visible {
     gap 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
 }
 
-/* Map Controls: top-left of 2x2 grid */
-.map-controls-app-container {
+/* Animation: top-left of 2x2 grid */
+.animation-app-container {
   grid-column: 1;
   grid-row: 1;
 }
@@ -6212,7 +6078,7 @@ textarea:focus-visible {
 
 /* Reset grid positions when expanded - all apps in a single row */
 .app-basket--expanded .zurich-app-button,
-.app-basket--expanded .map-controls-app-container,
+.app-basket--expanded .animation-app-container,
 .app-basket--expanded .chat-app-button,
 .app-basket--expanded .legend-app-button,
 .app-basket--expanded .phone-app-button {
@@ -6318,9 +6184,16 @@ textarea:focus-visible {
 }
 
 .app-basket-phone-content,
-.app-basket-map-controls-content {
+.app-basket-animation-content {
   padding: 0; /* Remove padding since scrollable already has it */
   color: rgba(255, 255, 255, 0.9);
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
 }
 
 .phone-content-title {
@@ -6329,6 +6202,13 @@ textarea:focus-visible {
   color: rgba(255, 255, 255, 0.95);
   margin: 0 0 20px 0;
   letter-spacing: -0.02em;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
 }
 
 .phone-contacts-table {
@@ -6348,6 +6228,13 @@ textarea:focus-visible {
   font-size: 14px;
   color: rgba(255, 255, 255, 0.95);
   letter-spacing: -0.01em;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
 }
 
 .phone-contact-row {
@@ -6372,6 +6259,13 @@ textarea:focus-visible {
   font-size: 14px;
   color: rgba(255, 255, 255, 0.85);
   line-height: 1.5;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
 }
 
 .phone-contact-number {
@@ -6379,12 +6273,26 @@ textarea:focus-visible {
   font-weight: 500;
   color: rgba(255, 255, 255, 0.9);
   text-align: right;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
 }
 
 .phone-contact-link {
   color: rgba(255, 255, 255, 0.9);
   text-decoration: none;
   transition: color 0.2s ease;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
 }
 
 .phone-contact-link:hover {
@@ -6495,6 +6403,13 @@ textarea:focus-visible {
   transition: color 0.25s ease;
   position: relative;
   z-index: 1;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
 }
 
 .map-control-card:hover .map-control-label {
@@ -6627,6 +6542,13 @@ textarea:focus-visible {
   white-space: nowrap;
   text-align: center;
   transition: font-size 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
 }
 
 .app-basket--expanded .zurich-app-location-name {
@@ -6641,6 +6563,13 @@ textarea:focus-visible {
   line-height: 1.2;
   white-space: nowrap;
   transition: font-size 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
 }
 
 .app-basket--expanded .zurich-app-location-time {
@@ -6650,6 +6579,13 @@ textarea:focus-visible {
 .zurich-app-time-text {
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.5px;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
 }
 
 /* Map Controls Overlay */
@@ -6663,8 +6599,8 @@ textarea:focus-visible {
   background: transparent;
 }
 
-/* -------- MAP CONTROLS APP BUTTON -------- */
-.map-controls-app-container {
+/* -------- ANIMATION APP BUTTON -------- */
+.animation-app-container {
   position: relative;
   width: 46px;
   height: 42px;
@@ -6675,12 +6611,12 @@ textarea:focus-visible {
     height 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
 }
 
-.app-basket--expanded .map-controls-app-container {
+.app-basket--expanded .animation-app-container {
   width: 56px;
   height: 56px;
 }
 
-.map-controls-app-button {
+.animation-app-button {
   width: 100%;
   height: 100%;
   background: rgba(26, 27, 30, 0.5);
@@ -6700,26 +6636,26 @@ textarea:focus-visible {
   box-sizing: border-box;
 }
 
-.app-basket--expanded .map-controls-app-button {
+.app-basket--expanded .animation-app-button {
   border-radius: 10px;
 }
 
-.map-controls-app-button:hover {
+.animation-app-button:hover {
   background: #1a1b1e;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
   transform: scale(1.05);
 }
 
-.map-controls-app-button:active {
+.animation-app-button:active {
   transform: scale(0.95);
 }
 
-.map-controls-app-button--expanded {
+.animation-app-button--expanded {
   background: #1a1b1e;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
 }
 
-.map-controls-app-button svg {
+.animation-app-button svg {
   width: 20px;
   height: 20px;
   color: #ffffff;
@@ -6733,12 +6669,29 @@ textarea:focus-visible {
     height 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
 }
 
-.app-basket--expanded .map-controls-app-button svg {
+.app-basket--expanded .animation-app-button svg {
   width: 16px;
   height: 16px;
 }
 
-/* Map Controls Panel (expanded) */
+/* Animation Content Styles */
+.animation-content {
+  padding: 20px 0;
+}
+
+.animation-description {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.5;
+  margin: 0;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+}
 
 /* -------- CHAT APP BUTTON -------- */
 .chat-app-button {
@@ -7064,7 +7017,7 @@ textarea:focus-visible {
 }
 
 .map-scale--visible {
-  opacity: 1;
+  opacity: 0.5;
   transform: translateY(0);
 }
 
@@ -7075,14 +7028,14 @@ textarea:focus-visible {
 .scale-line {
   width: 80px;
   height: 7px;
-  background: rgba(255, 255, 255, 0.8);
-  border-top: 1px solid rgba(0, 0, 0, 0.3);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+  background: rgba(255, 255, 255, 0.4);
+  border-top: 1px solid rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
 }
 
 .scale-label {
-  font-size: 18px;
-  color: rgba(255, 255, 255, 0.85);
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.5);
   font-family:
     "SF Pro Display",
     "SF Pro Text",
@@ -7090,9 +7043,9 @@ textarea:focus-visible {
     BlinkMacSystemFont,
     system-ui,
     sans-serif;
-  font-weight: 500;
+  font-weight: 400;
   letter-spacing: 0.01em;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 /* -------- MAP CITY BUTTON -------- */
