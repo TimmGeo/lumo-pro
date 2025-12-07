@@ -22,29 +22,69 @@
       @mapClicked="handleMapClicked"
     />
 
-    <!-- Clear Route Button (Top Center) -->
-    <button
-      v-if="currentRouteStats && mapZoom >= 11.5"
-      class="clear-route-top-button"
-      @click.stop="handleClearRoute"
-      aria-label="Clear route"
+    <!-- Top Center Buttons Container -->
+    <div
+      v-if="(currentRouteStats && mapZoom >= 11.5) || activeLayerName"
+      class="top-center-buttons-container"
     >
-      <svg
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+      <!-- Clear Route Button -->
+      <div
+        v-if="currentRouteStats && mapZoom >= 11.5"
+        class="clear-route-top-button"
       >
-        <path
-          d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
-        />
-      </svg>
-      <span>Route</span>
-    </button>
+        <span>Route</span>
+        <button
+          class="clear-route-close"
+          @click.stop="handleClearRoute"
+          aria-label="Clear route"
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Active Layer Indicator Button -->
+      <div v-if="activeLayerName" class="active-layer-button">
+        <span class="active-layer-name">{{ activeLayerName }}</span>
+        <button
+          class="active-layer-close"
+          @click.stop="clearActiveLayer"
+          aria-label="Clear layer"
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Hotspot Name Pop-up -->
+    <transition name="hotspot-name-fade">
+      <div v-if="displayedHotspotName" class="hotspot-name-popup">
+        {{ displayedHotspotName }}
+      </div>
+    </transition>
 
     <!-- Route Saved to History Message -->
     <div v-if="showRouteSavedMessage" class="route-saved-message">
@@ -1203,14 +1243,16 @@
       <transition name="basket-expand">
         <div v-if="isBasketExpanded" class="app-basket-content">
           <!-- App label -->
-          <div class="app-basket-content-label">
-            <span v-if="activeBasketApp === 'chat'">Route Companion</span>
-            <span v-else-if="activeBasketApp === 'legend'">Legend</span>
-            <span v-else-if="activeBasketApp === 'phone'">Phone</span>
-            <span v-else-if="activeBasketApp === 'map-controls'"
-              >Map Controls</span
-            >
-          </div>
+          <transition name="label-fade" mode="out-in">
+            <div :key="activeBasketApp" class="app-basket-content-label">
+              <span v-if="activeBasketApp === 'chat'">Route Companion</span>
+              <span v-else-if="activeBasketApp === 'legend'">Legend</span>
+              <span v-else-if="activeBasketApp === 'phone'">Phone</span>
+              <span v-else-if="activeBasketApp === 'map-controls'"
+                >Map Controls</span
+              >
+            </div>
+          </transition>
 
           <!-- Close button (chevron up) -->
           <button
@@ -1232,10 +1274,14 @@
             </svg>
           </button>
 
-          <!-- App content (scrollable) -->
-          <transition name="fade-content" mode="out-in">
+          <!-- App content (scrollable) with reload animation -->
+          <transition name="basket-reload" mode="out-in">
             <div
-              :key="activeBasketApp"
+              :key="
+                activeBasketApp === 'legend'
+                  ? `legend-${mode}`
+                  : activeBasketApp
+              "
               class="app-basket-content-scrollable-wrapper"
               :class="{
                 'route-already-shown':
@@ -1411,6 +1457,7 @@
                     :in-box="true"
                     :dragged-out="false"
                     :hubs="hubs"
+                    :mapZoom="mapZoom"
                     @openLayersSection="handleOpenLayersSection"
                     @hotspotClicked="handleHotspotClick"
                   />
@@ -1703,6 +1750,7 @@
                 :mode="mode"
                 :in-box="true"
                 :dragged-out="false"
+                :mapZoom="mapZoom"
                 @hotspotClicked="handleHotspotClick"
               />
             </div>
@@ -1762,6 +1810,21 @@ const mode = computed(() => {
   if (lightingVisible.value) return "lighting";
   return null; // No layer selected
 });
+
+// Computed property for active layer display name
+const activeLayerName = computed(() => {
+  if (combinedVisible.value) return "Combined Score";
+  if (vibrancyVisible.value) return "Urban Vibrancy";
+  if (lightingVisible.value) return "Lighting Intensity";
+  return null;
+});
+
+// Function to clear the active layer
+function clearActiveLayer() {
+  lightingVisible.value = false;
+  vibrancyVisible.value = false;
+  combinedVisible.value = false;
+}
 const startHub = ref("");
 const endHub = ref("");
 const hubs = ref([]);
@@ -1810,6 +1873,8 @@ const showInput = ref(false);
 // Track which route the current messages belong to
 const messagesRouteKey = ref(null);
 const mapControlsExpanded = ref(false);
+const displayedHotspotName = ref(null);
+let hotspotNameTimeout = null;
 
 // Track which app is currently active in the basket
 const activeBasketApp = ref(null); // 'chat', 'legend', 'phone', 'map-controls', or null
@@ -2381,9 +2446,11 @@ function handleClearRoute() {
 
 // Handle route popup click - toggle route details popup
 function handlePolygonClicked(event) {
-  // Open legend basket when a polygon is clicked
-  if (activeBasketApp.value !== "legend") {
-    previousBasketApp.value = null;
+  // Toggle legend basket when a polygon is clicked
+  if (activeBasketApp.value === "legend") {
+    closeBasket();
+  } else {
+    previousBasketApp.value = null; // Clear previous state on programmatic open
     activeBasketApp.value = "legend";
   }
 }
@@ -3022,6 +3089,24 @@ function handleHotspotClick(hotspot) {
     // Use higher zoom for vibrancy hotspots to show POI points
     const zoomLevel = hotspot.layerType === "vibrancy" ? 16 : 15;
     api.zoomToCoordinates(hotspot.lon, hotspot.lat, zoomLevel);
+
+    // Display hotspot name
+    if (hotspot.name) {
+      // Clear any existing timeout
+      if (hotspotNameTimeout) {
+        clearTimeout(hotspotNameTimeout);
+        hotspotNameTimeout = null;
+      }
+
+      // Set the hotspot name
+      displayedHotspotName.value = hotspot.name;
+
+      // Clear after 4 seconds
+      hotspotNameTimeout = setTimeout(() => {
+        displayedHotspotName.value = null;
+        hotspotNameTimeout = null;
+      }, 4000);
+    }
   }
 }
 
@@ -3142,8 +3227,14 @@ function handleIconClick(tab) {
       activeSidebarTab.value = tab;
     }
   } else {
-    // Sidebar already open, set tab immediately
-    activeSidebarTab.value = tab;
+    // Sidebar already open
+    // If clicking on the same tab that's currently active, collapse the sidebar
+    if (activeSidebarTab.value === tab) {
+      sidebarCollapsed.value = true;
+    } else {
+      // If clicking on a different tab, switch to it and keep sidebar open
+      activeSidebarTab.value = tab;
+    }
   }
 }
 
@@ -3275,13 +3366,21 @@ body,
   overflow: hidden;
 }
 
-/* Clear Route Button (Top Center) */
-.clear-route-top-button {
+/* Top Center Buttons Container */
+.top-center-buttons-container {
   position: absolute;
   top: 30px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Clear Route Button (Top Center) */
+.clear-route-top-button {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -3301,24 +3400,172 @@ body,
     BlinkMacSystemFont,
     system-ui,
     sans-serif;
-  cursor: pointer;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  white-space: nowrap;
 }
 
 .clear-route-top-button:hover {
   background: rgba(26, 27, 30, 0.6);
   color: rgba(255, 255, 255, 0.9);
-  transform: translateX(-50%) translateY(-1px);
+  transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-.clear-route-top-button:active {
-  transform: translateX(-50%) translateY(0);
+.clear-route-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.15s ease;
+  flex-shrink: 0;
 }
 
-.clear-route-top-button svg {
+.clear-route-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+  transform: scale(1.1);
+}
+
+.clear-route-close:active {
+  transform: scale(0.95);
+}
+
+.clear-route-close svg {
   flex-shrink: 0;
+}
+
+/* Active Layer Indicator Button */
+.active-layer-button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  background: rgba(26, 27, 30, 0.15);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: none;
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+  font-weight: 500;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  letter-spacing: -0.01em;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+  white-space: nowrap;
+}
+
+.active-layer-name {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.active-layer-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.15s ease;
+  flex-shrink: 0;
+}
+
+.active-layer-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+  transform: scale(1.1);
+}
+
+.active-layer-close:active {
+  transform: scale(0.95);
+}
+
+.active-layer-close svg {
+  flex-shrink: 0;
+}
+
+.active-layer-button:hover {
+  background: rgba(26, 27, 30, 0.6);
+  color: rgba(255, 255, 255, 0.9);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.active-layer-button:active {
+  transform: translateY(0);
+}
+
+/* Hotspot Name Pop-up */
+.hotspot-name-popup {
+  position: fixed;
+  top: 90px; /* Positioned under the top-center-buttons-container */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  font-size: 32px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.95);
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  letter-spacing: -0.02em;
+  text-align: center;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Hotspot Name Animation */
+.hotspot-name-fade-enter-active {
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.hotspot-name-fade-leave-active {
+  transition: all 0.35s cubic-bezier(0.55, 0.06, 0.68, 0.19);
+}
+
+.hotspot-name-fade-enter-from {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-10px) scale(0.95);
+}
+
+.hotspot-name-fade-leave-to {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-10px) scale(0.95);
 }
 
 /* Remove blue focus outlines globally */
@@ -5592,8 +5839,8 @@ textarea:focus-visible {
   top: 30px;
   right: 30px;
   z-index: 15;
-  width: 216px; /* 8px padding + 46px + 8px gap + 46px + 8px gap + 92px (Zurich) + 8px padding = 216px */
-  height: 108px; /* 8px padding + 42px + 8px gap + 42px + 8px padding = 108px */
+  width: 224px; /* 12px padding + 46px + 8px gap + 46px + 8px gap + 92px (Zurich) + 12px padding = 224px */
+  height: 116px; /* 12px padding + 42px + 8px gap + 42px + 12px padding = 116px */
   background: rgba(
     255,
     255,
@@ -5604,11 +5851,11 @@ textarea:focus-visible {
   -webkit-backdrop-filter: blur(40px) saturate(200%);
   border: none;
   border-radius: 20px;
-  padding: 16px; /* Consistent padding */
+  padding: 12px; /* Reduced padding for better fit */
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 12px; /* Gap between apps container and content when expanded */
   box-sizing: border-box;
   transition:
     width 0.3s cubic-bezier(0.16, 0.84, 0.24, 1),
@@ -5974,21 +6221,21 @@ textarea:focus-visible {
 
 /* Basket expand transition */
 .basket-expand-enter-active {
-  transition: all 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .basket-expand-leave-active {
-  transition: all 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
+  transition: all 0.35s cubic-bezier(0.55, 0.06, 0.68, 0.19);
 }
 
 .basket-expand-enter-from {
   opacity: 0;
-  transform: translateY(-10px);
+  transform: translateY(-8px);
 }
 
 .basket-expand-leave-to {
   opacity: 0;
-  transform: translateY(-10px);
+  transform: translateY(-8px);
 }
 
 .zurich-app-button {
@@ -7438,17 +7685,55 @@ textarea:focus-visible {
 .fade-content-enter-active,
 .fade-content-leave-active {
   transition:
-    opacity 0.15s ease,
-    transform 0.15s ease;
+    opacity 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .fade-content-enter-from {
   opacity: 0;
-  transform: translateY(5px);
+  transform: translateY(8px);
 }
 
 .fade-content-leave-to {
   opacity: 0;
-  transform: translateY(-5px);
+  transform: translateY(-8px);
+}
+
+/* Basket Reload Animation - smooth transition when content changes */
+.basket-reload-enter-active {
+  transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.basket-reload-leave-active {
+  transition: all 0.2s cubic-bezier(0.55, 0.06, 0.68, 0.19);
+}
+
+.basket-reload-enter-from {
+  opacity: 0;
+  transform: translateY(12px) scale(0.98);
+}
+
+.basket-reload-leave-to {
+  opacity: 0;
+  transform: translateY(-8px) scale(0.98);
+}
+
+/* Label fade animation */
+.label-fade-enter-active {
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.label-fade-leave-active {
+  transition: all 0.15s cubic-bezier(0.55, 0.06, 0.68, 0.19);
+}
+
+.label-fade-enter-from {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+.label-fade-leave-to {
+  opacity: 0;
+  transform: translateY(4px);
 }
 </style>

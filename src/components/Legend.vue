@@ -12,129 +12,135 @@
     </div>
 
     <!-- Lighting Layer Legend -->
-    <div v-else-if="mode === 'lighting'" class="legend-simple">
-      <div class="legend-item">
-        <div class="legend-item-header">
-          <div class="legend-item-title">Lighting Intensity</div>
-        </div>
-        <div class="legend-item-content">
-          <div class="legend-simple-scale">
-            <div class="scale-gradient scale-gradient-lighting"></div>
-            <div class="scale-labels">
-              <span>Low</span>
-              <span>High</span>
+    <transition name="legend-reload" mode="out-in">
+      <div v-if="mode === 'lighting'" :key="'lighting'" class="legend-simple">
+        <div class="legend-item">
+          <div class="legend-item-header">
+            <div class="legend-item-title">Lighting Intensity</div>
+          </div>
+          <div class="legend-item-content">
+            <div class="legend-item-description">
+              <span v-if="!lightingExpanded">
+                The <strong>color gradient</strong> represents lighting
+                intensity across Zurich.
+                <button
+                  class="show-more-button"
+                  @click="lightingExpanded = true"
+                >
+                  Show more
+                </button>
+              </span>
+              <span v-else>
+                The <strong>color gradient</strong> represents lighting
+                intensity across Zurich. <em>Darker areas</em> indicate lower
+                lighting levels, while <em>brighter areas</em> show higher
+                intensity. Use this layer to identify
+                <strong>well-lit routes</strong> for safer nighttime navigation.
+                <button
+                  class="show-more-button"
+                  @click="lightingExpanded = false"
+                >
+                  Show less
+                </button>
+              </span>
+            </div>
+            <div class="legend-simple-scale">
+              <div class="scale-gradient scale-gradient-lighting"></div>
+              <div class="scale-labels">
+                <span>Low</span>
+                <span>High</span>
+              </div>
             </div>
           </div>
-          <div class="legend-item-description">
-            <span v-if="!lightingExpanded">
-              The <strong>color gradient</strong> represents lighting intensity
-              across Zurich.
-              <button class="show-more-button" @click="lightingExpanded = true">
-                Show more
-              </button>
-            </span>
-            <span v-else>
-              The <strong>color gradient</strong> represents lighting intensity
-              across Zurich. <em>Darker areas</em> indicate lower lighting
-              levels, while <em>brighter areas</em> show higher intensity. Use
-              this layer to identify <strong>well-lit routes</strong> for safer
-              nighttime navigation.
-              <button
-                class="show-more-button"
-                @click="lightingExpanded = false"
-              >
-                Show less
-              </button>
-            </span>
-          </div>
         </div>
-      </div>
 
-      <!-- Lighting Hotspots -->
-      <div
-        v-if="lightingHotspots && lightingHotspots.length > 0"
-        class="lighting-locations"
-      >
-        <div class="locations-section">
-          <div class="locations-section-title">Hotspot Explorer</div>
-          <div class="locations-section-subtitle">
-            Discover Lighting Intensity hotspots - click to zoom in and explore
-          </div>
-          <div class="locations-list">
-            <div
-              v-for="(hotspot, index) in lightingHotspots"
-              :key="index"
-              class="location-button"
-              @click="handleHotspotClick(hotspot)"
-            >
-              <div class="location-button-image-wrapper">
-                <img
-                  v-if="getLocationImage(hotspot.name)"
-                  :src="getLocationImage(hotspot.name)"
-                  :alt="hotspot.name"
-                  class="location-button-image"
-                />
-                <div
-                  v-else
-                  class="location-button-image-placeholder"
-                  :style="{
-                    background: `linear-gradient(135deg, #f3efff 0%, #e0d5ff 100%)`,
-                  }"
-                >
+        <!-- Lighting Hotspots -->
+        <div
+          v-if="lightingHotspots && lightingHotspots.length > 0"
+          class="lighting-locations"
+        >
+          <div class="locations-section">
+            <div class="locations-section-title">Hotspot Explorer</div>
+            <div class="locations-section-subtitle">
+              Discover Lighting Intensity hotspots - click to zoom in and
+              explore
+            </div>
+            <div class="locations-list">
+              <div
+                v-for="(hotspot, index) in lightingHotspots"
+                :key="index"
+                class="location-button"
+                @click="handleHotspotClick(hotspot)"
+              >
+                <div class="location-button-image-wrapper">
+                  <img
+                    v-if="getLocationImage(hotspot.name)"
+                    :src="getLocationImage(hotspot.name)"
+                    :alt="hotspot.name"
+                    class="location-button-image"
+                  />
                   <div
-                    class="location-button-color-indicator"
-                    style="background-color: #f3efff"
-                  ></div>
-                </div>
-              </div>
-              <div class="location-button-content">
-                <div class="location-button-name">{{ hotspot.name }}</div>
-                <div
-                  v-if="hotspot.nearest_hub"
-                  class="location-button-hub-info"
-                >
-                  <div class="location-button-hub-label">
-                    <span class="location-button-hub-id"
-                      >Nearest to
-                      {{ getHubName(hotspot.nearest_hub.id) }} Hub</span
-                    >
+                    v-else
+                    class="location-button-image-placeholder"
+                    :style="{
+                      background: `linear-gradient(135deg, #f3efff 0%, #e0d5ff 100%)`,
+                    }"
+                  >
+                    <div
+                      class="location-button-color-indicator"
+                      style="background-color: #f3efff"
+                    ></div>
                   </div>
-                  <div class="location-button-hub-metrics">
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
-                      <path
-                        d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"
-                      ></path>
-                      <circle cx="12" cy="10" r="3"></circle>
-                    </svg>
-                    <span class="location-button-hub-distance">{{
-                      hotspot.nearest_hub.distance
-                    }}</span>
-                    <span class="location-button-hub-separator">•</span>
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
-                      <circle cx="12" cy="12" r="10"></circle>
-                      <polyline points="12 6 12 12 16 14"></polyline>
-                    </svg>
-                    <span class="location-button-hub-time">{{
-                      hotspot.nearest_hub.time
-                    }}</span>
+                </div>
+                <div class="location-button-content">
+                  <div class="location-button-name">{{ hotspot.name }}</div>
+                  <div
+                    v-if="hotspot.nearest_hub"
+                    class="location-button-hub-info"
+                  >
+                    <div class="location-button-hub-label">
+                      <span class="location-button-hub-id"
+                        >Nearest to
+                        {{ getHubName(hotspot.nearest_hub.id) }} Hub</span
+                      >
+                    </div>
+                    <div class="location-button-hub-metrics">
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path
+                          d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"
+                        ></path>
+                        <circle cx="12" cy="10" r="3"></circle>
+                      </svg>
+                      <span class="location-button-hub-distance">{{
+                        hotspot.nearest_hub.distance
+                      }}</span>
+                      <span class="location-button-hub-separator">•</span>
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                      </svg>
+                      <span class="location-button-hub-time">{{
+                        hotspot.nearest_hub.time
+                      }}</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -142,139 +148,201 @@
           </div>
         </div>
       </div>
-    </div>
+    </transition>
 
     <!-- Vibrancy Layer Legend -->
-    <div v-else-if="mode === 'vibrancy'" class="legend-simple">
-      <div class="legend-item">
-        <div class="legend-item-header">
-          <div class="legend-item-title">Urban Vibrancy</div>
-        </div>
-        <div class="legend-item-content">
-          <div class="legend-simple-scale">
-            <div class="scale-bars">
-              <div class="scale-bar" style="height: 20%"></div>
-              <div class="scale-bar" style="height: 40%"></div>
-              <div class="scale-bar" style="height: 60%"></div>
-              <div class="scale-bar" style="height: 80%"></div>
-              <div class="scale-bar" style="height: 100%"></div>
-            </div>
-            <div class="scale-labels">
-              <span>Low</span>
-              <span>High</span>
-            </div>
-          </div>
-          <div class="legend-item-description">
-            <span v-if="!vibrancyExpanded">
-              The <strong>height of the 3D bars</strong> represents the density
-              of Points of Interest.
-              <button class="show-more-button" @click="vibrancyExpanded = true">
-                Show more
-              </button>
-            </span>
-            <span v-else>
-              The <strong>height of the 3D bars</strong> represents the density
-              of Points of Interest, including restaurants, cafes, bars, and
-              entertainment venues. <em>Taller bars</em> indicate areas with
-              higher urban vibrancy and more activity. This layer helps you find
-              <strong>lively and engaging routes</strong> through Zurich's most
-              vibrant neighborhoods.
-              <button
-                class="show-more-button"
-                @click="vibrancyExpanded = false"
-              >
-                Show less
-              </button>
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Vibrancy Hotspots -->
+    <transition name="legend-reload" mode="out-in">
       <div
-        v-if="vibrancyHotspots && vibrancyHotspots.length > 0"
-        class="lighting-locations"
+        v-if="mode === 'vibrancy'"
+        :key="`vibrancy-${mapZoom >= 15 ? 'poi' : 'bars'}`"
+        class="legend-simple"
       >
-        <div class="locations-section">
-          <div class="locations-section-title">Hotspot Explorer</div>
-          <div class="locations-section-subtitle">
-            Explore Urban Vibrancy hotspots - click to zoom in and discover
+        <!-- Main Vibrancy Legend (3D bars) - hidden when zoomed in -->
+        <div v-if="mapZoom < 15" class="legend-item">
+          <div class="legend-item-header">
+            <div class="legend-item-title">Urban Vibrancy</div>
           </div>
-          <div class="locations-list">
-            <div
-              v-for="(hotspot, index) in vibrancyHotspots"
-              :key="index"
-              class="location-button"
-              @click="handleHotspotClick(hotspot)"
-            >
-              <div class="location-button-image-wrapper">
-                <img
-                  v-if="getLocationImage(hotspot.name)"
-                  :src="getLocationImage(hotspot.name)"
-                  :alt="hotspot.name"
-                  class="location-button-image"
-                />
-                <div
-                  v-else
-                  class="location-button-image-placeholder"
-                  :style="{
-                    background: `linear-gradient(135deg, #6b7280 0%, #4b5563 100%)`,
-                  }"
+          <div class="legend-item-content">
+            <div class="legend-item-description">
+              <span v-if="!vibrancyExpanded">
+                The <strong>height of the 3D bars</strong> represents the
+                density of Points of Interest.
+                <button
+                  class="show-more-button"
+                  @click="vibrancyExpanded = true"
                 >
-                  <div
-                    class="location-button-color-indicator"
-                    style="background-color: #6b7280"
-                  ></div>
-                </div>
+                  Show more
+                </button>
+              </span>
+              <span v-else>
+                The <strong>height of the 3D bars</strong> represents the
+                density of Points of Interest, including restaurants, cafes,
+                bars, and entertainment venues. <em>Taller bars</em> indicate
+                areas with higher urban vibrancy and more activity. This layer
+                helps you find
+                <strong>lively and engaging routes</strong> through Zurich's
+                most vibrant neighborhoods.
+                <button
+                  class="show-more-button"
+                  @click="vibrancyExpanded = false"
+                >
+                  Show less
+                </button>
+              </span>
+            </div>
+            <div class="legend-simple-scale">
+              <div class="scale-bars">
+                <div class="scale-bar" style="height: 20%"></div>
+                <div class="scale-bar" style="height: 40%"></div>
+                <div class="scale-bar" style="height: 60%"></div>
+                <div class="scale-bar" style="height: 80%"></div>
+                <div class="scale-bar" style="height: 100%"></div>
               </div>
-              <div class="location-button-content">
-                <div class="location-button-name">{{ hotspot.name }}</div>
+              <div class="scale-labels">
+                <span>Low</span>
+                <span>High</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- POI Points Color Legend (shown when zoomed in) -->
+        <div v-if="mapZoom >= 15" class="legend-item">
+          <div class="legend-item-header">
+            <div class="legend-item-title">Urban Vibrancy</div>
+          </div>
+          <div class="legend-item-content">
+            <div class="legend-item-description">
+              The <strong>colored points</strong> represent different types of
+              Points of Interest. Each color indicates a specific category of
+              venue that contributes to urban vibrancy.
+            </div>
+            <div class="poi-colors-legend">
+              <div class="poi-color-item">
                 <div
-                  v-if="hotspot.nearest_hub"
-                  class="location-button-hub-info"
-                >
-                  <div class="location-button-hub-label">
-                    <span class="location-button-hub-id"
-                      >Nearest to
-                      {{ getHubName(hotspot.nearest_hub.id) }} Hub</span
-                    >
+                  class="poi-color-circle"
+                  style="background-color: #ff4444"
+                ></div>
+                <span class="poi-color-label">Bar or Pub</span>
+              </div>
+              <div class="poi-color-item">
+                <div
+                  class="poi-color-circle"
+                  style="background-color: #ffaa00"
+                ></div>
+                <span class="poi-color-label">Cafe or Coffee Shop</span>
+              </div>
+              <div class="poi-color-item">
+                <div
+                  class="poi-color-circle"
+                  style="background-color: #00ff88"
+                ></div>
+                <span class="poi-color-label">Restaurant</span>
+              </div>
+              <div class="poi-color-item">
+                <div
+                  class="poi-color-circle"
+                  style="background-color: #aa44ff"
+                ></div>
+                <span class="poi-color-label">Music Venue</span>
+              </div>
+              <div class="poi-color-item">
+                <div
+                  class="poi-color-circle"
+                  style="background-color: #ff44aa"
+                ></div>
+                <span class="poi-color-label">Night Club</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vibrancy Hotspots -->
+        <div
+          v-if="vibrancyHotspots && vibrancyHotspots.length > 0"
+          class="lighting-locations"
+        >
+          <div class="locations-section">
+            <div class="locations-section-title">Hotspot Explorer</div>
+            <div class="locations-section-subtitle">
+              Explore Urban Vibrancy hotspots - click to zoom in and discover
+            </div>
+            <div class="locations-list">
+              <div
+                v-for="(hotspot, index) in vibrancyHotspots"
+                :key="index"
+                class="location-button"
+                @click="handleHotspotClick(hotspot)"
+              >
+                <div class="location-button-image-wrapper">
+                  <img
+                    v-if="getLocationImage(hotspot.name)"
+                    :src="getLocationImage(hotspot.name)"
+                    :alt="hotspot.name"
+                    class="location-button-image"
+                  />
+                  <div
+                    v-else
+                    class="location-button-image-placeholder"
+                    :style="{
+                      background: `linear-gradient(135deg, #6b7280 0%, #4b5563 100%)`,
+                    }"
+                  >
+                    <div
+                      class="location-button-color-indicator"
+                      style="background-color: #6b7280"
+                    ></div>
                   </div>
-                  <div class="location-button-hub-metrics">
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
-                      <path
-                        d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"
-                      ></path>
-                      <circle cx="12" cy="10" r="3"></circle>
-                    </svg>
-                    <span class="location-button-hub-distance">{{
-                      hotspot.nearest_hub.distance
-                    }}</span>
-                    <span class="location-button-hub-separator">•</span>
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
-                      <circle cx="12" cy="12" r="10"></circle>
-                      <polyline points="12 6 12 12 16 14"></polyline>
-                    </svg>
-                    <span class="location-button-hub-time">{{
-                      hotspot.nearest_hub.time
-                    }}</span>
+                </div>
+                <div class="location-button-content">
+                  <div class="location-button-name">{{ hotspot.name }}</div>
+                  <div
+                    v-if="hotspot.nearest_hub"
+                    class="location-button-hub-info"
+                  >
+                    <div class="location-button-hub-label">
+                      <span class="location-button-hub-id"
+                        >Nearest to
+                        {{ getHubName(hotspot.nearest_hub.id) }} Hub</span
+                      >
+                    </div>
+                    <div class="location-button-hub-metrics">
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path
+                          d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"
+                        ></path>
+                        <circle cx="12" cy="10" r="3"></circle>
+                      </svg>
+                      <span class="location-button-hub-distance">{{
+                        hotspot.nearest_hub.distance
+                      }}</span>
+                      <span class="location-button-hub-separator">•</span>
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                      </svg>
+                      <span class="location-button-hub-time">{{
+                        hotspot.nearest_hub.time
+                      }}</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -282,160 +350,165 @@
           </div>
         </div>
       </div>
-    </div>
+    </transition>
 
     <!-- Combined Layer Legend -->
-    <div v-else-if="mode === 'combined'" class="legend-simple">
-      <div class="legend-item">
-        <div class="legend-item-header">
-          <div class="legend-item-icon legend-icon-combined">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <rect x="3" y="3" width="18" height="18" rx="2" />
-              <path d="M3 9h18M9 3v18" />
-            </svg>
-          </div>
-          <div class="legend-item-title">Combined</div>
-        </div>
-        <div class="legend-item-content">
-          <div class="legend-simple-scale">
-            <div class="scale-combined">
-              <div class="scale-combined-color">
-                <div class="scale-gradient scale-gradient-lighting"></div>
-                <span>Color = Lighting</span>
-              </div>
-              <div class="scale-combined-height">
-                <div class="scale-bars">
-                  <div class="scale-bar" style="height: 20%"></div>
-                  <div class="scale-bar" style="height: 40%"></div>
-                  <div class="scale-bar" style="height: 60%"></div>
-                  <div class="scale-bar" style="height: 80%"></div>
-                  <div class="scale-bar" style="height: 100%"></div>
-                </div>
-                <span>Height = Vibrancy</span>
-              </div>
-            </div>
-          </div>
-          <div class="legend-item-description">
-            <span v-if="!combinedExpanded">
-              This layer <strong>combines lighting intensity</strong> (shown by
-              color) <em>and</em> <strong>urban vibrancy</strong> (shown by
-              height) into a single visualization.
-              <button class="show-more-button" @click="combinedExpanded = true">
-                Show more
-              </button>
-            </span>
-            <span v-else>
-              This layer <strong>combines lighting intensity</strong> (shown by
-              color) <em>and</em> <strong>urban vibrancy</strong> (shown by
-              height) into a single visualization. It identifies areas that
-              offer both <em>good lighting for safety</em> and
-              <em>high activity for an engaging experience</em>. The
-              <strong>generated routes</strong> in this application are based on
-              this combined score, making it ideal for finding the
-              <strong>best balanced routes</strong>.
-              <button
-                class="show-more-button"
-                @click="combinedExpanded = false"
+    <transition name="legend-reload" mode="out-in">
+      <div v-if="mode === 'combined'" :key="'combined'" class="legend-simple">
+        <div class="legend-item">
+          <div class="legend-item-header">
+            <div class="legend-item-icon legend-icon-combined">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
               >
-                Show less
-              </button>
-            </span>
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <path d="M3 9h18M9 3v18" />
+              </svg>
+            </div>
+            <div class="legend-item-title">Combined</div>
           </div>
-        </div>
-      </div>
-
-      <!-- Combined Hotspots -->
-      <div
-        v-if="combinedHotspots && combinedHotspots.length > 0"
-        class="lighting-locations"
-      >
-        <div class="locations-section">
-          <div class="locations-section-title">Hotspot Explorer</div>
-          <div class="locations-section-subtitle">
-            Find Combined Score hotspots - click to zoom in and explore
-          </div>
-          <div class="locations-list">
-            <div
-              v-for="(hotspot, index) in combinedHotspots"
-              :key="index"
-              class="location-button"
-              @click="handleHotspotClick(hotspot)"
-            >
-              <div class="location-button-image-wrapper">
-                <img
-                  v-if="getLocationImage(hotspot.name)"
-                  :src="getLocationImage(hotspot.name)"
-                  :alt="hotspot.name"
-                  class="location-button-image"
-                />
-                <div
-                  v-else
-                  class="location-button-image-placeholder"
-                  :style="{
-                    background: `linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%)`,
-                  }"
+          <div class="legend-item-content">
+            <div class="legend-item-description">
+              <span v-if="!combinedExpanded">
+                This layer <strong>combines lighting intensity</strong> (shown
+                by color) <em>and</em> <strong>urban vibrancy</strong> (shown by
+                height) into a single visualization.
+                <button
+                  class="show-more-button"
+                  @click="combinedExpanded = true"
                 >
-                  <div
-                    class="location-button-color-indicator"
-                    style="background-color: #60a5fa"
-                  ></div>
+                  Show more
+                </button>
+              </span>
+              <span v-else>
+                This layer <strong>combines lighting intensity</strong> (shown
+                by color) <em>and</em> <strong>urban vibrancy</strong> (shown by
+                height) into a single visualization. It identifies areas that
+                offer both <em>good lighting for safety</em> and
+                <em>high activity for an engaging experience</em>. The
+                <strong>generated routes</strong> in this application are based
+                on this combined score, making it ideal for finding the
+                <strong>best balanced routes</strong>.
+                <button
+                  class="show-more-button"
+                  @click="combinedExpanded = false"
+                >
+                  Show less
+                </button>
+              </span>
+            </div>
+            <div class="legend-simple-scale">
+              <div class="scale-combined">
+                <div class="scale-combined-color">
+                  <div class="scale-gradient scale-gradient-lighting"></div>
+                  <span>Color = Lighting</span>
+                </div>
+                <div class="scale-combined-height">
+                  <div class="scale-bars">
+                    <div class="scale-bar" style="height: 20%"></div>
+                    <div class="scale-bar" style="height: 40%"></div>
+                    <div class="scale-bar" style="height: 60%"></div>
+                    <div class="scale-bar" style="height: 80%"></div>
+                    <div class="scale-bar" style="height: 100%"></div>
+                  </div>
+                  <span>Height = Vibrancy</span>
                 </div>
               </div>
-              <div class="location-button-content">
-                <div class="location-button-name">{{ hotspot.name }}</div>
-                <div
-                  v-if="hotspot.nearest_hub"
-                  class="location-button-hub-info"
-                >
-                  <div class="location-button-hub-label">
-                    <span class="location-button-hub-id"
-                      >Nearest to
-                      {{ getHubName(hotspot.nearest_hub.id) }} Hub</span
-                    >
+            </div>
+          </div>
+        </div>
+
+        <!-- Combined Hotspots -->
+        <div
+          v-if="combinedHotspots && combinedHotspots.length > 0"
+          class="lighting-locations"
+        >
+          <div class="locations-section">
+            <div class="locations-section-title">Hotspot Explorer</div>
+            <div class="locations-section-subtitle">
+              Find Combined Score hotspots - click to zoom in and explore
+            </div>
+            <div class="locations-list">
+              <div
+                v-for="(hotspot, index) in combinedHotspots"
+                :key="index"
+                class="location-button"
+                @click="handleHotspotClick(hotspot)"
+              >
+                <div class="location-button-image-wrapper">
+                  <img
+                    v-if="getLocationImage(hotspot.name)"
+                    :src="getLocationImage(hotspot.name)"
+                    :alt="hotspot.name"
+                    class="location-button-image"
+                  />
+                  <div
+                    v-else
+                    class="location-button-image-placeholder"
+                    :style="{
+                      background: `linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%)`,
+                    }"
+                  >
+                    <div
+                      class="location-button-color-indicator"
+                      style="background-color: #60a5fa"
+                    ></div>
                   </div>
-                  <div class="location-button-hub-metrics">
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
-                      <path
-                        d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"
-                      ></path>
-                      <circle cx="12" cy="10" r="3"></circle>
-                    </svg>
-                    <span class="location-button-hub-distance">{{
-                      hotspot.nearest_hub.distance
-                    }}</span>
-                    <span class="location-button-hub-separator">•</span>
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
-                      <circle cx="12" cy="12" r="10"></circle>
-                      <polyline points="12 6 12 12 16 14"></polyline>
-                    </svg>
-                    <span class="location-button-hub-time">{{
-                      hotspot.nearest_hub.time
-                    }}</span>
+                </div>
+                <div class="location-button-content">
+                  <div class="location-button-name">{{ hotspot.name }}</div>
+                  <div
+                    v-if="hotspot.nearest_hub"
+                    class="location-button-hub-info"
+                  >
+                    <div class="location-button-hub-label">
+                      <span class="location-button-hub-id"
+                        >Nearest to
+                        {{ getHubName(hotspot.nearest_hub.id) }} Hub</span
+                      >
+                    </div>
+                    <div class="location-button-hub-metrics">
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path
+                          d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"
+                        ></path>
+                        <circle cx="12" cy="10" r="3"></circle>
+                      </svg>
+                      <span class="location-button-hub-distance">{{
+                        hotspot.nearest_hub.distance
+                      }}</span>
+                      <span class="location-button-hub-separator">•</span>
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                      </svg>
+                      <span class="location-button-hub-time">{{
+                        hotspot.nearest_hub.time
+                      }}</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -443,7 +516,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </transition>
   </div>
 </template>
 
@@ -454,6 +527,7 @@ const props = defineProps({
   mode: { type: String, required: false, default: null },
   draggedOut: { type: Boolean, default: false },
   inBox: { type: Boolean, default: false },
+  mapZoom: { type: Number, default: 1 },
 });
 
 const emit = defineEmits(["openLayersSection", "hotspotClicked"]);
@@ -467,6 +541,7 @@ function handleHotspotClick(hotspot) {
     emit("hotspotClicked", {
       lon: hotspot.lon,
       lat: hotspot.lat,
+      name: hotspot.name, // Pass the hotspot name
       layerType: props.mode, // Pass the layer type (lighting, vibrancy, combined)
     });
   }
@@ -1056,5 +1131,60 @@ onMounted(() => {
 
 .open-layers-button:active {
   transform: translateY(0);
+}
+
+/* POI Colors Legend */
+.poi-colors-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.poi-color-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.poi-color-circle {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.poi-color-label {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.75);
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+/* Legend Reload Animation - smooth transition when legend content changes */
+.legend-reload-enter-active {
+  transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.legend-reload-leave-active {
+  transition: all 0.2s cubic-bezier(0.55, 0.06, 0.68, 0.19);
+}
+
+.legend-reload-enter-from {
+  opacity: 0;
+  transform: translateY(12px) scale(0.98);
+}
+
+.legend-reload-leave-to {
+  opacity: 0;
+  transform: translateY(-8px) scale(0.98);
 }
 </style>

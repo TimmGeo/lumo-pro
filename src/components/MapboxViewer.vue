@@ -999,24 +999,8 @@ onMounted(async () => {
             props.combinedVisible ? "visible" : "none"
           );
 
-          // Add click handlers for combined polygons (both fill and 3D layers)
-          map.on("click", "hex-combined-fill", (e) => {
-            if (e.features && e.features.length > 0) {
-              emit("polygonClicked", {
-                type: "combined",
-                feature: e.features[0],
-              });
-            }
-          });
-
-          map.on("click", "hex-combined-layer", (e) => {
-            if (e.features && e.features.length > 0) {
-              emit("polygonClicked", {
-                type: "combined",
-                feature: e.features[0],
-              });
-            }
-          });
+          // Combined layer click handlers are handled in the general map click handler
+          // (both fill and 3D layers are handled there for consistency and reliability)
         } catch (error) {
           console.error("Failed to load vibrancy GeoJSON data:", error);
         }
@@ -1027,18 +1011,29 @@ onMounted(async () => {
         // Add general map click handler (for empty map area clicks)
         // This fires when clicking on empty map space (not on features)
         map.on("click", (e) => {
-          // Check if clicking on any interactive features
+          // First, check specifically for combined layer clicks (priority check)
+          const combinedFeatures = map.queryRenderedFeatures(e.point, {
+            layers: ["hex-combined-fill", "hex-combined-layer"],
+          });
+          if (combinedFeatures.length > 0) {
+            emit("polygonClicked", {
+              type: "combined",
+              feature: combinedFeatures[0],
+            });
+            return;
+          }
+
+          // Then check for other interactive features
           const features = map.queryRenderedFeatures(e.point, {
             layers: [
               "hubs-circles",
               "hubs-clusters",
               "hex-layer",
               "hex-vibrancy-layer",
-              "hex-combined-fill",
-              "hex-combined-layer",
               "vibrancy-points-layer",
             ],
           });
+
           // Only emit if no interactive features are clicked
           if (features.length === 0) {
             emit("mapClicked");
