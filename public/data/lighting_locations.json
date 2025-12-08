@@ -1,0 +1,82 @@
+{
+  "highest": [
+    {
+      "intensity": 0.880076903589743,
+      "color": "#f3efff",
+      "lon": 8.495475796754224,
+      "lat": 47.36810584735614,
+      "location": "Escher Wyss",
+      "description": "Industrial area converted to modern district",
+      "coordinates": [
+        8.495475796754224,
+        47.36810584735614
+      ]
+    },
+    {
+      "intensity": 0.880076903589743,
+      "color": "#f3efff",
+      "lon": 8.509142916043208,
+      "lat": 47.42060095360386,
+      "location": "Oerlikon",
+      "description": "Business district and transport hub",
+      "coordinates": [
+        8.509142916043208,
+        47.42060095360386
+      ]
+    },
+    {
+      "intensity": 0.880076903589743,
+      "color": "#f3efff",
+      "lon": 8.515264613301879,
+      "lat": 47.382764996571275,
+      "location": "Hardbrücke",
+      "description": "Major bridge connecting west and east Zurich",
+      "coordinates": [
+        8.515264613301879,
+        47.382764996571275
+      ]
+    }
+  ],
+  "lowest": [
+    {
+      "intensity": 0.0015531712129595965,
+      "color": "#050316",
+      "lon": 8.624748451681842,
+      "lat": 47.35470688485674,
+      "location": "East Zurich",
+      "description": "Eastern part of the city",
+      "coordinates": [
+        8.624748451681842,
+        47.35470688485674
+      ]
+    },
+    {
+      "intensity": 0.0015531712129595965,
+      "color": "#050316",
+      "lon": 8.623592350329805,
+      "lat": 47.35426898895046,
+      "location": "East Zurich",
+      "description": "Eastern part of the city",
+      "coordinates": [
+        8.623592350329805,
+        47.35426898895046
+      ]
+    },
+    {
+      "intensity": 0.0015531712129595965,
+      "color": "#050316",
+      "lon": 8.623612337377656,
+      "lat": 47.35516831724522,
+      "location": "East Zurich",
+      "description": "Eastern part of the city",
+      "coordinates": [
+        8.623612337377656,
+        47.35516831724522
+      ]
+    }
+  ],
+  "total_locations": 10451,
+  "avg_intensity": 0.015516025116000682,
+  "max_intensity": 0.880076903589743,
+  "min_intensity": 0.0015531712129595965
+}

@@ -1,0 +1,56 @@
+[
+  {
+    "name": "Zürich Hauptbahnhof",
+    "fid": 3,
+    "coordinates": [
+      8.538182043625302,
+      47.37378691269743
+    ],
+    "lon": 8.538182043625302,
+    "lat": 47.37378691269743,
+    "nearest_hub": {
+      "id": 8,
+      "name": null,
+      "distance": "492m",
+      "distance_km": 0.492,
+      "time": "6min",
+      "time_minutes": 6
+    }
+  },
+  {
+    "name": "Zürich Langstrasse",
+    "fid": 1,
+    "coordinates": [
+      8.526994729443762,
+      47.37858824798001
+    ],
+    "lon": 8.526994729443762,
+    "lat": 47.37858824798001,
+    "nearest_hub": {
+      "id": 8,
+      "name": null,
+      "distance": "671m",
+      "distance_km": 0.671,
+      "time": "8min",
+      "time_minutes": 8
+    }
+  },
+  {
+    "name": "Zürich Bellevue",
+    "fid": 2,
+    "coordinates": [
+      8.546971942887119,
+      47.36464839117405
+    ],
+    "lon": 8.546971942887119,
+    "lat": 47.36464839117405,
+    "nearest_hub": {
+      "id": 7,
+      "name": null,
+      "distance": "1.0km",
+      "distance_km": 1.046,
+      "time": "13min",
+      "time_minutes": 13
+    }
+  }
+]

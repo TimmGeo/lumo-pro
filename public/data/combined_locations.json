@@ -1,0 +1,47 @@
+{
+  "highest": [
+    {
+      "combined_score": 0.4795490196078432,
+      "lighting": 0.9490980392156864,
+      "vibrancy": 0.01,
+      "lon": 8.516547770879281,
+      "lat": 47.38949933599378,
+      "location": "Hardbrücke",
+      "description": "Major bridge connecting west and east Zurich",
+      "coordinates": [
+        8.516547770879281,
+        47.38949933599378
+      ]
+    },
+    {
+      "combined_score": 0.4745490196078432,
+      "lighting": 0.9490980392156864,
+      "vibrancy": 0.0,
+      "lon": 8.495475796754224,
+      "lat": 47.36810584735614,
+      "location": "Escher Wyss",
+      "description": "Industrial area converted to modern district",
+      "coordinates": [
+        8.495475796754224,
+        47.36810584735614
+      ]
+    },
+    {
+      "combined_score": 0.4745490196078432,
+      "lighting": 0.9490980392156864,
+      "vibrancy": 0.0,
+      "lon": 8.509142916043208,
+      "lat": 47.42060095360386,
+      "location": "Oerlikon",
+      "description": "Business district and transport hub",
+      "coordinates": [
+        8.509142916043208,
+        47.42060095360386
+      ]
+    }
+  ],
+  "total_locations": 10451,
+  "avg_combined": 0.04380308873716935,
+  "max_combined": 0.4795490196078432,
+  "min_combined": 0.011301960784313727
+}

@@ -1,0 +1,41 @@
+{
+  "highest": [
+    {
+      "vibrancy": 6.0,
+      "lon": 8.540232410177806,
+      "lat": 47.36993642964796,
+      "location": "Niederdorf",
+      "description": "Old town area with narrow streets",
+      "coordinates": [
+        8.540232410177806,
+        47.36993642964796
+      ]
+    },
+    {
+      "vibrancy": 6.0,
+      "lon": 8.543792963069855,
+      "lat": 47.3757492645179,
+      "location": "Bahnhofstrasse",
+      "description": "Famous shopping street in the heart of Zurich",
+      "coordinates": [
+        8.543792963069855,
+        47.3757492645179
+      ]
+    },
+    {
+      "vibrancy": 6.0,
+      "lon": 8.543737023770248,
+      "lat": 47.37305125535325,
+      "location": "Paradeplatz",
+      "description": "Financial district and banking center",
+      "coordinates": [
+        8.543737023770248,
+        47.37305125535325
+      ]
+    }
+  ],
+  "total_locations": 10451,
+  "avg_vibrancy": 0.04229260357860492,
+  "max_vibrancy": 6.0,
+  "min_vibrancy": 0.0
+}
