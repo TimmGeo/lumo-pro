@@ -36,6 +36,20 @@
         v-if="currentRouteStats && mapZoom >= 11.5"
         class="clear-route-top-button"
       >
+        <svg
+          class="clear-route-icon"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+          <circle cx="12" cy="10" r="3" />
+        </svg>
         <span>Route</span>
         <button
           class="clear-route-close"
@@ -60,6 +74,21 @@
 
       <!-- Active Layer Indicator Button -->
       <div v-if="activeLayerName" class="active-layer-button">
+        <svg
+          class="active-layer-icon"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M12 2L2 7l10 5 10-5-10-5z" />
+          <path d="M2 17l10 5 10-5" />
+          <path d="M2 12l10 5 10-5" />
+        </svg>
         <span class="active-layer-name">{{ activeLayerName }}</span>
         <button
           class="active-layer-close"
@@ -3463,6 +3492,12 @@ body,
   flex-shrink: 0;
 }
 
+.clear-route-icon {
+  flex-shrink: 0;
+  color: inherit;
+  opacity: 0.7;
+}
+
 /* Active Layer Indicator Button */
 .active-layer-button {
   display: flex;
@@ -3530,6 +3565,12 @@ body,
 
 .active-layer-close svg {
   flex-shrink: 0;
+}
+
+.active-layer-icon {
+  flex-shrink: 0;
+  color: inherit;
+  opacity: 0.7;
 }
 
 .active-layer-button:hover {
