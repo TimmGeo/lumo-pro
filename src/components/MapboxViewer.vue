@@ -2508,11 +2508,171 @@ function clearRoute(skipHubFilter = false) {
     if (selectedHubId1 === null && selectedHubId2 === null) {
       // No hubs selected - show all hubs immediately
       filterHubsByRoute(null, null);
+      // Zoom to show all hubs
+      zoomToAllHubs();
     } else if (selectedHubId1 !== null && selectedHubId2 === null) {
       // Only one hub selected - show all hubs (not a complete route yet)
       filterHubsByRoute(null, null);
+      // Zoom to show all hubs
+      zoomToAllHubs();
+    } else if (selectedHubId1 !== null && selectedHubId2 !== null) {
+      // Both hubs were selected (route was cleared), zoom to show all hubs
+      // Use setTimeout to ensure the route is fully cleared first
+      setTimeout(() => {
+        zoomToAllHubs();
+      }, 100);
     }
     // If both hubs are selected, filter will be set by loadAndDisplayRoute
+  }
+}
+
+// Zoom to show all routing hubs
+function zoomToAllHubs() {
+  console.log("zoomToAllHubs called", {
+    map: !!map,
+    mapLoaded: map?.isStyleLoaded(),
+    hubsData: !!hubsData,
+    featuresCount: hubsData?.features?.length,
+    hasHubsSource: map?.getSource("hubs") ? true : false,
+  });
+
+  if (!map) {
+    console.warn("zoomToAllHubs: Map not available");
+    return;
+  }
+
+  // Try to get hubs from map source first, fallback to hubsData
+  let features = null;
+  const hubsSource = map.getSource("hubs");
+  if (hubsSource && hubsSource._data) {
+    features = hubsSource._data.features;
+    console.log(
+      "zoomToAllHubs: Using features from map source",
+      features?.length
+    );
+  } else if (hubsData && hubsData.features) {
+    features = hubsData.features;
+    console.log(
+      "zoomToAllHubs: Using features from hubsData",
+      features?.length
+    );
+  }
+
+  if (!features || features.length === 0) {
+    console.warn("zoomToAllHubs: No features available");
+    return;
+  }
+
+  // Calculate bounds from all hub coordinates (excluding clusters)
+  const bounds = new mapboxgl.LngLatBounds();
+
+  // Add all hub coordinates to bounds (exclude clusters which have point_count)
+  let hubCount = 0;
+  features.forEach((feature) => {
+    // Skip clusters (they have point_count property)
+    if (feature.properties && feature.properties.point_count) {
+      return;
+    }
+    if (feature.geometry && feature.geometry.type === "Point") {
+      const [lon, lat] = feature.geometry.coordinates;
+      bounds.extend([lon, lat]);
+      hubCount++;
+    }
+  });
+
+  console.log(
+    "zoomToAllHubs: Found",
+    hubCount,
+    "hubs, bounds empty:",
+    bounds.isEmpty()
+  );
+
+  // If we have valid bounds, zoom to them
+  if (!bounds.isEmpty()) {
+    try {
+      // Get current pitch and bearing to preserve them
+      const currentPitch = map.getPitch();
+      const currentBearing = map.getBearing();
+
+      // Temporarily fit bounds to calculate optimal zoom and center
+      const originalCenter = map.getCenter();
+      const originalZoom = map.getZoom();
+
+      // Fit bounds with padding to calculate target view
+      // Use less padding and higher maxZoom to show labels (labels visible at zoom 11.5+)
+      map.fitBounds(bounds, {
+        padding: { top: 80, bottom: 80, left: 80, right: 80 },
+        duration: 0, // No animation for calculation
+        maxZoom: 15, // Allow zooming in closer to see labels
+      });
+
+      // Use the calculated zoom, but ensure it's at least 12 to show labels
+      const targetZoom = Math.max(Math.min(map.getZoom(), 15), 12);
+      const targetCenter = map.getCenter();
+
+      // Restore original position
+      map.jumpTo({
+        center: originalCenter,
+        zoom: originalZoom,
+        pitch: currentPitch,
+        bearing: currentBearing,
+      });
+
+      // Now animate to the target position while preserving pitch and bearing
+      map.easeTo({
+        center: targetCenter,
+        zoom: targetZoom,
+        pitch: currentPitch,
+        bearing: currentBearing,
+        duration: 1000, // 1 second animation
+      });
+
+      console.log(
+        "zoomToAllHubs: Called easeTo successfully with preserved pitch"
+      );
+    } catch (error) {
+      console.error("zoomToAllHubs: Error calling fitBounds/easeTo", error);
+      // If fitBounds fails, try again after a short delay
+      setTimeout(() => {
+        try {
+          const currentPitch = map.getPitch();
+          const currentBearing = map.getBearing();
+          const originalCenter = map.getCenter();
+          const originalZoom = map.getZoom();
+
+          map.fitBounds(bounds, {
+            padding: { top: 80, bottom: 80, left: 80, right: 80 },
+            duration: 0,
+            maxZoom: 15,
+          });
+
+          // Use the calculated zoom, but ensure it's at least 12 to show labels
+          const targetZoom = Math.max(Math.min(map.getZoom(), 15), 12);
+          const targetCenter = map.getCenter();
+
+          map.jumpTo({
+            center: originalCenter,
+            zoom: originalZoom,
+            pitch: currentPitch,
+            bearing: currentBearing,
+          });
+
+          map.easeTo({
+            center: targetCenter,
+            zoom: targetZoom,
+            pitch: currentPitch,
+            bearing: currentBearing,
+            duration: 1000,
+          });
+
+          console.log("zoomToAllHubs: Retry successful");
+        } catch (retryError) {
+          console.error("zoomToAllHubs: Retry also failed", retryError);
+        }
+      }, 200);
+    }
+  } else {
+    console.warn("zoomToAllHubs: Bounds are empty, cannot zoom");
   }
 }
 
@@ -2679,7 +2839,12 @@ defineExpose({
         filterHubsByRoute(null, null);
         // Update colors again after filter is applied to ensure they're correct
         updateHubColors();
-      }, 10);
+        // Zoom to show all hubs when route is cleared
+        // Use another setTimeout to ensure filter is applied
+        setTimeout(() => {
+          zoomToAllHubs();
+        }, 100);
+      }, 50);
     }
   },
   getHubs: () => {
@@ -2731,6 +2896,7 @@ defineExpose({
       essential: true,
     });
   },
+  zoomToAllHubs,
 });
 
 function requestZurichFocus(key) {

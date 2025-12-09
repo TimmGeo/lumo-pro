@@ -2445,6 +2445,30 @@ function handleClearRoute() {
   // Clear route stats
   currentRouteStats.value = null;
 
+  // Zoom to show all hubs after clearing route
+  // Use setTimeout to ensure route clearing is complete
+  if (routeApi && routeApi.zoomToAllHubs) {
+    console.log("handleClearRoute: Will call zoomToAllHubs", {
+      routeApi: !!routeApi,
+      hasZoomToAllHubs: typeof routeApi.zoomToAllHubs === "function",
+    });
+    // Use a longer delay to ensure all clearing operations are complete
+    setTimeout(() => {
+      console.log("handleClearRoute: Executing zoomToAllHubs");
+      try {
+        routeApi.zoomToAllHubs();
+      } catch (error) {
+        console.error("handleClearRoute: Error calling zoomToAllHubs", error);
+      }
+    }, 300);
+  } else {
+    console.warn("handleClearRoute: zoomToAllHubs not available", {
+      routeApi: !!routeApi,
+      hasZoomToAllHubs: routeApi?.zoomToAllHubs ? true : false,
+      routeApiKeys: routeApi ? Object.keys(routeApi) : [],
+    });
+  }
+
   // Close chat app if open
   if (activeBasketApp.value === "chat") {
     closeBasket();
