@@ -788,12 +788,20 @@ async function animateHexagonsReveal(
     return;
   }
 
-  // Show animation layers
+  // Show animation layers only if zoom is sufficient (same threshold as route buttons: 11.5)
+  const currentZoom = map.getZoom();
+  const zoomThreshold = 11.5;
+  const visibility = currentZoom >= zoomThreshold ? "visible" : "none";
+
   if (map.getLayer("hex-route-animation-fill")) {
-    map.setLayoutProperty("hex-route-animation-fill", "visibility", "visible");
+    map.setLayoutProperty("hex-route-animation-fill", "visibility", visibility);
   }
   if (map.getLayer("hex-route-animation-layer")) {
-    map.setLayoutProperty("hex-route-animation-layer", "visibility", "visible");
+    map.setLayoutProperty(
+      "hex-route-animation-layer",
+      "visibility",
+      visibility
+    );
   }
 
   // Apply coloring mode immediately before animation starts
@@ -1091,6 +1099,26 @@ onMounted(async () => {
 
       // Show/hide route popup based on zoom (same condition as zurich time display)
       handleRoutePopupVisibility(zoom);
+
+      // Hide animation hexagons when zoomed out (same threshold as route buttons: 11.5)
+      const zoomThreshold = 11.5;
+      if (routeAnimationActive) {
+        const visibility = zoom >= zoomThreshold ? "visible" : "none";
+        if (map.getLayer("hex-route-animation-fill")) {
+          map.setLayoutProperty(
+            "hex-route-animation-fill",
+            "visibility",
+            visibility
+          );
+        }
+        if (map.getLayer("hex-route-animation-layer")) {
+          map.setLayoutProperty(
+            "hex-route-animation-layer",
+            "visibility",
+            visibility
+          );
+        }
+      }
     });
 
     map.on("move", () => {
@@ -1099,6 +1127,26 @@ onMounted(async () => {
 
       // Show/hide route popup based on zoom (same condition as zurich time display)
       handleRoutePopupVisibility(zoom);
+
+      // Hide animation hexagons when zoomed out (same threshold as route buttons: 11.5)
+      const zoomThreshold = 11.5;
+      if (routeAnimationActive) {
+        const visibility = zoom >= zoomThreshold ? "visible" : "none";
+        if (map.getLayer("hex-route-animation-fill")) {
+          map.setLayoutProperty(
+            "hex-route-animation-fill",
+            "visibility",
+            visibility
+          );
+        }
+        if (map.getLayer("hex-route-animation-layer")) {
+          map.setLayoutProperty(
+            "hex-route-animation-layer",
+            "visibility",
+            visibility
+          );
+        }
+      }
     });
 
     map.on("load", async () => {
