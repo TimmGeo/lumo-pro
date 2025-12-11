@@ -1358,12 +1358,14 @@
           </svg>
         </button>
 
-        <!-- Phone App Button -->
+        <!-- Security App Button -->
         <button
-          class="phone-app-button"
-          :class="{ 'phone-app-button--active': activeBasketApp === 'phone' }"
-          @click.stop="togglePhone"
-          aria-label="Open phone"
+          class="security-app-button"
+          :class="{
+            'security-app-button--active': activeBasketApp === 'security',
+          }"
+          @click.stop="toggleSecurity"
+          aria-label="Open security"
         >
           <svg
             width="20"
@@ -1375,9 +1377,7 @@
             stroke-linecap="round"
             stroke-linejoin="round"
           >
-            <path
-              d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"
-            ></path>
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
           </svg>
         </button>
 
@@ -1427,7 +1427,7 @@
             <div :key="activeBasketApp" class="app-basket-content-label">
               <span v-if="activeBasketApp === 'chat'">Route Companion</span>
               <span v-else-if="activeBasketApp === 'legend'">Legend</span>
-              <span v-else-if="activeBasketApp === 'phone'">Phone</span>
+              <span v-else-if="activeBasketApp === 'security'">Security</span>
               <span v-else-if="activeBasketApp === 'animation'">Animation</span>
             </div>
           </transition>
@@ -1641,63 +1641,129 @@
                   />
                 </div>
 
-                <!-- Phone App Content -->
+                <!-- Security App Content -->
                 <div
-                  v-else-if="activeBasketApp === 'phone'"
+                  v-else-if="activeBasketApp === 'security'"
                   class="app-basket-app-section"
                 >
-                  <div class="app-basket-phone-content">
-                    <h3 class="phone-content-title">Emergency Numbers</h3>
-                    <div class="phone-contacts-table">
-                      <div class="phone-contacts-header">
-                        <div class="phone-contact-facility">Service</div>
-                        <div class="phone-contact-number">Phone Number</div>
-                      </div>
-                      <div class="phone-contact-row">
-                        <div class="phone-contact-facility">
-                          General Emergency
+                  <div class="app-basket-security-content">
+                    <h3 class="security-content-title">Security & Safety</h3>
+                    <div class="security-category">
+                      <h4 class="security-category-title">Emergency Numbers</h4>
+                      <div class="security-contacts-table">
+                        <div class="security-contacts-header">
+                          <div class="security-contact-facility">Service</div>
+                          <div class="security-contact-number">
+                            Phone Number
+                          </div>
                         </div>
-                        <div class="phone-contact-number">
-                          <a href="tel:112" class="phone-contact-link">112</a>
+                        <div class="security-contact-row">
+                          <div class="security-contact-facility">
+                            General Emergency
+                          </div>
+                          <div class="security-contact-number">
+                            <a href="tel:112" class="security-contact-link"
+                              >112</a
+                            >
+                          </div>
                         </div>
-                      </div>
-                      <div class="phone-contact-row">
-                        <div class="phone-contact-facility">Police</div>
-                        <div class="phone-contact-number">
-                          <a href="tel:117" class="phone-contact-link">117</a>
+                        <div class="security-contact-row">
+                          <div class="security-contact-facility">Police</div>
+                          <div class="security-contact-number">
+                            <a href="tel:117" class="security-contact-link"
+                              >117</a
+                            >
+                          </div>
                         </div>
-                      </div>
-                      <div class="phone-contact-row">
-                        <div class="phone-contact-facility">
-                          Fire Department
+                        <div class="security-contact-row">
+                          <div class="security-contact-facility">
+                            Fire Department
+                          </div>
+                          <div class="security-contact-number">
+                            <a href="tel:118" class="security-contact-link"
+                              >118</a
+                            >
+                          </div>
                         </div>
-                        <div class="phone-contact-number">
-                          <a href="tel:118" class="phone-contact-link">118</a>
+                        <div class="security-contact-row">
+                          <div class="security-contact-facility">
+                            Medical Emergency
+                          </div>
+                          <div class="security-contact-number">
+                            <a href="tel:144" class="security-contact-link"
+                              >144</a
+                            >
+                          </div>
                         </div>
-                      </div>
-                      <div class="phone-contact-row">
-                        <div class="phone-contact-facility">
-                          Medical Emergency
+                        <div class="security-contact-row">
+                          <div class="security-contact-facility">
+                            Poison Control
+                          </div>
+                          <div class="security-contact-number">
+                            <a href="tel:145" class="security-contact-link"
+                              >145</a
+                            >
+                          </div>
                         </div>
-                        <div class="phone-contact-number">
-                          <a href="tel:144" class="phone-contact-link">144</a>
-                        </div>
-                      </div>
-                      <div class="phone-contact-row">
-                        <div class="phone-contact-facility">Poison Control</div>
-                        <div class="phone-contact-number">
-                          <a href="tel:145" class="phone-contact-link">145</a>
-                        </div>
-                      </div>
-                      <div class="phone-contact-row">
-                        <div class="phone-contact-facility">
-                          Roadside Assistance
-                        </div>
-                        <div class="phone-contact-number">
-                          <a href="tel:140" class="phone-contact-link">140</a>
+                        <div class="security-contact-row">
+                          <div class="security-contact-facility">
+                            Roadside Assistance
+                          </div>
+                          <div class="security-contact-number">
+                            <a href="tel:140" class="security-contact-link"
+                              >140</a
+                            >
+                          </div>
                         </div>
                       </div>
                     </div>
+                  </div>
+
+                  <!-- Route Security Alerts -->
+                  <div class="security-category" style="margin-top: 32px">
+                    <h4 class="security-category-title">Route Safety</h4>
+                    <button
+                      class="security-alert-button"
+                      :class="{ active: routeSecurityAlertsActive }"
+                      @click="toggleRouteSecurityAlerts"
+                      :disabled="!currentRouteStats"
+                    >
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path
+                          d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"
+                        ></path>
+                        <path d="M12 8v4"></path>
+                        <path d="M12 16h.01"></path>
+                      </svg>
+                      <span
+                        >{{
+                          routeSecurityAlertsActive ? "Hide" : "Show"
+                        }}
+                        Security Alerts</span
+                      >
+                    </button>
+                    <p
+                      class="security-alert-description"
+                      v-if="!currentRouteStats"
+                    >
+                      Select a route to view security alerts
+                    </p>
+                    <p
+                      class="security-alert-description"
+                      v-else-if="routeSecurityAlertsActive"
+                    >
+                      Route segments passing through unsafe areas are
+                      highlighted in red
+                    </p>
                   </div>
                 </div>
 
@@ -2022,7 +2088,7 @@ const displayedHotspotName = ref(null);
 let hotspotNameTimeout = null;
 
 // Track which app is currently active in the basket
-const activeBasketApp = ref(null); // 'chat', 'legend', 'phone', 'animation', or null
+const activeBasketApp = ref(null); // 'chat', 'legend', 'security', 'animation', or null
 // Store previous app state to restore when zooming back in
 const previousBasketApp = ref(null);
 
@@ -2064,6 +2130,9 @@ function closeBasket() {
 const isAnimating = ref(false);
 const routeAnimationActive = ref(false);
 const animationColoringMode = ref("route"); // "route" or "median"
+
+// Route security alerts state
+const routeSecurityAlertsActive = ref(false);
 
 // Handler functions for app buttons that clear previous state on manual interaction
 function toggleAnimation() {
@@ -2113,6 +2182,13 @@ function handleResetAnimation() {
   routeAnimationActive.value = false;
   isAnimating.value = false;
 }
+
+// Watch for route changes and clear security alerts
+watch([startHub, endHub], () => {
+  if (routeSecurityAlertsActive.value) {
+    routeSecurityAlertsActive.value = false;
+  }
+});
 
 // Watch for coloring mode changes and update animation if active
 watch(animationColoringMode, (newMode, oldMode) => {
@@ -2171,9 +2247,36 @@ function toggleLegend() {
   activeBasketApp.value = activeBasketApp.value === "legend" ? null : "legend";
 }
 
-function togglePhone() {
+function toggleSecurity() {
   previousBasketApp.value = null; // Clear previous state on manual interaction
-  activeBasketApp.value = activeBasketApp.value === "phone" ? null : "phone";
+  activeBasketApp.value =
+    activeBasketApp.value === "security" ? null : "security";
+}
+
+// Toggle route security alerts
+function toggleRouteSecurityAlerts() {
+  const routeApi = api || mapboxViewerRef.value;
+  if (
+    !routeApi ||
+    !currentRouteStats.value ||
+    !startHub.value ||
+    !endHub.value
+  ) {
+    return;
+  }
+
+  routeSecurityAlertsActive.value = !routeSecurityAlertsActive.value;
+
+  const routeId1 = Math.min(parseInt(startHub.value), parseInt(endHub.value));
+  const routeId2 = Math.max(parseInt(startHub.value), parseInt(endHub.value));
+
+  if (routeApi.toggleRouteSecurityAlerts) {
+    routeApi.toggleRouteSecurityAlerts(
+      routeId1,
+      routeId2,
+      routeSecurityAlertsActive.value
+    );
+  }
 }
 
 // Hover popup data
@@ -6356,7 +6459,7 @@ textarea:focus-visible {
 }
 
 /* Phone: bottom-right of 2x2 grid */
-.phone-app-button {
+.security-app-button {
   grid-column: 2;
   grid-row: 2;
 }
@@ -6380,7 +6483,7 @@ textarea:focus-visible {
 .app-basket--expanded .animation-app-container,
 .app-basket--expanded .chat-app-button,
 .app-basket--expanded .legend-app-button,
-.app-basket--expanded .phone-app-button {
+.app-basket--expanded .security-app-button {
   grid-column: auto;
   grid-row: 1;
 }
@@ -6482,7 +6585,7 @@ textarea:focus-visible {
   width: 100%;
 }
 
-.app-basket-phone-content,
+.app-basket-security-content,
 .app-basket-animation-content {
   padding: 0; /* Remove padding since scrollable already has it */
   color: rgba(255, 255, 255, 0.9);
@@ -6495,7 +6598,7 @@ textarea:focus-visible {
     sans-serif;
 }
 
-.phone-content-title {
+.security-content-title {
   font-size: 20px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.95);
@@ -6510,14 +6613,33 @@ textarea:focus-visible {
     sans-serif;
 }
 
-.phone-contacts-table {
+.security-category {
+  margin-bottom: 24px;
+}
+
+.security-category-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0 0 16px 0;
+  letter-spacing: -0.01em;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+}
+
+.security-contacts-table {
   display: flex;
   flex-direction: column;
   gap: 0;
   width: 100%;
 }
 
-.phone-contacts-header {
+.security-contacts-header {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 16px;
@@ -6536,7 +6658,7 @@ textarea:focus-visible {
     sans-serif;
 }
 
-.phone-contact-row {
+.security-contact-row {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 16px;
@@ -6545,7 +6667,7 @@ textarea:focus-visible {
   transition: background-color 0.2s ease;
 }
 
-.phone-contact-row:hover {
+.security-contact-row:hover {
   background-color: rgba(255, 255, 255, 0.03);
   border-radius: 6px;
   padding-left: 8px;
@@ -6567,7 +6689,7 @@ textarea:focus-visible {
     sans-serif;
 }
 
-.phone-contact-number {
+.security-contact-number {
   font-size: 14px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.9);
@@ -6581,7 +6703,7 @@ textarea:focus-visible {
     sans-serif;
 }
 
-.phone-contact-link {
+.security-contact-link {
   color: rgba(255, 255, 255, 0.9);
   text-decoration: none;
   transition: color 0.2s ease;
@@ -6594,9 +6716,74 @@ textarea:focus-visible {
     sans-serif;
 }
 
-.phone-contact-link:hover {
+.security-contact-link:hover {
   color: rgba(255, 255, 255, 1);
   text-decoration: underline;
+}
+
+.security-alert-button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+}
+
+.security-alert-button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.security-alert-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.security-alert-button.active {
+  background: rgba(255, 68, 68, 0.15);
+  border-color: rgba(255, 68, 68, 0.3);
+  color: #ff4444;
+}
+
+.security-alert-button.active:hover {
+  background: rgba(255, 68, 68, 0.2);
+  border-color: rgba(255, 68, 68, 0.4);
+}
+
+.security-alert-button svg {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+}
+
+.security-alert-description {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 12px 0 0 0;
+  line-height: 1.5;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
 }
 
 .map-controls-grid {
@@ -7249,8 +7436,8 @@ textarea:focus-visible {
   height: 16px;
 }
 
-/* -------- PHONE APP BUTTON -------- */
-.phone-app-button {
+/* -------- SECURITY APP BUTTON -------- */
+.security-app-button {
   position: relative;
   width: 46px;
   height: 42px;
@@ -7272,27 +7459,27 @@ textarea:focus-visible {
   box-sizing: border-box;
 }
 
-.app-basket--expanded .phone-app-button {
+.app-basket--expanded .security-app-button {
   width: 56px;
   height: 56px;
 }
 
-.phone-app-button:hover {
+.security-app-button:hover {
   background: #1a1b1e;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
   transform: scale(1.05);
 }
 
-.phone-app-button:active {
+.security-app-button:active {
   transform: scale(0.95);
 }
 
-.phone-app-button--active {
+.security-app-button--active {
   background: #1a1b1e;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
 }
 
-.phone-app-button svg {
+.security-app-button svg {
   width: 20px;
   height: 20px;
   color: #ffffff;
@@ -7306,7 +7493,7 @@ textarea:focus-visible {
     height 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
 }
 
-.app-basket--expanded .phone-app-button svg {
+.app-basket--expanded .security-app-button svg {
   width: 16px;
   height: 16px;
 }

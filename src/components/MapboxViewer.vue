@@ -290,6 +290,303 @@ let originalHexFilter = null;
 let intersectionData = null;
 let hexagonMedian = null; // Store median score for coloring
 
+// Route security alerts state
+let routeSecurityAlertsActive = false;
+let routeSecurityAlertsData = null;
+
+// Apply security alerts to routes by creating red segments for unsafe parts
+async function applyRouteSecurityAlerts() {
+  if (!map || !map.isStyleLoaded() || !routeSecurityAlertsData) {
+    return;
+  }
+
+  const beforeLayer = map.getLayer("hubs-circles") ? "hubs-circles" : undefined;
+
+  // Process fast route
+  if (
+    routeSecurityAlertsData.fast &&
+    routeSecurityAlertsData.fast.unsafe_segments.length > 0
+  ) {
+    await createUnsafeRouteSegments(
+      "route-fast",
+      "fast",
+      routeSecurityAlertsData.fast.unsafe_segments,
+      beforeLayer
+    );
+  }
+
+  // Process bright route
+  if (
+    routeSecurityAlertsData.bright &&
+    routeSecurityAlertsData.bright.unsafe_segments.length > 0
+  ) {
+    await createUnsafeRouteSegments(
+      "route-bright",
+      "bright",
+      routeSecurityAlertsData.bright.unsafe_segments,
+      beforeLayer
+    );
+  }
+}
+
+// Create unsafe route segments as red overlays
+async function createUnsafeRouteSegments(
+  sourceId,
+  routeType,
+  unsafeSegmentIndices,
+  beforeLayer
+) {
+  const source = map.getSource(sourceId);
+  if (
+    !source ||
+    !source._data ||
+    !source._data.features ||
+    source._data.features.length === 0
+  ) {
+    return;
+  }
+
+  const routeFeature = source._data.features[0];
+  const routeCoords = routeFeature.geometry.coordinates;
+
+  if (!routeCoords || routeCoords.length < 2) {
+    return;
+  }
+
+  // Create LineString segments for unsafe parts
+  // Create a segment for EVERY unsafe index to ensure complete coverage
+  const unsafeSegments = [];
+  const processedIndices = new Set();
+
+  // Sort indices for processing
+  const sortedIndices = [...unsafeSegmentIndices]
+    .filter((idx) => idx >= 0 && idx < routeCoords.length - 1)
+    .sort((a, b) => a - b);
+
+  if (sortedIndices.length === 0) {
+    return;
+  }
+
+  // First, create continuous segments for consecutive indices (more efficient)
+  let rangeStart = sortedIndices[0];
+  let rangeEnd = sortedIndices[0];
+
+  for (let i = 1; i < sortedIndices.length; i++) {
+    const currentIdx = sortedIndices[i];
+
+    // If indices are consecutive or very close (within 2), extend the range
+    if (currentIdx <= rangeEnd + 2) {
+      rangeEnd = currentIdx;
+    } else {
+      // Create continuous segment for the completed range
+      const startIdx = Math.max(0, rangeStart);
+      const endIdx = Math.min(routeCoords.length - 1, rangeEnd + 1);
+
+      if (startIdx < endIdx) {
+        const segmentCoords = routeCoords.slice(startIdx, endIdx + 1);
+        unsafeSegments.push({
+          type: "Feature",
+          geometry: {
+            type: "LineString",
+            coordinates: segmentCoords,
+          },
+          properties: {
+            route_type: routeType,
+            is_unsafe: true,
+          },
+        });
+
+        // Mark all indices in this range as processed
+        for (let j = rangeStart; j <= rangeEnd; j++) {
+          processedIndices.add(j);
+        }
+      }
+
+      // Start new range
+      rangeStart = currentIdx;
+      rangeEnd = currentIdx;
+    }
+  }
+
+  // Add the final range
+  const startIdx = Math.max(0, rangeStart);
+  const endIdx = Math.min(routeCoords.length - 1, rangeEnd + 1);
+
+  if (startIdx < endIdx) {
+    const segmentCoords = routeCoords.slice(startIdx, endIdx + 1);
+    unsafeSegments.push({
+      type: "Feature",
+      geometry: {
+        type: "LineString",
+        coordinates: segmentCoords,
+      },
+      properties: {
+        route_type: routeType,
+        is_unsafe: true,
+      },
+    });
+
+    // Mark all indices in this range as processed
+    for (let j = rangeStart; j <= rangeEnd; j++) {
+      processedIndices.add(j);
+    }
+  }
+
+  // Ensure ALL unsafe indices have segments (add individual segments for any missed)
+  sortedIndices.forEach((segmentIndex) => {
+    if (
+      !processedIndices.has(segmentIndex) &&
+      segmentIndex < routeCoords.length - 1
+    ) {
+      unsafeSegments.push({
+        type: "Feature",
+        geometry: {
+          type: "LineString",
+          coordinates: [
+            routeCoords[segmentIndex],
+            routeCoords[segmentIndex + 1],
+          ],
+        },
+        properties: {
+          route_type: routeType,
+          is_unsafe: true,
+        },
+      });
+    }
+  });
+
+  if (unsafeSegments.length === 0) {
+    return;
+  }
+
+  const unsafeSourceId = `${sourceId}-unsafe`;
+  const unsafeData = {
+    type: "FeatureCollection",
+    features: unsafeSegments,
+  };
+
+  // Add or update source
+  if (map.getSource(unsafeSourceId)) {
+    map.getSource(unsafeSourceId).setData(unsafeData);
+  } else {
+    map.addSource(unsafeSourceId, {
+      type: "geojson",
+      data: unsafeData,
+    });
+  }
+
+  // Add red overlay layers for unsafe segments
+  const unsafeLayerIds = [`${unsafeSourceId}-glow`, `${unsafeSourceId}-line`];
+
+  // Red glow layer
+  if (!map.getLayer(unsafeLayerIds[0])) {
+    map.addLayer(
+      {
+        id: unsafeLayerIds[0],
+        type: "line",
+        source: unsafeSourceId,
+        paint: {
+          "line-color": "#ff0000",
+          "line-width": [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            10,
+            14,
+            15,
+            20,
+            18,
+            26,
+          ],
+          "line-opacity": [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            11.4,
+            0,
+            11.5,
+            0.4,
+          ],
+          "line-blur": 10,
+        },
+        layout: {
+          "line-join": "round",
+          "line-cap": "round",
+        },
+      },
+      beforeLayer
+    );
+  }
+
+  // Red main line
+  if (!map.getLayer(unsafeLayerIds[1])) {
+    map.addLayer(
+      {
+        id: unsafeLayerIds[1],
+        type: "line",
+        source: unsafeSourceId,
+        paint: {
+          "line-color": "#ff4444",
+          "line-width": [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            10,
+            5,
+            15,
+            8,
+            18,
+            10,
+          ],
+          "line-opacity": [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            11.4,
+            0,
+            11.5,
+            1,
+          ],
+        },
+        layout: {
+          "line-join": "round",
+          "line-cap": "round",
+        },
+      },
+      beforeLayer
+    );
+  }
+
+  // Ensure layers are visible
+  unsafeLayerIds.forEach((layerId) => {
+    if (map.getLayer(layerId)) {
+      map.setLayoutProperty(layerId, "visibility", "visible");
+    }
+  });
+}
+
+// Remove security alert layers
+function removeRouteSecurityAlerts() {
+  if (!map || !map.isStyleLoaded()) {
+    return;
+  }
+
+  ["route-fast-unsafe", "route-bright-unsafe"].forEach((sourceId) => {
+    // Remove layers
+    ["glow", "line"].forEach((suffix) => {
+      const layerId = `${sourceId}-${suffix}`;
+      if (map.getLayer(layerId)) {
+        map.removeLayer(layerId);
+      }
+    });
+
+    // Remove source
+    if (map.getSource(sourceId)) {
+      map.removeSource(sourceId);
+    }
+  });
+}
+
 // Update layer coloring based on mode
 function updateLayerColoring(layerId, coloringMode) {
   if (!map) {
@@ -2891,6 +3188,12 @@ function resetRouteAnimation() {
 
 // Clear the displayed routes (both fast and bright)
 function clearRoute(skipHubFilter = false) {
+  // Clear security alerts when route is cleared
+  if (routeSecurityAlertsActive) {
+    removeRouteSecurityAlerts();
+    routeSecurityAlertsActive = false;
+    routeSecurityAlertsData = null;
+  }
   if (!map || !map.isStyleLoaded()) return;
 
   // Reset route animation if active
@@ -3501,6 +3804,46 @@ defineExpose({
     );
   },
   resetRouteAnimation,
+  toggleRouteSecurityAlerts: async (routeId1, routeId2, enabled) => {
+    if (!map || !map.isStyleLoaded()) {
+      console.warn("Map not ready for security alerts");
+      return;
+    }
+
+    routeSecurityAlertsActive = enabled;
+
+    if (enabled) {
+      // Load security alerts data
+      const routeName = `${Math.min(routeId1, routeId2)}_${Math.max(routeId1, routeId2)}`;
+      const alertsUrl =
+        `${BASE}data/route_security_alerts/${routeName}.json`.replace(
+          /\/{2,}/g,
+          "/"
+        );
+
+      try {
+        const response = await fetch(alertsUrl);
+        if (!response.ok) {
+          console.warn(`Security alerts data not found for route ${routeName}`);
+          routeSecurityAlertsActive = false;
+          return;
+        }
+
+        routeSecurityAlertsData = await response.json();
+        console.log("Loaded security alerts:", routeSecurityAlertsData);
+
+        // Apply security alerts to routes
+        await applyRouteSecurityAlerts();
+      } catch (error) {
+        console.error("Error loading security alerts:", error);
+        routeSecurityAlertsActive = false;
+      }
+    } else {
+      // Remove security alert layers
+      removeRouteSecurityAlerts();
+      routeSecurityAlertsData = null;
+    }
+  },
 });
 
 function requestZurichFocus(key) {
