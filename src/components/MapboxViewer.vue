@@ -288,9 +288,85 @@ let brightRouteGeom = null;
 let routeAnimationActive = false;
 let originalHexFilter = null;
 let intersectionData = null;
+let hexagonMedian = null; // Store median score for coloring
 
-// Animate hexagons revealing along the route
-async function animateHexagonsReveal(hexIds, intersectionData) {
+// Update layer coloring based on mode
+function updateLayerColoring(layerId, coloringMode) {
+  if (!map || !map.isStyleLoaded()) {
+    console.warn(`Cannot update layer ${layerId}: map not ready`);
+    return;
+  }
+
+  // Check layer type to determine the correct color property
+  const layer = map.getLayer(layerId);
+  if (!layer) {
+    console.warn(`Layer ${layerId} not found`);
+    return;
+  }
+
+  const isExtrusion = layer.type === "fill-extrusion";
+  const colorProperty = isExtrusion ? "fill-extrusion-color" : "fill-color";
+
+  console.log(
+    `Updating ${layerId} with ${coloringMode} mode, property: ${colorProperty}`
+  );
+
+  if (coloringMode === "median") {
+    // Median-based coloring: green for above median, red for below
+    if (!hexagonMedian) {
+      console.warn("Hexagon median not loaded, cannot apply median coloring");
+      return;
+    }
+
+    console.log(`Applying median coloring with median value: ${hexagonMedian}`);
+
+    const colorExpression = [
+      "case",
+      [">", ["get", "combined_score"], hexagonMedian],
+      "#22c55e", // Green - above median
+      "#ef4444", // Red - below median
+    ];
+
+    try {
+      map.setPaintProperty(layerId, colorProperty, colorExpression);
+      console.log(`Successfully updated ${layerId} with median coloring`);
+    } catch (error) {
+      console.error(`Error updating ${layerId} paint property:`, error);
+    }
+  } else {
+    // Route-based coloring: blue for bright, grey for fast
+    console.log("Applying route-based coloring");
+    const colorExpression = [
+      "case",
+      ["has", "route_type"],
+      [
+        "match",
+        ["get", "route_type"],
+        "bright",
+        "#64b4ff", // Blue for bright route
+        "fast",
+        "#9ca3af", // Grey for fast route
+        "both",
+        "#8b5cf6", // Purple for both routes
+        "#6c5ce7", // Default purple-blue
+      ],
+      "#6c5ce7", // Default if no route_type
+    ];
+
+    try {
+      map.setPaintProperty(layerId, colorProperty, colorExpression);
+      console.log(`Successfully updated ${layerId} with route coloring`);
+    } catch (error) {
+      console.error(`Error updating ${layerId} paint property:`, error);
+    }
+  }
+}
+
+async function animateHexagonsReveal(
+  hexIds,
+  intersectionData,
+  coloringMode = "route"
+) {
   if (!map || !map.isStyleLoaded() || !hexIds || hexIds.length === 0) {
     return;
   }
@@ -420,8 +496,16 @@ async function animateHexagonsReveal(hexIds, intersectionData) {
   // Wait for animation to complete
   await new Promise((resolve) => setTimeout(resolve, animationDuration + 50));
 
+  // Apply coloring mode after animation completes
+  if (map.getLayer("hex-route-animation-fill")) {
+    updateLayerColoring("hex-route-animation-fill", coloringMode);
+  }
+  if (map.getLayer("hex-route-animation-layer")) {
+    updateLayerColoring("hex-route-animation-layer", coloringMode);
+  }
+
   console.log(
-    `Hexagon animation complete - showing ${intersectingFeatures.length} hexagons with height animation`
+    `Hexagon animation complete - showing ${intersectingFeatures.length} hexagons with height animation (${coloringMode} mode)`
   );
 }
 
@@ -1155,7 +1239,8 @@ onMounted(async () => {
             type: "fill",
             source: "hex-route-animation",
             paint: {
-              // Color based on route type: blue for bright, grey for fast
+              // Color will be updated dynamically based on coloring mode
+              // Default to route-based coloring
               "fill-color": [
                 "case",
                 ["has", "route_type"],
@@ -1193,7 +1278,8 @@ onMounted(async () => {
             type: "fill-extrusion",
             source: "hex-route-animation",
             paint: {
-              // Color based on route type: blue for bright, grey for fast
+              // Color will be updated dynamically based on coloring mode
+              // Default to route-based coloring
               "fill-extrusion-color": [
                 "case",
                 ["has", "route_type"],
@@ -3184,7 +3270,7 @@ defineExpose({
     });
   },
   zoomToAllHubs,
-  animateRouteHexagons: async (routeId1, routeId2) => {
+  animateRouteHexagons: async (routeId1, routeId2, coloringMode = "route") => {
     if (!map || !map.isStyleLoaded()) {
       console.warn("Map not ready for animation");
       return;
@@ -3208,6 +3294,28 @@ defineExpose({
       intersectionData = await response.json();
       console.log("Loaded intersection data:", intersectionData);
 
+      // Load median data if in median mode
+      if (coloringMode === "median" && !hexagonMedian) {
+        const medianUrl = `${BASE}data/hexagon_median.json`.replace(
+          /\/{2,}/g,
+          "/"
+        );
+        try {
+          const medianResponse = await fetch(medianUrl);
+          if (medianResponse.ok) {
+            const medianData = await medianResponse.json();
+            hexagonMedian = medianData.median_score;
+            console.log("Loaded hexagon median:", hexagonMedian);
+          } else {
+            console.warn("Median data not found, using route coloring");
+            coloringMode = "route";
+          }
+        } catch (error) {
+          console.warn("Error loading median data:", error);
+          coloringMode = "route";
+        }
+      }
+
       // Get all hexagon IDs that intersect with either route
       const allIntersectingIds = new Set([
         ...intersectionData.fast_hex_ids,
@@ -3221,13 +3329,88 @@ defineExpose({
       // Animate hexagons appearing (using independent animation layers)
       await animateHexagonsReveal(
         Array.from(allIntersectingIds),
-        intersectionData
+        intersectionData,
+        coloringMode
       );
 
       routeAnimationActive = true;
     } catch (error) {
       console.error("Error loading or animating route hexagons:", error);
     }
+  },
+  updateAnimationColoring: async (routeId1, routeId2, coloringMode) => {
+    if (!map || !map.isStyleLoaded() || !routeAnimationActive) {
+      console.warn(
+        "Cannot update coloring: map not ready or animation not active"
+      );
+      return;
+    }
+
+    console.log(`Updating animation coloring to ${coloringMode} mode`);
+
+    // Load median data if in median mode and not already loaded
+    if (coloringMode === "median" && !hexagonMedian) {
+      const medianUrl = `${BASE}data/hexagon_median.json`.replace(
+        /\/{2,}/g,
+        "/"
+      );
+      try {
+        const medianResponse = await fetch(medianUrl);
+        if (medianResponse.ok) {
+          const medianData = await medianResponse.json();
+          hexagonMedian = medianData.median_score;
+          console.log("Loaded hexagon median for update:", hexagonMedian);
+        } else {
+          console.warn("Median data file not found");
+          return; // Don't update if median can't be loaded
+        }
+      } catch (error) {
+        console.warn("Error loading median data:", error);
+        return; // Don't update if median can't be loaded
+      }
+    }
+
+    // Verify that features have combined_score property
+    const animationSource = map.getSource("hex-route-animation");
+    if (
+      animationSource &&
+      animationSource._data &&
+      animationSource._data.features
+    ) {
+      const sampleFeature = animationSource._data.features[0];
+      if (sampleFeature) {
+        console.log(
+          "Sample feature properties:",
+          Object.keys(sampleFeature.properties)
+        );
+        console.log(
+          "Sample combined_score:",
+          sampleFeature.properties.combined_score
+        );
+        if (
+          coloringMode === "median" &&
+          sampleFeature.properties.combined_score === undefined
+        ) {
+          console.warn("Features don't have combined_score property!");
+        }
+      }
+    }
+
+    // Update layer paint properties based on coloring mode
+    // Use nextTick to ensure map is ready for updates
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    if (map.getLayer("hex-route-animation-fill")) {
+      updateLayerColoring("hex-route-animation-fill", coloringMode);
+    }
+    if (map.getLayer("hex-route-animation-layer")) {
+      updateLayerColoring("hex-route-animation-layer", coloringMode);
+    }
+
+    // Force map to repaint
+    map.triggerRepaint();
+
+    console.log(`Updated animation coloring to ${coloringMode} mode`);
   },
   resetRouteAnimation,
 });

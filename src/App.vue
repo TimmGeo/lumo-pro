@@ -1668,6 +1668,42 @@
                         Animate the display of hexagons that intersect with the
                         current routes.
                       </p>
+
+                      <!-- Coloring Mode Selector -->
+                      <div class="animation-coloring-mode">
+                        <label class="animation-coloring-label"
+                          >Coloring Mode:</label
+                        >
+                        <div class="animation-coloring-options">
+                          <button
+                            class="animation-coloring-button"
+                            :class="{
+                              active: animationColoringMode === 'route',
+                            }"
+                            @click="animationColoringMode = 'route'"
+                            :disabled="!routeAnimationActive"
+                          >
+                            <span>Route Colors</span>
+                            <span class="animation-coloring-hint"
+                              >Blue / Grey</span
+                            >
+                          </button>
+                          <button
+                            class="animation-coloring-button"
+                            :class="{
+                              active: animationColoringMode === 'median',
+                            }"
+                            @click="animationColoringMode = 'median'"
+                            :disabled="!routeAnimationActive"
+                          >
+                            <span>Score vs Median</span>
+                            <span class="animation-coloring-hint"
+                              >Green / Red</span
+                            >
+                          </button>
+                        </div>
+                      </div>
+
                       <button
                         class="animation-button"
                         @click="handleAnimateRoutes"
@@ -1983,6 +2019,7 @@ function closeBasket() {
 // Animation state
 const isAnimating = ref(false);
 const routeAnimationActive = ref(false);
+const animationColoringMode = ref("route"); // "route" or "median"
 
 // Handler functions for app buttons that clear previous state on manual interaction
 function toggleAnimation() {
@@ -2011,7 +2048,11 @@ async function handleAnimateRoutes() {
     const routeId1 = Math.min(parseInt(startHub.value), parseInt(endHub.value));
     const routeId2 = Math.max(parseInt(startHub.value), parseInt(endHub.value));
 
-    await routeApi.animateRouteHexagons(routeId1, routeId2);
+    await routeApi.animateRouteHexagons(
+      routeId1,
+      routeId2,
+      animationColoringMode.value
+    );
   } catch (error) {
     console.error("Error animating routes:", error);
   } finally {
@@ -2028,6 +2069,48 @@ function handleResetAnimation() {
   routeAnimationActive.value = false;
   isAnimating.value = false;
 }
+
+// Watch for coloring mode changes and update animation if active
+watch(animationColoringMode, (newMode, oldMode) => {
+  console.log(`Coloring mode changed from ${oldMode} to ${newMode}`);
+  console.log("routeAnimationActive:", routeAnimationActive.value);
+  console.log("currentRouteStats:", !!currentRouteStats.value);
+  console.log("startHub:", startHub.value);
+  console.log("endHub:", endHub.value);
+
+  if (
+    routeAnimationActive.value &&
+    currentRouteStats.value &&
+    startHub.value &&
+    endHub.value
+  ) {
+    const routeApi = api || mapboxViewerRef.value;
+    console.log("Route API available:", !!routeApi);
+    console.log(
+      "updateAnimationColoring available:",
+      !!(routeApi && routeApi.updateAnimationColoring)
+    );
+
+    if (routeApi && routeApi.updateAnimationColoring) {
+      const routeId1 = Math.min(
+        parseInt(startHub.value),
+        parseInt(endHub.value)
+      );
+      const routeId2 = Math.max(
+        parseInt(startHub.value),
+        parseInt(endHub.value)
+      );
+      console.log(
+        `Calling updateAnimationColoring with route ${routeId1}_${routeId2}, mode: ${newMode}`
+      );
+      routeApi.updateAnimationColoring(routeId1, routeId2, newMode);
+    } else {
+      console.warn("updateAnimationColoring not available");
+    }
+  } else {
+    console.warn("Cannot update coloring: conditions not met");
+  }
+});
 
 function toggleChat() {
   previousBasketApp.value = null; // Clear previous state on manual interaction
@@ -6901,6 +6984,78 @@ textarea:focus-visible {
 
 .animation-reset-button svg {
   flex-shrink: 0;
+}
+
+.animation-coloring-mode {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.animation-coloring-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.animation-coloring-options {
+  display: flex;
+  gap: 8px;
+  flex-direction: column;
+}
+
+.animation-coloring-button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  text-align: left;
+}
+
+.animation-coloring-button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.animation-coloring-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.animation-coloring-button.active {
+  background: rgba(100, 180, 255, 0.15);
+  border-color: rgba(100, 180, 255, 0.3);
+  color: #ffffff;
+}
+
+.animation-coloring-button.active:hover {
+  background: rgba(100, 180, 255, 0.2);
+  border-color: rgba(100, 180, 255, 0.4);
+}
+
+.animation-coloring-hint {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 400;
+}
+
+.animation-coloring-button.active .animation-coloring-hint {
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .animation-content {
