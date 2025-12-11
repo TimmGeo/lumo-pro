@@ -74,7 +74,13 @@
               >
                 <div class="location-button-image-wrapper">
                   <img
-                    v-if="getLocationImage(hotspot.name)"
+                    v-if="getLocationSVG(hotspot.name)"
+                    :src="getLocationSVG(hotspot.name)"
+                    :alt="hotspot.name"
+                    class="location-button-image"
+                  />
+                  <img
+                    v-else-if="getLocationImage(hotspot.name)"
                     :src="getLocationImage(hotspot.name)"
                     :alt="hotspot.name"
                     class="location-button-image"
@@ -91,20 +97,15 @@
                       style="background-color: #f3efff"
                     ></div>
                   </div>
-                </div>
-                <div class="location-button-content">
-                  <div class="location-button-name">{{ hotspot.name }}</div>
                   <div
                     v-if="hotspot.nearest_hub"
                     class="location-button-hub-info"
                   >
-                    <div class="location-button-hub-label">
-                      <span class="location-button-hub-id"
-                        >Nearest to
-                        {{ getHubName(hotspot.nearest_hub.id) }} Hub</span
-                      >
-                    </div>
                     <div class="location-button-hub-metrics">
+                      <span class="location-button-hub-id"
+                        >From
+                        {{ getHubName(hotspot.nearest_hub.id) }} hub:</span
+                      >
                       <svg
                         width="14"
                         height="14"
@@ -286,7 +287,13 @@
               >
                 <div class="location-button-image-wrapper">
                   <img
-                    v-if="getLocationImage(hotspot.name)"
+                    v-if="getLocationSVG(hotspot.name)"
+                    :src="getLocationSVG(hotspot.name)"
+                    :alt="hotspot.name"
+                    class="location-button-image"
+                  />
+                  <img
+                    v-else-if="getLocationImage(hotspot.name)"
                     :src="getLocationImage(hotspot.name)"
                     :alt="hotspot.name"
                     class="location-button-image"
@@ -303,20 +310,15 @@
                       style="background-color: #6b7280"
                     ></div>
                   </div>
-                </div>
-                <div class="location-button-content">
-                  <div class="location-button-name">{{ hotspot.name }}</div>
                   <div
                     v-if="hotspot.nearest_hub"
                     class="location-button-hub-info"
                   >
-                    <div class="location-button-hub-label">
-                      <span class="location-button-hub-id"
-                        >Nearest to
-                        {{ getHubName(hotspot.nearest_hub.id) }} Hub</span
-                      >
-                    </div>
                     <div class="location-button-hub-metrics">
+                      <span class="location-button-hub-id"
+                        >From
+                        {{ getHubName(hotspot.nearest_hub.id) }} hub:</span
+                      >
                       <svg
                         width="14"
                         height="14"
@@ -439,7 +441,13 @@
               >
                 <div class="location-button-image-wrapper">
                   <img
-                    v-if="getLocationImage(hotspot.name)"
+                    v-if="getLocationSVG(hotspot.name)"
+                    :src="getLocationSVG(hotspot.name)"
+                    :alt="hotspot.name"
+                    class="location-button-image"
+                  />
+                  <img
+                    v-else-if="getLocationImage(hotspot.name)"
                     :src="getLocationImage(hotspot.name)"
                     :alt="hotspot.name"
                     class="location-button-image"
@@ -456,20 +464,15 @@
                       style="background-color: #60a5fa"
                     ></div>
                   </div>
-                </div>
-                <div class="location-button-content">
-                  <div class="location-button-name">{{ hotspot.name }}</div>
                   <div
                     v-if="hotspot.nearest_hub"
                     class="location-button-hub-info"
                   >
-                    <div class="location-button-hub-label">
-                      <span class="location-button-hub-id"
-                        >Nearest to
-                        {{ getHubName(hotspot.nearest_hub.id) }} Hub</span
-                      >
-                    </div>
                     <div class="location-button-hub-metrics">
+                      <span class="location-button-hub-id"
+                        >From
+                        {{ getHubName(hotspot.nearest_hub.id) }} hub:</span
+                      >
                       <svg
                         width="14"
                         height="14"
@@ -671,6 +674,27 @@ function getLocationImage(locationName) {
 
   // Return image path if exists, otherwise null
   return imageMap[locationName] || null;
+}
+
+function getLocationSVG(locationName) {
+  if (!locationName) return null;
+
+  // Map location names to SVG paths in SVG folder
+  const BASE = import.meta.env.BASE_URL || "/";
+  const svgMap = {
+    Altstetten: `${BASE}SVG/altstetten.svg`,
+    Oerlikon: `${BASE}SVG/oerlikon.svg`,
+    "Zürich Niederdörfli": `${BASE}SVG/niederdorf.svg`,
+    "Zürich Hauptbahnhof": `${BASE}SVG/bahnhof.svg`,
+    "Zürich Langstrasse": `${BASE}SVG/langstrasse.svg`,
+    "Zürich Bellevue": `${BASE}SVG/bellevue.svg`,
+    "Zürich Enge": `${BASE}SVG/enge.svg`,
+    "Zürich Central": `${BASE}SVG/central.svg`,
+    "Zürich Hardbrücke": `${BASE}SVG/hardbrücke.svg`,
+  };
+
+  // Return SVG path if exists, otherwise null
+  return svgMap[locationName] || null;
 }
 
 function adjustColorBrightness(hex, percent) {
@@ -966,7 +990,7 @@ onMounted(() => {
   overflow: hidden;
   cursor: pointer;
   position: relative;
-  aspect-ratio: 1;
+  aspect-ratio: 16 / 9;
   width: 100%;
 }
 
@@ -1017,8 +1041,7 @@ onMounted(() => {
   flex-direction: column;
   gap: 6px;
   min-width: 0;
-  background: rgba(26, 27, 30, 0.6);
-  backdrop-filter: blur(10px);
+  background: transparent;
 }
 
 .location-button-name {
@@ -1054,12 +1077,19 @@ onMounted(() => {
 }
 
 .location-button-hub-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 16px;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.7) 0%,
+    rgba(0, 0, 0, 0.4) 70%,
+    transparent 100%
+  );
 }
 
 .location-button-hub-label {
