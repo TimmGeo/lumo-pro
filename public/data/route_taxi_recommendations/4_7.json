@@ -1,0 +1,24 @@
+{
+  "fast": {
+    "recommendation": "⚠️ Safe to walk initially, but consider taking a taxi/uber from approximately segment 10 to your destination.",
+    "analysis": {
+      "pattern": "end",
+      "unsafe_ratio": 0.25396825396825395,
+      "first_unsafe": 9,
+      "last_unsafe": 625,
+      "total_segments": 630,
+      "unsafe_count": 160
+    }
+  },
+  "bright": {
+    "recommendation": "⚠️ Safe to walk initially, but consider taking a taxi/uber from approximately segment 10 to your destination.",
+    "analysis": {
+      "pattern": "end",
+      "unsafe_ratio": 0.25754884547069273,
+      "first_unsafe": 9,
+      "last_unsafe": 558,
+      "total_segments": 563,
+      "unsafe_count": 145
+    }
+  }
+}

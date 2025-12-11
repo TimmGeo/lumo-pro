@@ -27,7 +27,8 @@
       v-if="
         (currentRouteStats && mapZoom >= 11.5) ||
         activeLayerName ||
-        routeAnimationActive
+        routeAnimationActive ||
+        routeSecurityAlertsActive
       "
       class="top-center-buttons-container"
       :class="{
@@ -99,6 +100,48 @@
           class="clear-route-close"
           @click.stop="handleResetAnimation"
           aria-label="Clear animation"
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Clear Security Alerts Button -->
+      <div
+        v-if="routeSecurityAlertsActive && mapZoom >= 11.5"
+        class="clear-route-top-button"
+      >
+        <svg
+          class="clear-route-icon"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+          <path d="M12 8v4"></path>
+          <path d="M12 16h.01"></path>
+        </svg>
+        <span>Security Alerts</span>
+        <button
+          class="clear-route-close"
+          @click.stop="toggleRouteSecurityAlerts"
+          aria-label="Clear security alerts"
         >
           <svg
             width="14"
@@ -1648,7 +1691,106 @@
                 >
                   <div class="app-basket-security-content">
                     <h3 class="security-content-title">Security & Safety</h3>
-                    <div class="security-category">
+                    <p class="security-introduction">
+                      Your safety is our priority. Access emergency contacts and
+                      route safety information to help you navigate Zurich with
+                      confidence.
+                    </p>
+
+                    <!-- Route Security Alerts -->
+                    <div class="security-category" style="margin-top: 32px">
+                      <h4 class="security-category-title">Route Safety</h4>
+                      <button
+                        class="security-alert-button"
+                        :class="{ active: routeSecurityAlertsActive }"
+                        @click="toggleRouteSecurityAlerts"
+                        :disabled="!currentRouteStats"
+                      >
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <path
+                            d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"
+                          ></path>
+                          <path d="M12 8v4"></path>
+                          <path d="M12 16h.01"></path>
+                        </svg>
+                        <span
+                          >{{
+                            routeSecurityAlertsActive ? "Hide" : "Show"
+                          }}
+                          Security Alerts</span
+                        >
+                      </button>
+                      <p
+                        class="security-alert-description"
+                        v-if="!currentRouteStats"
+                      >
+                        Select a route to view security alerts
+                      </p>
+                      <p
+                        class="security-alert-description"
+                        v-else-if="routeSecurityAlertsActive"
+                      >
+                        Route segments passing through unsafe areas are
+                        highlighted in red
+                      </p>
+                    </div>
+
+                    <!-- Link Route to Uber -->
+                    <div class="security-category" style="margin-top: 32px">
+                      <h4 class="security-category-title">
+                        Link Route to Uber
+                      </h4>
+                      <div class="uber-link-section">
+                        <div class="uber-icon-container">
+                          <img
+                            class="uber-icon"
+                            :src="`${BASE}assets/uber.jpg`"
+                            alt="Uber"
+                          />
+                        </div>
+                        <p class="uber-description">
+                          Transfer your route details directly to the Uber app
+                          for convenient ride booking. Your selected route will
+                          be imported with start and destination points ready
+                          for booking.
+                        </p>
+                        <button
+                          class="uber-import-button"
+                          :disabled="!currentRouteStats"
+                          @click="handleUberImport"
+                        >
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          >
+                            <path
+                              d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"
+                            ></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                          </svg>
+                          <span>Import Route Details into Uber</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Emergency Numbers -->
+                    <div class="security-category" style="margin-top: 32px">
                       <h4 class="security-category-title">Emergency Numbers</h4>
                       <div class="security-contacts-table">
                         <div class="security-contacts-header">
@@ -1717,53 +1859,6 @@
                         </div>
                       </div>
                     </div>
-                  </div>
-
-                  <!-- Route Security Alerts -->
-                  <div class="security-category" style="margin-top: 32px">
-                    <h4 class="security-category-title">Route Safety</h4>
-                    <button
-                      class="security-alert-button"
-                      :class="{ active: routeSecurityAlertsActive }"
-                      @click="toggleRouteSecurityAlerts"
-                      :disabled="!currentRouteStats"
-                    >
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      >
-                        <path
-                          d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"
-                        ></path>
-                        <path d="M12 8v4"></path>
-                        <path d="M12 16h.01"></path>
-                      </svg>
-                      <span
-                        >{{
-                          routeSecurityAlertsActive ? "Hide" : "Show"
-                        }}
-                        Security Alerts</span
-                      >
-                    </button>
-                    <p
-                      class="security-alert-description"
-                      v-if="!currentRouteStats"
-                    >
-                      Select a route to view security alerts
-                    </p>
-                    <p
-                      class="security-alert-description"
-                      v-else-if="routeSecurityAlertsActive"
-                    >
-                      Route segments passing through unsafe areas are
-                      highlighted in red
-                    </p>
                   </div>
                 </div>
 
@@ -2278,6 +2373,19 @@ function toggleRouteSecurityAlerts() {
     );
   }
 }
+
+function handleUberImport() {
+  if (!currentRouteStats.value || !startHub.value || !endHub.value) {
+    return;
+  }
+  // Dummy function for Uber import
+  console.log("Uber import clicked - route details would be imported here");
+  // In a real implementation, this would open the Uber app or deep link
+  // with the route details (start and end coordinates/addresses)
+}
+
+// Base URL for assets
+const BASE = import.meta.env.BASE_URL || "/";
 
 // Hover popup data
 const popup = ref({ show: false, x: 0, y: 0, lights: 0, pois: 0, hub: "—" });
@@ -6602,8 +6710,22 @@ textarea:focus-visible {
   font-size: 20px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.95);
-  margin: 0 0 20px 0;
+  margin: 0 0 12px 0;
   letter-spacing: -0.02em;
+}
+
+.security-introduction {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0 0 24px 0;
+  line-height: 1.6;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
   font-family:
     "SF Pro Display",
     "SF Pro Text",
@@ -6784,6 +6906,84 @@ textarea:focus-visible {
     BlinkMacSystemFont,
     system-ui,
     sans-serif;
+}
+
+.uber-link-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.uber-icon-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  margin-bottom: 4px;
+}
+
+.uber-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.uber-description {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+  line-height: 1.6;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+}
+
+.uber-import-button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  width: 100%;
+  justify-content: center;
+}
+
+.uber-import-button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.uber-import-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.uber-import-button svg {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
 }
 
 .map-controls-grid {

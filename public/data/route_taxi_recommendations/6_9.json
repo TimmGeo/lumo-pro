@@ -1,0 +1,24 @@
+{
+  "fast": {
+    "recommendation": "⚠️ Safe to walk initially, but consider taking a taxi/uber from approximately segment 93 to segment 176, then continue walking to your destination.",
+    "analysis": {
+      "pattern": "middle",
+      "unsafe_ratio": 0.08191126279863481,
+      "first_unsafe": 92,
+      "last_unsafe": 174,
+      "total_segments": 293,
+      "unsafe_count": 24
+    }
+  },
+  "bright": {
+    "recommendation": "⚠️ Safe to walk initially, but consider taking a taxi/uber from approximately segment 106 to segment 187, then continue walking to your destination.",
+    "analysis": {
+      "pattern": "middle",
+      "unsafe_ratio": 0.0756578947368421,
+      "first_unsafe": 105,
+      "last_unsafe": 185,
+      "total_segments": 304,
+      "unsafe_count": 23
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "fast": {
+    "recommendation": "⚠️ Consider taking a taxi/uber from the start to approximately segment 239, then continue walking to your destination.",
+    "analysis": {
+      "pattern": "start",
+      "unsafe_ratio": 0.026923076923076925,
+      "first_unsafe": 76,
+      "last_unsafe": 237,
+      "total_segments": 260,
+      "unsafe_count": 7
+    }
+  },
+  "bright": {
+    "recommendation": "⚠️ Consider taking a taxi/uber from the start to approximately segment 239, then continue walking to your destination.",
+    "analysis": {
+      "pattern": "start",
+      "unsafe_ratio": 0.026923076923076925,
+      "first_unsafe": 76,
+      "last_unsafe": 237,
+      "total_segments": 260,
+      "unsafe_count": 7
+    }
+  }
+}
