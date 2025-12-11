@@ -24,7 +24,11 @@
 
     <!-- Top Center Buttons Container -->
     <div
-      v-if="(currentRouteStats && mapZoom >= 11.5) || activeLayerName"
+      v-if="
+        (currentRouteStats && mapZoom >= 11.5) ||
+        activeLayerName ||
+        routeAnimationActive
+      "
       class="top-center-buttons-container"
       :class="{
         'top-center-buttons-container--zurich-message-visible':
@@ -55,6 +59,46 @@
           class="clear-route-close"
           @click.stop="handleClearRoute"
           aria-label="Clear route"
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Clear Animation Button -->
+      <div
+        v-if="routeAnimationActive && mapZoom >= 11.5"
+        class="clear-route-top-button"
+      >
+        <svg
+          class="clear-route-icon"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <polygon points="5 3 19 12 5 21 5 3" />
+        </svg>
+        <span>Animation</span>
+        <button
+          class="clear-route-close"
+          @click.stop="handleResetAnimation"
+          aria-label="Clear animation"
         >
           <svg
             width="14"
@@ -2091,7 +2135,7 @@ watch(animationColoringMode, (newMode, oldMode) => {
       !!(routeApi && routeApi.updateAnimationColoring)
     );
 
-    if (routeApi && routeApi.updateAnimationColoring) {
+    if (routeApi) {
       const routeId1 = Math.min(
         parseInt(startHub.value),
         parseInt(endHub.value)
@@ -2101,11 +2145,16 @@ watch(animationColoringMode, (newMode, oldMode) => {
         parseInt(endHub.value)
       );
       console.log(
-        `Calling updateAnimationColoring with route ${routeId1}_${routeId2}, mode: ${newMode}`
+        `Regenerating animation with route ${routeId1}_${routeId2}, mode: ${newMode}`
       );
-      routeApi.updateAnimationColoring(routeId1, routeId2, newMode);
+      // Re-animate with new coloring mode to instantly regenerate
+      if (routeApi.animateRouteHexagons) {
+        routeApi.animateRouteHexagons(routeId1, routeId2, newMode);
+      } else {
+        console.warn("animateRouteHexagons not available");
+      }
     } else {
-      console.warn("updateAnimationColoring not available");
+      console.warn("Route API not available");
     }
   } else {
     console.warn("Cannot update coloring: conditions not met");

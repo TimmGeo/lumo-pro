@@ -292,50 +292,98 @@ let hexagonMedian = null; // Store median score for coloring
 
 // Update layer coloring based on mode
 function updateLayerColoring(layerId, coloringMode) {
-  if (!map || !map.isStyleLoaded()) {
-    console.warn(`Cannot update layer ${layerId}: map not ready`);
+  if (!map) {
+    console.warn(`Cannot update layer ${layerId}: map not available`);
     return;
   }
 
-  // Check layer type to determine the correct color property
+  // Check if layer exists and map is ready
+  if (!map.getLayer(layerId)) {
+    console.warn(`Layer ${layerId} does not exist`);
+    return;
+  }
+
+  // More lenient check - try to update even if map is not fully loaded
+  // During animations, the style might be in transition, but layers can still be updated
+  if (!map.loaded() && !map.isStyleLoaded()) {
+    console.warn(
+      `Map not fully loaded, but attempting to update ${layerId} anyway`
+    );
+    // Don't return - try anyway as the layer might still be updatable
+  }
+
+  // Get layer (already checked above, but double-check)
   const layer = map.getLayer(layerId);
   if (!layer) {
     console.warn(`Layer ${layerId} not found`);
     return;
   }
 
-  const isExtrusion = layer.type === "fill-extrusion";
-  const colorProperty = isExtrusion ? "fill-extrusion-color" : "fill-color";
+  // Determine color property based on layer type
+  let colorProperty;
+  if (layer.type === "fill-extrusion") {
+    colorProperty = "fill-extrusion-color";
+  } else if (layer.type === "fill") {
+    colorProperty = "fill-color";
+  } else {
+    console.warn(`Unknown layer type "${layer.type}" for layer ${layerId}`);
+    return;
+  }
 
   console.log(
-    `Updating ${layerId} with ${coloringMode} mode, property: ${colorProperty}`
+    `Updating ${layerId} (type: ${layer.type}) with ${coloringMode} mode, property: ${colorProperty}`
   );
 
   if (coloringMode === "median") {
     // Median-based coloring: green for above median, red for below
-    if (!hexagonMedian) {
+    if (!hexagonMedian && hexagonMedian !== 0) {
       console.warn("Hexagon median not loaded, cannot apply median coloring");
       return;
     }
 
-    console.log(`Applying median coloring with median value: ${hexagonMedian}`);
+    // Ensure median is a number
+    const medianValue =
+      typeof hexagonMedian === "number"
+        ? hexagonMedian
+        : parseFloat(hexagonMedian);
+    if (isNaN(medianValue)) {
+      console.error(`Invalid median value: ${hexagonMedian}`);
+      return;
+    }
+
+    console.log(`Applying median coloring with median value: ${medianValue}`);
+    console.log(`Layer ID: ${layerId}, Color property: ${colorProperty}`);
 
     const colorExpression = [
       "case",
-      [">", ["get", "combined_score"], hexagonMedian],
+      [">", ["get", "combined_score"], medianValue],
       "#22c55e", // Green - above median
       "#ef4444", // Red - below median
     ];
 
+    console.log("Color expression:", JSON.stringify(colorExpression));
+
     try {
       map.setPaintProperty(layerId, colorProperty, colorExpression);
-      console.log(`Successfully updated ${layerId} with median coloring`);
+      console.log(`✓ Successfully updated ${layerId} with median coloring`);
+
+      // Verify the update worked
+      const updatedValue = map.getPaintProperty(layerId, colorProperty);
+      console.log(`Verified paint property value:`, updatedValue);
     } catch (error) {
-      console.error(`Error updating ${layerId} paint property:`, error);
+      console.error(`✗ Error updating ${layerId} paint property:`, error);
+      console.error("Error details:", error.message);
+      if (error.stack) {
+        console.error("Stack trace:", error.stack);
+      }
+      // Re-throw to help with debugging
+      throw error;
     }
   } else {
     // Route-based coloring: blue for bright, grey for fast
     console.log("Applying route-based coloring");
+    console.log(`Layer ID: ${layerId}, Color property: ${colorProperty}`);
+
     const colorExpression = [
       "case",
       ["has", "route_type"],
@@ -353,11 +401,21 @@ function updateLayerColoring(layerId, coloringMode) {
       "#6c5ce7", // Default if no route_type
     ];
 
+    console.log("Color expression:", JSON.stringify(colorExpression));
+
     try {
       map.setPaintProperty(layerId, colorProperty, colorExpression);
-      console.log(`Successfully updated ${layerId} with route coloring`);
+      console.log(`✓ Successfully updated ${layerId} with route coloring`);
+
+      // Verify the update worked
+      const updatedValue = map.getPaintProperty(layerId, colorProperty);
+      console.log(`Verified paint property value:`, updatedValue);
     } catch (error) {
-      console.error(`Error updating ${layerId} paint property:`, error);
+      console.error(`✗ Error updating ${layerId} paint property:`, error);
+      console.error("Error details:", error.message);
+      if (error.stack) {
+        console.error("Stack trace:", error.stack);
+      }
     }
   }
 }
@@ -441,6 +499,14 @@ async function animateHexagonsReveal(
     map.setLayoutProperty("hex-route-animation-layer", "visibility", "visible");
   }
 
+  // Apply coloring mode immediately before animation starts
+  if (map.getLayer("hex-route-animation-fill")) {
+    updateLayerColoring("hex-route-animation-fill", coloringMode);
+  }
+  if (map.getLayer("hex-route-animation-layer")) {
+    updateLayerColoring("hex-route-animation-layer", coloringMode);
+  }
+
   // First, add all hexagons with height 0
   const initialData = {
     type: "FeatureCollection",
@@ -496,7 +562,8 @@ async function animateHexagonsReveal(
   // Wait for animation to complete
   await new Promise((resolve) => setTimeout(resolve, animationDuration + 50));
 
-  // Apply coloring mode after animation completes
+  // Colors are already applied at the start, but ensure they're still correct after animation
+  // (in case something changed during animation)
   if (map.getLayer("hex-route-animation-fill")) {
     updateLayerColoring("hex-route-animation-fill", coloringMode);
   }
@@ -3339,9 +3406,11 @@ defineExpose({
     }
   },
   updateAnimationColoring: async (routeId1, routeId2, coloringMode) => {
-    if (!map || !map.isStyleLoaded() || !routeAnimationActive) {
+    // This function is kept for backward compatibility but is now mainly
+    // used internally. External calls should use animateRouteHexagons instead.
+    if (!map || !routeAnimationActive) {
       console.warn(
-        "Cannot update coloring: map not ready or animation not active"
+        "Cannot update coloring: map not available or animation not active"
       );
       return;
     }
@@ -3349,28 +3418,35 @@ defineExpose({
     console.log(`Updating animation coloring to ${coloringMode} mode`);
 
     // Load median data if in median mode and not already loaded
-    if (coloringMode === "median" && !hexagonMedian) {
-      const medianUrl = `${BASE}data/hexagon_median.json`.replace(
-        /\/{2,}/g,
-        "/"
-      );
-      try {
-        const medianResponse = await fetch(medianUrl);
-        if (medianResponse.ok) {
-          const medianData = await medianResponse.json();
-          hexagonMedian = medianData.median_score;
-          console.log("Loaded hexagon median for update:", hexagonMedian);
-        } else {
-          console.warn("Median data file not found");
+    if (coloringMode === "median") {
+      if (!hexagonMedian) {
+        const medianUrl = `${BASE}data/hexagon_median.json`.replace(
+          /\/{2,}/g,
+          "/"
+        );
+        try {
+          console.log("Loading median data from:", medianUrl);
+          const medianResponse = await fetch(medianUrl);
+          if (medianResponse.ok) {
+            const medianData = await medianResponse.json();
+            hexagonMedian = medianData.median_score;
+            console.log("✓ Loaded hexagon median for update:", hexagonMedian);
+          } else {
+            console.error(
+              `✗ Median data file not found (status: ${medianResponse.status})`
+            );
+            return; // Don't update if median can't be loaded
+          }
+        } catch (error) {
+          console.error("✗ Error loading median data:", error);
           return; // Don't update if median can't be loaded
         }
-      } catch (error) {
-        console.warn("Error loading median data:", error);
-        return; // Don't update if median can't be loaded
+      } else {
+        console.log("Using cached hexagon median:", hexagonMedian);
       }
     }
 
-    // Verify that features have combined_score property
+    // Verify that features have required properties
     const animationSource = map.getSource("hex-route-animation");
     if (
       animationSource &&
@@ -3383,34 +3459,46 @@ defineExpose({
           "Sample feature properties:",
           Object.keys(sampleFeature.properties)
         );
-        console.log(
-          "Sample combined_score:",
-          sampleFeature.properties.combined_score
-        );
-        if (
-          coloringMode === "median" &&
-          sampleFeature.properties.combined_score === undefined
-        ) {
-          console.warn("Features don't have combined_score property!");
+        if (coloringMode === "median") {
+          console.log(
+            "Sample combined_score:",
+            sampleFeature.properties.combined_score
+          );
+          if (sampleFeature.properties.combined_score === undefined) {
+            console.warn("Features don't have combined_score property!");
+          }
+        } else {
+          console.log(
+            "Sample route_type:",
+            sampleFeature.properties.route_type
+          );
+          if (sampleFeature.properties.route_type === undefined) {
+            console.warn("Features don't have route_type property!");
+          }
         }
       }
     }
 
-    // Update layer paint properties based on coloring mode
-    // Use nextTick to ensure map is ready for updates
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    // Update layer paint properties based on coloring mode immediately
+    const fillLayerExists = map.getLayer("hex-route-animation-fill");
+    const extrusionLayerExists = map.getLayer("hex-route-animation-layer");
 
-    if (map.getLayer("hex-route-animation-fill")) {
+    console.log(
+      `Fill layer exists: ${!!fillLayerExists}, Extrusion layer exists: ${!!extrusionLayerExists}`
+    );
+
+    // Update both layers synchronously for instant color change
+    // Apply colors immediately - no delays
+    if (fillLayerExists) {
       updateLayerColoring("hex-route-animation-fill", coloringMode);
     }
-    if (map.getLayer("hex-route-animation-layer")) {
+    if (extrusionLayerExists) {
       updateLayerColoring("hex-route-animation-layer", coloringMode);
     }
 
-    // Force map to repaint
-    map.triggerRepaint();
-
-    console.log(`Updated animation coloring to ${coloringMode} mode`);
+    console.log(
+      `✓ Updated animation coloring to ${coloringMode} mode (instant)`
+    );
   },
   resetRouteAnimation,
 });
