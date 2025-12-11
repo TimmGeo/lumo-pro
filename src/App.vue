@@ -1665,8 +1665,68 @@
                   <div class="app-basket-animation-content">
                     <div class="animation-content">
                       <p class="animation-description">
-                        Animation controls and settings will be available here.
+                        Animate the display of hexagons that intersect with the
+                        current routes.
                       </p>
+                      <button
+                        class="animation-button"
+                        @click="handleAnimateRoutes"
+                        :disabled="!currentRouteStats || isAnimating"
+                      >
+                        <svg
+                          v-if="!isAnimating"
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                        </svg>
+                        <svg
+                          v-else
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <rect x="6" y="4" width="4" height="16"></rect>
+                          <rect x="14" y="4" width="4" height="16"></rect>
+                        </svg>
+                        <span>{{
+                          isAnimating ? "Animating..." : "Animate Routes"
+                        }}</span>
+                      </button>
+                      <button
+                        v-if="isAnimating || routeAnimationActive"
+                        class="animation-reset-button"
+                        @click="handleResetAnimation"
+                      >
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <polyline points="23 4 23 10 17 10"></polyline>
+                          <polyline points="1 20 1 14 7 14"></polyline>
+                          <path
+                            d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"
+                          ></path>
+                        </svg>
+                        <span>Reset</span>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -1920,11 +1980,53 @@ function closeBasket() {
   previousBasketApp.value = null;
 }
 
+// Animation state
+const isAnimating = ref(false);
+const routeAnimationActive = ref(false);
+
 // Handler functions for app buttons that clear previous state on manual interaction
 function toggleAnimation() {
   previousBasketApp.value = null; // Clear previous state on manual interaction
   activeBasketApp.value =
     activeBasketApp.value === "animation" ? null : "animation";
+}
+
+// Handle route animation
+async function handleAnimateRoutes() {
+  if (!currentRouteStats.value || !startHub.value || !endHub.value) {
+    console.warn("No route available for animation");
+    return;
+  }
+
+  const routeApi = api || mapboxViewerRef.value;
+  if (!routeApi || !routeApi.animateRouteHexagons) {
+    console.warn("Animation function not available");
+    return;
+  }
+
+  isAnimating.value = true;
+  routeAnimationActive.value = true;
+
+  try {
+    const routeId1 = Math.min(parseInt(startHub.value), parseInt(endHub.value));
+    const routeId2 = Math.max(parseInt(startHub.value), parseInt(endHub.value));
+
+    await routeApi.animateRouteHexagons(routeId1, routeId2);
+  } catch (error) {
+    console.error("Error animating routes:", error);
+  } finally {
+    isAnimating.value = false;
+  }
+}
+
+// Reset animation
+function handleResetAnimation() {
+  const routeApi = api || mapboxViewerRef.value;
+  if (routeApi && routeApi.resetRouteAnimation) {
+    routeApi.resetRouteAnimation();
+  }
+  routeAnimationActive.value = false;
+  isAnimating.value = false;
 }
 
 function toggleChat() {
@@ -6740,6 +6842,67 @@ textarea:focus-visible {
 }
 
 /* Animation Content Styles */
+.animation-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 16px;
+}
+
+.animation-button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.animation-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.animation-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.animation-button svg {
+  flex-shrink: 0;
+}
+
+.animation-reset-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 12px;
+}
+
+.animation-reset-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.animation-reset-button svg {
+  flex-shrink: 0;
+}
+
 .animation-content {
   padding: 20px 0;
 }

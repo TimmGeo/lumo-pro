@@ -284,6 +284,147 @@ let brightRoutePopup = null;
 let fastRouteGeom = null;
 let brightRouteGeom = null;
 
+// Animation state
+let routeAnimationActive = false;
+let originalHexFilter = null;
+let intersectionData = null;
+
+// Animate hexagons revealing along the route
+async function animateHexagonsReveal(hexIds, intersectionData) {
+  if (!map || !map.isStyleLoaded() || !hexIds || hexIds.length === 0) {
+    return;
+  }
+
+  // Get the hex-combined source to extract hexagon features
+  const hexCombinedSource = map.getSource("hex-combined");
+  if (!hexCombinedSource) {
+    console.warn("hex-combined source not found");
+    return;
+  }
+
+  // Get the hexagon data
+  const hexData = hexCombinedSource._data;
+  if (!hexData || !hexData.features) {
+    console.warn("hex-combined data not available");
+    return;
+  }
+
+  // Create Sets for fast lookup
+  const hexIdSet = new Set(hexIds);
+  const fastHexIds = new Set(intersectionData?.fast_hex_ids || []);
+  const brightHexIds = new Set(intersectionData?.bright_hex_ids || []);
+
+  // Extract features that match the hexagon IDs and add route information
+  const intersectingFeatures = hexData.features
+    .filter((feature) => {
+      const hexId = feature.properties?.id || feature.properties?.fid;
+      return hexIdSet.has(hexId);
+    })
+    .map((feature) => {
+      // Create a copy of the feature to avoid mutating the original
+      const hexId = feature.properties?.id || feature.properties?.fid;
+      const isFast = fastHexIds.has(hexId);
+      const isBright = brightHexIds.has(hexId);
+
+      // Determine route type
+      let routeType = null;
+      if (isFast && isBright) {
+        routeType = "both";
+      } else if (isBright) {
+        routeType = "bright";
+      } else if (isFast) {
+        routeType = "fast";
+      }
+
+      return {
+        ...feature,
+        properties: {
+          ...feature.properties,
+          route_type: routeType,
+          animation_height: 0, // Start with 0 height
+        },
+      };
+    });
+
+  console.log(
+    `Found ${intersectingFeatures.length} hexagon features out of ${hexIds.length} IDs`
+  );
+
+  // Get the animation source
+  const animationSource = map.getSource("hex-route-animation");
+  if (!animationSource) {
+    console.warn("hex-route-animation source not found");
+    return;
+  }
+
+  // Show animation layers
+  if (map.getLayer("hex-route-animation-fill")) {
+    map.setLayoutProperty("hex-route-animation-fill", "visibility", "visible");
+  }
+  if (map.getLayer("hex-route-animation-layer")) {
+    map.setLayoutProperty("hex-route-animation-layer", "visibility", "visible");
+  }
+
+  // First, add all hexagons with height 0
+  const initialData = {
+    type: "FeatureCollection",
+    features: intersectingFeatures.map((f) => ({
+      ...f,
+      properties: { ...f.properties, animation_height: 0 },
+    })),
+  };
+  animationSource.setData(initialData);
+
+  // Wait a moment for the initial data to render
+  await new Promise((resolve) => setTimeout(resolve, 100));
+
+  // Animate height growth from 0 to 1 with smooth easing
+  const animationDuration = 2000; // Total duration in ms
+  const startTime = Date.now();
+
+  // Use requestAnimationFrame for smoother animation
+  const animate = () => {
+    const currentTime = Date.now();
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / animationDuration, 1); // 0 to 1
+
+    // Apply ease-out cubic easing for smooth deceleration
+    // Easing function: 1 - (1 - t)^3
+    const easedProgress = 1 - Math.pow(1 - progress, 3);
+
+    // Update all features with new height
+    const animatedFeatures = intersectingFeatures.map((feature) => ({
+      ...feature,
+      properties: {
+        ...feature.properties,
+        animation_height: easedProgress,
+      },
+    }));
+
+    const animatedData = {
+      type: "FeatureCollection",
+      features: animatedFeatures,
+    };
+
+    animationSource.setData(animatedData);
+
+    // Continue animation if not complete
+    if (progress < 1) {
+      requestAnimationFrame(animate);
+    }
+  };
+
+  // Start animation
+  requestAnimationFrame(animate);
+
+  // Wait for animation to complete
+  await new Promise((resolve) => setTimeout(resolve, animationDuration + 50));
+
+  console.log(
+    `Hexagon animation complete - showing ${intersectingFeatures.length} hexagons with height animation`
+  );
+}
+
 // Paths that work both locally and in deploy
 const BASE = import.meta.env.BASE_URL || "/";
 const hubsUrl = `${BASE}data/routing_HUBS/routing_HUBS.geojson`.replace(
@@ -901,6 +1042,15 @@ onMounted(async () => {
             data: lumoScoreData,
           });
 
+          // Add source for animated route hexagons (separate from combined layer)
+          map.addSource("hex-route-animation", {
+            type: "geojson",
+            data: {
+              type: "FeatureCollection",
+              features: [],
+            },
+          });
+
           // Add 2D fill layer for combined (shows when zoomed in, after 3D disappears)
           map.addLayer({
             id: "hex-combined-fill",
@@ -997,6 +1147,101 @@ onMounted(async () => {
             "hex-combined-layer",
             "visibility",
             props.combinedVisible ? "visible" : "none"
+          );
+
+          // Add 2D fill layer for animated route hexagons
+          map.addLayer({
+            id: "hex-route-animation-fill",
+            type: "fill",
+            source: "hex-route-animation",
+            paint: {
+              // Color based on route type: blue for bright, grey for fast
+              "fill-color": [
+                "case",
+                ["has", "route_type"],
+                [
+                  "match",
+                  ["get", "route_type"],
+                  "bright",
+                  "#64b4ff", // Blue for bright route
+                  "fast",
+                  "#9ca3af", // Grey for fast route
+                  "both",
+                  "#8b5cf6", // Purple for both routes
+                  "#6c5ce7", // Default purple-blue
+                ],
+                "#6c5ce7", // Default if no route_type
+              ],
+              "fill-opacity": [
+                "interpolate",
+                ["linear"],
+                ["zoom"],
+                15,
+                0,
+                15.15,
+                0.4,
+                15.3,
+                0.5,
+              ],
+              "fill-outline-color": "transparent",
+            },
+          });
+
+          // Add 3D extruded hexagon layer for animated route hexagons
+          map.addLayer({
+            id: "hex-route-animation-layer",
+            type: "fill-extrusion",
+            source: "hex-route-animation",
+            paint: {
+              // Color based on route type: blue for bright, grey for fast
+              "fill-extrusion-color": [
+                "case",
+                ["has", "route_type"],
+                [
+                  "match",
+                  ["get", "route_type"],
+                  "bright",
+                  "#64b4ff", // Blue for bright route
+                  "fast",
+                  "#9ca3af", // Grey for fast route
+                  "both",
+                  "#8b5cf6", // Purple for both routes
+                  "#6c5ce7", // Default purple-blue
+                ],
+                "#6c5ce7", // Default if no route_type
+              ],
+              "fill-extrusion-opacity": [
+                "interpolate",
+                ["linear"],
+                ["zoom"],
+                15,
+                0.6,
+                15.15,
+                0.15,
+                15.3,
+                0,
+              ],
+              // Height will be animated from 0 to full height
+              // Use animation_height property that starts at 0 and animates to full height
+              "fill-extrusion-height": [
+                "*",
+                ["get", "animation_height"],
+                ["*", ["get", "combined_score"], 2500],
+              ],
+              "fill-extrusion-base": 0,
+            },
+          });
+
+          // Initially hide animation layers
+          map.setLayoutProperty(
+            "hex-route-animation-fill",
+            "visibility",
+            "none"
+          );
+          map.setLayoutProperty(
+            "hex-route-animation-layer",
+            "visibility",
+            "none"
           );
 
           // Combined layer click handlers are handled in the general map click handler
@@ -1256,6 +1501,12 @@ function ensureHubsOnTop() {
     "hubs-labels", // Move last (will be on top of hub stack)
   ];
 
+  // Animation layers should be above combined layers but below hubs
+  const animationLayers = [
+    "hex-route-animation-fill",
+    "hex-route-animation-layer",
+  ];
+
   // Check if all hub layers exist
   const existingHubLayers = hubLayers.filter((layerId) =>
     map.getLayer(layerId)
@@ -1294,6 +1545,22 @@ function ensureHubsOnTop() {
 
   // Only move layers if they're not already on top
   if (needsReordering) {
+    // Move animation layers to be just before hubs (if they exist)
+    animationLayers.forEach((layerId) => {
+      if (map.getLayer(layerId)) {
+        try {
+          // Move animation layer to be just before the first hub layer
+          if (existingHubLayers.length > 0) {
+            map.moveLayer(layerId, existingHubLayers[0]);
+          } else {
+            map.moveLayer(layerId);
+          }
+        } catch (e) {
+          // Layer might not exist yet, that's okay
+        }
+      }
+    });
+
     // Move each hub layer to the absolute top
     hubLayers.forEach((layerId) => {
       if (map.getLayer(layerId)) {
@@ -2441,9 +2708,42 @@ function showRouteStatsPopup(routeGeom, stats, routeType = "fast") {
   }, 10);
 }
 
+// Reset route animation (internal function)
+function resetRouteAnimation() {
+  if (!map || !map.isStyleLoaded()) {
+    return;
+  }
+
+  // Hide animation layers
+  if (map.getLayer("hex-route-animation-fill")) {
+    map.setLayoutProperty("hex-route-animation-fill", "visibility", "none");
+  }
+  if (map.getLayer("hex-route-animation-layer")) {
+    map.setLayoutProperty("hex-route-animation-layer", "visibility", "none");
+  }
+
+  // Clear the animation source data
+  const animationSource = map.getSource("hex-route-animation");
+  if (animationSource) {
+    animationSource.setData({
+      type: "FeatureCollection",
+      features: [],
+    });
+  }
+
+  routeAnimationActive = false;
+  intersectionData = null;
+  console.log("Route animation reset");
+}
+
 // Clear the displayed routes (both fast and bright)
 function clearRoute(skipHubFilter = false) {
   if (!map || !map.isStyleLoaded()) return;
+
+  // Reset route animation if active
+  if (routeAnimationActive) {
+    resetRouteAnimation();
+  }
 
   // Remove popups if they exist
   if (fastRoutePopup) {
@@ -2594,23 +2894,22 @@ function zoomToAllHubs() {
       const currentPitch = map.getPitch();
       const currentBearing = map.getBearing();
 
-      // Temporarily fit bounds to calculate optimal zoom and center
+      // Calculate target view using the same pattern as route zooming
+      // Store current state
       const originalCenter = map.getCenter();
       const originalZoom = map.getZoom();
 
-      // Fit bounds with padding to calculate target view
-      // Use less padding and higher maxZoom to show labels (labels visible at zoom 11.5+)
+      // Temporarily fit bounds to calculate optimal zoom and center
       map.fitBounds(bounds, {
         padding: { top: 80, bottom: 80, left: 80, right: 80 },
-        duration: 0, // No animation for calculation
-        maxZoom: 15, // Allow zooming in closer to see labels
+        duration: 0,
+        maxZoom: 15,
       });
 
-      // Use the calculated zoom, but ensure it's at least 12 to show labels
       const targetZoom = Math.max(Math.min(map.getZoom(), 15), 12);
       const targetCenter = map.getCenter();
 
-      // Restore original position
+      // Restore original position immediately
       map.jumpTo({
         center: originalCenter,
         zoom: originalZoom,
@@ -2619,57 +2918,45 @@ function zoomToAllHubs() {
       });
 
       // Now animate to the target position while preserving pitch and bearing
+      // Use easeTo with custom easing for smoother animation (same as route zooming)
       map.easeTo({
         center: targetCenter,
         zoom: targetZoom,
         pitch: currentPitch,
         bearing: currentBearing,
-        duration: 1000, // 1 second animation
+        duration: 1200, // Slightly longer for smoother feel
+        easing(t) {
+          // Ease-out easing for smooth deceleration
+          return t * (2 - t);
+        },
       });
 
       console.log(
-        "zoomToAllHubs: Called easeTo successfully with preserved pitch"
+        "zoomToAllHubs: Called flyTo successfully with preserved pitch"
       );
     } catch (error) {
-      console.error("zoomToAllHubs: Error calling fitBounds/easeTo", error);
-      // If fitBounds fails, try again after a short delay
-      setTimeout(() => {
-        try {
-          const currentPitch = map.getPitch();
-          const currentBearing = map.getBearing();
-          const originalCenter = map.getCenter();
-          const originalZoom = map.getZoom();
-
-          map.fitBounds(bounds, {
-            padding: { top: 80, bottom: 80, left: 80, right: 80 },
-            duration: 0,
-            maxZoom: 15,
-          });
-
-          // Use the calculated zoom, but ensure it's at least 12 to show labels
-          const targetZoom = Math.max(Math.min(map.getZoom(), 15), 12);
-          const targetCenter = map.getCenter();
-
-          map.jumpTo({
-            center: originalCenter,
-            zoom: originalZoom,
-            pitch: currentPitch,
-            bearing: currentBearing,
-          });
-
+      console.error("zoomToAllHubs: Error calculating or animating", error);
+      // Fallback: use fitBounds directly
+      try {
+        const currentPitch = map.getPitch();
+        const currentBearing = map.getBearing();
+        map.fitBounds(bounds, {
+          padding: { top: 80, bottom: 80, left: 80, right: 80 },
+          duration: 1200,
+          maxZoom: 15,
+        });
+        // Restore pitch and bearing after a short delay
+        setTimeout(() => {
           map.easeTo({
-            center: targetCenter,
-            zoom: targetZoom,
             pitch: currentPitch,
             bearing: currentBearing,
-            duration: 1000,
+            duration: 300,
           });
-
-          console.log("zoomToAllHubs: Retry successful");
-        } catch (retryError) {
-          console.error("zoomToAllHubs: Retry also failed", retryError);
-        }
-      }, 200);
+        }, 1250);
+        console.log("zoomToAllHubs: Fallback to fitBounds");
+      } catch (fallbackError) {
+        console.error("zoomToAllHubs: Fallback also failed", fallbackError);
+      }
     }
   } else {
     console.warn("zoomToAllHubs: Bounds are empty, cannot zoom");
@@ -2897,6 +3184,52 @@ defineExpose({
     });
   },
   zoomToAllHubs,
+  animateRouteHexagons: async (routeId1, routeId2) => {
+    if (!map || !map.isStyleLoaded()) {
+      console.warn("Map not ready for animation");
+      return;
+    }
+
+    const routeName = `${Math.min(routeId1, routeId2)}_${Math.max(routeId1, routeId2)}`;
+    const intersectionUrl =
+      `${BASE}data/route_intersections/${routeName}.json`.replace(
+        /\/{2,}/g,
+        "/"
+      );
+
+    try {
+      // Load intersection data
+      const response = await fetch(intersectionUrl);
+      if (!response.ok) {
+        console.warn(`Intersection data not found for route ${routeName}`);
+        return;
+      }
+
+      intersectionData = await response.json();
+      console.log("Loaded intersection data:", intersectionData);
+
+      // Get all hexagon IDs that intersect with either route
+      const allIntersectingIds = new Set([
+        ...intersectionData.fast_hex_ids,
+        ...intersectionData.bright_hex_ids,
+      ]);
+
+      console.log(
+        `Animating ${allIntersectingIds.size} hexagons (fast: ${intersectionData.fast_count}, bright: ${intersectionData.bright_count})`
+      );
+
+      // Animate hexagons appearing (using independent animation layers)
+      await animateHexagonsReveal(
+        Array.from(allIntersectingIds),
+        intersectionData
+      );
+
+      routeAnimationActive = true;
+    } catch (error) {
+      console.error("Error loading or animating route hexagons:", error);
+    }
+  },
+  resetRouteAnimation,
 });
 
 function requestZurichFocus(key) {

@@ -1,0 +1,997 @@
+{
+  "route_name": "3_7",
+  "comparisons": {
+    "9234": {
+      "hex_id": 9234,
+      "combined_score": 0.07317073170731708,
+      "fast_contribution": -0.01857238755873797,
+      "bright_contribution": -0.019246119733924608,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "11283": {
+      "hex_id": 11283,
+      "combined_score": 0.029268292682926828,
+      "comparison": "fast_higher"
+    },
+    "11285": {
+      "hex_id": 11285,
+      "combined_score": 0.01951219512195122,
+      "comparison": "bright_higher"
+    },
+    "5142": {
+      "hex_id": 5142,
+      "combined_score": 0.01951219512195122,
+      "fast_contribution": -0.07223092414410383,
+      "bright_contribution": -0.07290465631929047,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "7191": {
+      "hex_id": 7191,
+      "combined_score": 0.029268292682926828,
+      "fast_contribution": -0.06247482658312822,
+      "bright_contribution": -0.06314855875831486,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "7192": {
+      "hex_id": 7192,
+      "combined_score": 0.029268292682926828,
+      "fast_contribution": -0.06247482658312822,
+      "bright_contribution": -0.06314855875831486,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "13342": {
+      "hex_id": 13342,
+      "combined_score": 0.01951219512195122,
+      "fast_contribution": -0.07223092414410383,
+      "bright_contribution": -0.07290465631929047,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "8750": {
+      "hex_id": 8750,
+      "combined_score": 0.04878048780487806,
+      "fast_contribution": -0.042962631461176994,
+      "bright_contribution": -0.04363636363636363,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "8751": {
+      "hex_id": 8751,
+      "combined_score": 0.03414634146341464,
+      "fast_contribution": -0.057596777802640414,
+      "bright_contribution": -0.058270509977827054,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "10802": {
+      "hex_id": 10802,
+      "combined_score": 0.04878048780487806,
+      "fast_contribution": -0.042962631461176994,
+      "bright_contribution": -0.04363636363636363,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "4659": {
+      "hex_id": 4659,
+      "combined_score": 0.03414634146341464,
+      "fast_contribution": -0.057596777802640414,
+      "bright_contribution": -0.058270509977827054,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "6712": {
+      "hex_id": 6712,
+      "combined_score": 0.05365853658536586,
+      "fast_contribution": -0.03808458268068919,
+      "bright_contribution": -0.03875831485587583,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "6713": {
+      "hex_id": 6713,
+      "combined_score": 0.029268292682926828,
+      "fast_contribution": -0.06247482658312822,
+      "bright_contribution": -0.06314855875831486,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "12857": {
+      "hex_id": 12857,
+      "combined_score": 0.03902439024390244,
+      "fast_contribution": -0.05271872902215261,
+      "bright_contribution": -0.05339246119733925,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "8268": {
+      "hex_id": 8268,
+      "combined_score": 0.15609756097560976,
+      "fast_contribution": 0.0643544417095547,
+      "bright_contribution": 0.06368070953436807,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "10320": {
+      "hex_id": 10320,
+      "combined_score": 0.09268292682926829,
+      "fast_contribution": 0.0009398075632132408,
+      "bright_contribution": 0.00026607538802660147,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "4177": {
+      "hex_id": 4177,
+      "combined_score": 0.06829268292682927,
+      "fast_contribution": -0.023450436339225778,
+      "bright_contribution": -0.024124168514412417,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "12373": {
+      "hex_id": 12373,
+      "combined_score": 0.01951219512195122,
+      "fast_contribution": -0.07223092414410383,
+      "bright_contribution": -0.07290465631929047,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "6231": {
+      "hex_id": 6231,
+      "combined_score": 0.11219512195121951,
+      "fast_contribution": 0.020452002685164464,
+      "bright_contribution": 0.019778270509977824,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "9837": {
+      "hex_id": 9837,
+      "combined_score": 0.4048780487804879,
+      "fast_contribution": 0.31313492951443284,
+      "bright_contribution": 0.3124611973392462,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "7790": {
+      "hex_id": 7790,
+      "combined_score": 0.39024390243902446,
+      "fast_contribution": 0.2985007831729694,
+      "bright_contribution": 0.2978270509977828,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "7791": {
+      "hex_id": 7791,
+      "combined_score": 0.07317073170731708,
+      "fast_contribution": -0.01857238755873797,
+      "bright_contribution": -0.019246119733924608,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "11889": {
+      "hex_id": 11889,
+      "combined_score": 0.04390243902439025,
+      "fast_contribution": -0.0478406802416648,
+      "bright_contribution": -0.04851441241685144,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "5748": {
+      "hex_id": 5748,
+      "combined_score": 0.00975609756097561,
+      "fast_contribution": -0.08198702170507945,
+      "bright_contribution": -0.08266075388026609,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "9354": {
+      "hex_id": 9354,
+      "combined_score": 0.04878048780487806,
+      "fast_contribution": -0.042962631461176994,
+      "bright_contribution": -0.04363636363636363,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "11404": {
+      "hex_id": 11404,
+      "combined_score": 0.1804878048780488,
+      "comparison": "bright_higher"
+    },
+    "11405": {
+      "hex_id": 11405,
+      "combined_score": 0.11707317073170731,
+      "fast_contribution": 0.02533005146565226,
+      "bright_contribution": 0.02465631929046562,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "11406": {
+      "hex_id": 11406,
+      "combined_score": 0.04390243902439025,
+      "comparison": "bright_higher"
+    },
+    "7311": {
+      "hex_id": 7311,
+      "combined_score": 0.32357723577235775,
+      "fast_contribution": 0.2318341165063027,
+      "bright_contribution": 0.23116038433111608,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "7312": {
+      "hex_id": 7312,
+      "combined_score": 0.2894308943089431,
+      "fast_contribution": 0.19768777504288804,
+      "bright_contribution": 0.1970140428677014,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "5263": {
+      "hex_id": 5263,
+      "combined_score": 0.01951219512195122,
+      "fast_contribution": -0.07223092414410383,
+      "bright_contribution": -0.07290465631929047,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "8871": {
+      "hex_id": 8871,
+      "combined_score": 0.32195121951219513,
+      "fast_contribution": 0.23020810024614008,
+      "bright_contribution": 0.22953436807095345,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "4779": {
+      "hex_id": 4779,
+      "combined_score": 0.058536585365853655,
+      "fast_contribution": -0.033206533900201396,
+      "bright_contribution": -0.033880266075388035,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "10923": {
+      "hex_id": 10923,
+      "combined_score": 0.06829268292682927,
+      "fast_contribution": -0.023450436339225778,
+      "bright_contribution": -0.024124168514412417,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "6833": {
+      "hex_id": 6833,
+      "combined_score": 0.029268292682926828,
+      "fast_contribution": -0.06247482658312822,
+      "bright_contribution": -0.06314855875831486,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "12978": {
+      "hex_id": 12978,
+      "combined_score": 0.03902439024390244,
+      "fast_contribution": -0.05271872902215261,
+      "bright_contribution": -0.05339246119733925,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "12977": {
+      "hex_id": 12977,
+      "combined_score": 0.14634146341463417,
+      "fast_contribution": 0.054598344148579114,
+      "bright_contribution": 0.053924611973392475,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "8388": {
+      "hex_id": 8388,
+      "combined_score": 0.10243902439024391,
+      "fast_contribution": 0.01069590512418886,
+      "bright_contribution": 0.01002217294900222,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "4297": {
+      "hex_id": 4297,
+      "combined_score": 0.03414634146341464,
+      "fast_contribution": -0.057596777802640414,
+      "bright_contribution": -0.058270509977827054,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "10441": {
+      "hex_id": 10441,
+      "combined_score": 0.10731707317073172,
+      "fast_contribution": 0.015573953904676668,
+      "bright_contribution": 0.014900221729490029,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "12494": {
+      "hex_id": 12494,
+      "combined_score": 0.03414634146341464,
+      "fast_contribution": -0.057596777802640414,
+      "bright_contribution": -0.058270509977827054,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "6352": {
+      "hex_id": 6352,
+      "combined_score": 0.014634146341463414,
+      "fast_contribution": -0.07710897292459164,
+      "bright_contribution": -0.07778270509977828,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "6353": {
+      "hex_id": 6353,
+      "combined_score": 0.01951219512195122,
+      "fast_contribution": -0.07223092414410383,
+      "bright_contribution": -0.07290465631929047,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "3813": {
+      "hex_id": 3813,
+      "combined_score": 0.04390243902439025,
+      "fast_contribution": -0.0478406802416648,
+      "bright_contribution": -0.04851441241685144,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "3814": {
+      "hex_id": 3814,
+      "combined_score": 0.06341463414634146,
+      "fast_contribution": -0.028328485119713587,
+      "bright_contribution": -0.029002217294900226,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "7910": {
+      "hex_id": 7910,
+      "combined_score": 0.18536585365853658,
+      "fast_contribution": 0.09362273439248153,
+      "bright_contribution": 0.0929490022172949,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "7909": {
+      "hex_id": 7909,
+      "combined_score": 0.21463414634146344,
+      "fast_contribution": 0.12289102707540839,
+      "bright_contribution": 0.12221729490022175,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "9958": {
+      "hex_id": 9958,
+      "combined_score": 0.25365853658536586,
+      "fast_contribution": 0.1619154173193108,
+      "bright_contribution": 0.16124168514412418,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "12009": {
+      "hex_id": 12009,
+      "combined_score": 0.04878048780487806,
+      "fast_contribution": -0.042962631461176994,
+      "bright_contribution": -0.04363636363636363,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "5869": {
+      "hex_id": 5869,
+      "combined_score": 0.029268292682926828,
+      "fast_contribution": -0.06247482658312822,
+      "bright_contribution": -0.06314855875831486,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "9475": {
+      "hex_id": 9475,
+      "combined_score": 0.08292682926829269,
+      "fast_contribution": -0.008816289997762364,
+      "bright_contribution": -0.009490022172949003,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "11525": {
+      "hex_id": 11525,
+      "combined_score": 0.08292682926829269,
+      "fast_contribution": -0.008816289997762364,
+      "bright_contribution": -0.009490022172949003,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "7430": {
+      "hex_id": 7430,
+      "combined_score": 0.23739837398373986,
+      "fast_contribution": 0.1456552547176848,
+      "bright_contribution": 0.1449815225424982,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "7431": {
+      "hex_id": 7431,
+      "combined_score": 0.1804878048780488,
+      "fast_contribution": 0.08874468561199375,
+      "bright_contribution": 0.08807095343680711,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "11526": {
+      "hex_id": 11526,
+      "combined_score": 0.029268292682926828,
+      "comparison": "bright_higher"
+    },
+    "5385": {
+      "hex_id": 5385,
+      "combined_score": 0.09756097560975611,
+      "fast_contribution": 0.005817856343701064,
+      "bright_contribution": 0.0051441241685144246,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "8992": {
+      "hex_id": 8992,
+      "combined_score": 0.4731707317073171,
+      "fast_contribution": 0.38142761244126205,
+      "bright_contribution": 0.38075388026607543,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "11042": {
+      "hex_id": 11042,
+      "combined_score": 0.029268292682926828,
+      "comparison": "fast_higher"
+    },
+    "4899": {
+      "hex_id": 4899,
+      "combined_score": 0.04878048780487806,
+      "fast_contribution": -0.042962631461176994,
+      "bright_contribution": -0.04363636363636363,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "4900": {
+      "hex_id": 4900,
+      "combined_score": 0.01951219512195122,
+      "fast_contribution": -0.07223092414410383,
+      "bright_contribution": -0.07290465631929047,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "11044": {
+      "hex_id": 11044,
+      "combined_score": 0.029268292682926828,
+      "comparison": "bright_higher"
+    },
+    "11043": {
+      "hex_id": 11043,
+      "combined_score": 0.04390243902439025,
+      "fast_contribution": -0.0478406802416648,
+      "bright_contribution": -0.04851441241685144,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "6952": {
+      "hex_id": 6952,
+      "combined_score": 0.11707317073170731,
+      "fast_contribution": 0.02533005146565226,
+      "bright_contribution": 0.02465631929046562,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "6953": {
+      "hex_id": 6953,
+      "combined_score": 0.058536585365853655,
+      "fast_contribution": -0.033206533900201396,
+      "bright_contribution": -0.033880266075388035,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "13099": {
+      "hex_id": 13099,
+      "combined_score": 0.02439024390243903,
+      "fast_contribution": -0.06735287536361602,
+      "bright_contribution": -0.06802660753880266,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "8509": {
+      "hex_id": 8509,
+      "combined_score": 0.04390243902439025,
+      "fast_contribution": -0.0478406802416648,
+      "bright_contribution": -0.04851441241685144,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "10561": {
+      "hex_id": 10561,
+      "combined_score": 0.07804878048780488,
+      "fast_contribution": -0.013694338778250173,
+      "bright_contribution": -0.014368070953436812,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "4418": {
+      "hex_id": 4418,
+      "combined_score": 0.03414634146341464,
+      "fast_contribution": -0.057596777802640414,
+      "bright_contribution": -0.058270509977827054,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "10562": {
+      "hex_id": 10562,
+      "combined_score": 0.13170731707317074,
+      "fast_contribution": 0.03996419780711569,
+      "bright_contribution": 0.03929046563192905,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "12615": {
+      "hex_id": 12615,
+      "combined_score": 0.03902439024390244,
+      "fast_contribution": -0.05271872902215261,
+      "bright_contribution": -0.05339246119733925,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "6472": {
+      "hex_id": 6472,
+      "combined_score": 0.058536585365853655,
+      "fast_contribution": -0.033206533900201396,
+      "bright_contribution": -0.033880266075388035,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "6473": {
+      "hex_id": 6473,
+      "combined_score": 0.05365853658536586,
+      "fast_contribution": -0.03808458268068919,
+      "bright_contribution": -0.03875831485587583,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "8028": {
+      "hex_id": 8028,
+      "combined_score": 0.15609756097560976,
+      "fast_contribution": 0.0643544417095547,
+      "bright_contribution": 0.06368070953436807,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "8029": {
+      "hex_id": 8029,
+      "combined_score": 0.11219512195121951,
+      "fast_contribution": 0.020452002685164464,
+      "bright_contribution": 0.019778270509977824,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "8030": {
+      "hex_id": 8030,
+      "combined_score": 0.09268292682926829,
+      "fast_contribution": 0.0009398075632132408,
+      "bright_contribution": 0.00026607538802660147,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "3935": {
+      "hex_id": 3935,
+      "combined_score": 0.03414634146341464,
+      "fast_contribution": -0.057596777802640414,
+      "bright_contribution": -0.058270509977827054,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "3936": {
+      "hex_id": 3936,
+      "combined_score": 0.03902439024390244,
+      "fast_contribution": -0.05271872902215261,
+      "bright_contribution": -0.05339246119733925,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "10078": {
+      "hex_id": 10078,
+      "combined_score": 0.09756097560975611,
+      "fast_contribution": 0.005817856343701064,
+      "bright_contribution": 0.0051441241685144246,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "12131": {
+      "hex_id": 12131,
+      "combined_score": 0.029268292682926828,
+      "fast_contribution": -0.06247482658312822,
+      "bright_contribution": -0.06314855875831486,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "5989": {
+      "hex_id": 5989,
+      "combined_score": 0.00975609756097561,
+      "fast_contribution": -0.08198702170507945,
+      "bright_contribution": -0.08266075388026609,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "5990": {
+      "hex_id": 5990,
+      "combined_score": 0.0,
+      "comparison": "fast_higher"
+    },
+    "9595": {
+      "hex_id": 9595,
+      "combined_score": 0.06829268292682927,
+      "fast_contribution": -0.023450436339225778,
+      "bright_contribution": -0.024124168514412417,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "9596": {
+      "hex_id": 9596,
+      "combined_score": 0.11707317073170731,
+      "fast_contribution": 0.02533005146565226,
+      "bright_contribution": 0.02465631929046562,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "7550": {
+      "hex_id": 7550,
+      "combined_score": 0.07317073170731708,
+      "fast_contribution": -0.01857238755873797,
+      "bright_contribution": -0.019246119733924608,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "7551": {
+      "hex_id": 7551,
+      "combined_score": 0.39186991869918697,
+      "fast_contribution": 0.3001267994331319,
+      "bright_contribution": 0.2994530672579453,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "11647": {
+      "hex_id": 11647,
+      "combined_score": 0.03414634146341464,
+      "fast_contribution": -0.057596777802640414,
+      "bright_contribution": -0.058270509977827054,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "11646": {
+      "hex_id": 11646,
+      "combined_score": 0.029268292682926828,
+      "comparison": "fast_higher"
+    },
+    "5506": {
+      "hex_id": 5506,
+      "combined_score": 0.08130081300813008,
+      "fast_contribution": -0.010442306257924971,
+      "bright_contribution": -0.01111603843311161,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "9112": {
+      "hex_id": 9112,
+      "combined_score": 0.0878048780487805,
+      "fast_contribution": -0.0039382412172745546,
+      "bright_contribution": -0.004611973392461194,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "11163": {
+      "hex_id": 11163,
+      "combined_score": 0.03414634146341464,
+      "comparison": "fast_higher"
+    },
+    "5020": {
+      "hex_id": 5020,
+      "combined_score": 0.029268292682926828,
+      "fast_contribution": -0.06247482658312822,
+      "bright_contribution": -0.06314855875831486,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "11165": {
+      "hex_id": 11165,
+      "combined_score": 0.014634146341463414,
+      "comparison": "bright_higher"
+    },
+    "11164": {
+      "hex_id": 11164,
+      "combined_score": 0.05365853658536586,
+      "fast_contribution": -0.03808458268068919,
+      "bright_contribution": -0.03875831485587583,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "7072": {
+      "hex_id": 7072,
+      "combined_score": 0.03902439024390244,
+      "fast_contribution": -0.05271872902215261,
+      "bright_contribution": -0.05339246119733925,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "7073": {
+      "hex_id": 7073,
+      "combined_score": 0.35609756097560974,
+      "fast_contribution": 0.2643544417095547,
+      "bright_contribution": 0.26368070953436806,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "13220": {
+      "hex_id": 13220,
+      "combined_score": 0.02439024390243903,
+      "fast_contribution": -0.06735287536361602,
+      "bright_contribution": -0.06802660753880266,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "13221": {
+      "hex_id": 13221,
+      "combined_score": 0.0,
+      "fast_contribution": -0.09174311926605505,
+      "bright_contribution": -0.09241685144124169,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "8629": {
+      "hex_id": 8629,
+      "combined_score": 0.04390243902439025,
+      "fast_contribution": -0.0478406802416648,
+      "bright_contribution": -0.04851441241685144,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "8630": {
+      "hex_id": 8630,
+      "combined_score": 0.03902439024390244,
+      "fast_contribution": -0.05271872902215261,
+      "bright_contribution": -0.05339246119733925,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "4538": {
+      "hex_id": 4538,
+      "combined_score": 0.02439024390243903,
+      "fast_contribution": -0.06735287536361602,
+      "bright_contribution": -0.06802660753880266,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "10682": {
+      "hex_id": 10682,
+      "combined_score": 0.05365853658536586,
+      "fast_contribution": -0.03808458268068919,
+      "bright_contribution": -0.03875831485587583,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "12735": {
+      "hex_id": 12735,
+      "combined_score": 0.029268292682926828,
+      "fast_contribution": -0.06247482658312822,
+      "bright_contribution": -0.06314855875831486,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "6593": {
+      "hex_id": 6593,
+      "combined_score": 0.05365853658536586,
+      "fast_contribution": -0.03808458268068919,
+      "bright_contribution": -0.03875831485587583,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "6594": {
+      "hex_id": 6594,
+      "combined_score": 0.37398373983739835,
+      "fast_contribution": 0.2822406205713433,
+      "bright_contribution": 0.2815668883961567,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "8147": {
+      "hex_id": 8147,
+      "combined_score": 0.03902439024390244,
+      "fast_contribution": -0.05271872902215261,
+      "bright_contribution": -0.05339246119733925,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "8148": {
+      "hex_id": 8148,
+      "combined_score": 0.2780487804878049,
+      "fast_contribution": 0.18630566122174985,
+      "bright_contribution": 0.18563192904656323,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "10199": {
+      "hex_id": 10199,
+      "combined_score": 0.07804878048780488,
+      "fast_contribution": -0.013694338778250173,
+      "bright_contribution": -0.014368070953436812,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "4056": {
+      "hex_id": 4056,
+      "combined_score": 0.03414634146341464,
+      "fast_contribution": -0.057596777802640414,
+      "bright_contribution": -0.058270509977827054,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "10200": {
+      "hex_id": 10200,
+      "combined_score": 0.05365853658536586,
+      "fast_contribution": -0.03808458268068919,
+      "bright_contribution": -0.03875831485587583,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "12252": {
+      "hex_id": 12252,
+      "combined_score": 0.00975609756097561,
+      "fast_contribution": -0.08198702170507945,
+      "bright_contribution": -0.08266075388026609,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "6111": {
+      "hex_id": 6111,
+      "combined_score": 0.014634146341463414,
+      "fast_contribution": -0.07710897292459164,
+      "bright_contribution": -0.07778270509977828,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "9717": {
+      "hex_id": 9717,
+      "combined_score": 0.18536585365853658,
+      "fast_contribution": 0.09362273439248153,
+      "bright_contribution": 0.0929490022172949,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "7670": {
+      "hex_id": 7670,
+      "combined_score": 0.1804878048780488,
+      "fast_contribution": 0.08874468561199375,
+      "bright_contribution": 0.08807095343680711,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "11767": {
+      "hex_id": 11767,
+      "combined_score": 0.06829268292682927,
+      "fast_contribution": -0.023450436339225778,
+      "bright_contribution": -0.024124168514412417,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    },
+    "5627": {
+      "hex_id": 5627,
+      "combined_score": 0.029268292682926828,
+      "fast_contribution": -0.06247482658312822,
+      "bright_contribution": -0.06314855875831486,
+      "fast_avg": 0.09174311926605505,
+      "bright_avg": 0.09241685144124169,
+      "comparison": "fast_higher"
+    }
+  },
+  "total_hexagons": 115
+}
