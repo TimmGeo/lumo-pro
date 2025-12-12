@@ -3673,6 +3673,7 @@ defineExpose({
   zoomOut,
   resetNorth,
   toggleTilt,
+  toggleFullscreen,
   getIsTilted: () => isTilted.value,
   clearRoute,
   zoomToCoordinates: (lon, lat, zoom = 15) => {

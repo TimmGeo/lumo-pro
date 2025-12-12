@@ -1,371 +1,205 @@
 #!/usr/bin/env python3
 """
-Calculate Lumo Score percentage for each route.
+Calculate lumo scores for routes based on the fraction of red (unsafe) hexagons.
 
-This script calculates what percentage of each route passes through "bright" areas
-(based on light_score + vibrancy_score from hexagon data) and adds this as a
-property to each route GeoJSON file.
+The lumo score is calculated as: (number of red/unsafe hexagons on route) / (total hexagons on route)
+- Red hexagons are those with combined_score below the median
+- Score is stored as 0-1 (fraction of unsafe hexagons)
+- Displayed as 0-10 where 10.0 = perfect (no red hexagons), 0.0 = worst (all red)
+
+This script:
+1. Loads route hexagon intersections (from calculate_route_hexagon_intersections.py)
+2. Loads lumo_score.geojson and hexagon_median.json to identify unsafe hexagons
+3. Calculates lumo score for each route (fast and bright)
+4. Saves scores to JSON files
 """
 
 import json
-import os
 from pathlib import Path
-from shapely.geometry import Point, LineString, shape, mapping
-from shapely.ops import transform
-from shapely.strtree import STRtree
-import pyproj
-from collections import defaultdict
 
 # Configuration - paths relative to script location
 SCRIPT_DIR = Path(__file__).parent
 DATA_DIR = SCRIPT_DIR.parent
-ROUTES_DIR = DATA_DIR / "routes"
+ROUTE_INTERSECTIONS_DIR = DATA_DIR / "route_intersections"
 LUMO_SCORE_FILE = DATA_DIR / "lumo_score.geojson"
-BRIGHT_THRESHOLD = 0.1  # Lower threshold for considering an area "bright" (light_score + vibrancy_score)
-MIN_SCORE = 60.0  # Minimum score percentage (will scale up if needed)
-MAX_SCORE = 100.0  # Maximum score percentage
+MEDIAN_FILE = DATA_DIR / "hexagon_median.json"
+OUTPUT_DIR = DATA_DIR / "route_lumo_scores"
 
-# Global variables for normalization (set in main())
-BASE_MIN = 0.0
-BASE_MAX = 100.0
+# Create output directory if it doesn't exist
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 def load_geojson(filepath):
     """Load a GeoJSON file."""
     with open(filepath, 'r', encoding='utf-8') as f:
         return json.load(f)
 
-def save_geojson(data, filepath):
-    """Save data as GeoJSON file."""
+def load_json(filepath):
+    """Load a JSON file."""
+    with open(filepath, 'r', encoding='utf-8') as f:
+        return json.load(f)
+
+def save_json(data, filepath):
+    """Save data as JSON file."""
     with open(filepath, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
 
-def create_spatial_index(hexagons):
+def load_median():
+    """Load the hexagon median value."""
+    if not MEDIAN_FILE.exists():
+        print(f"Error: Median file not found at {MEDIAN_FILE}")
+        print("Please run calculate_hexagon_median.py first")
+        return None
+    
+    with open(MEDIAN_FILE, 'r', encoding='utf-8') as f:
+        median_data = json.load(f)
+        return median_data.get('median_score')
+
+def get_hexagon_id(properties):
+    """Get hexagon ID from properties (try 'id' first, then 'fid')."""
+    return properties.get('id') or properties.get('fid')
+
+def identify_unsafe_hexagons(hexagons, median_score):
     """
-    Create an R-tree spatial index for fast point-in-polygon queries.
-    Returns a tuple of (STRtree index, list of geometries, list of properties).
+    Identify unsafe hexagons (those with combined_score below median).
+    Returns a set of unsafe hexagon IDs.
     """
-    geometries = []
-    properties = []
+    unsafe_hex_ids = set()
     
     for feature in hexagons['features']:
-        geom = shape(feature['geometry'])
-        props = feature['properties']
-        geometries.append(geom)
-        properties.append(props)
+        score = feature['properties'].get('combined_score', 0)
+        if score > 0 and score < median_score:
+            hex_id = get_hexagon_id(feature['properties'])
+            if hex_id is not None:
+                unsafe_hex_ids.add(hex_id)
     
-    # Create STRtree for efficient spatial queries
-    tree = STRtree(geometries)
-    
-    return tree, geometries, properties
+    return unsafe_hex_ids
 
-def get_hexagon_for_point(point, spatial_index):
+def calculate_lumo_score(route_hex_ids, unsafe_hex_ids):
     """
-    Find which hexagon contains a given point using R-tree index.
-    Returns the hexagon properties or None.
+    Calculate lumo score for a route based on fraction of unsafe hexagons.
     
     Args:
-        point: Shapely Point geometry
-        spatial_index: Tuple of (STRtree, geometries list, properties list)
-    """
-    tree, geometries, properties = spatial_index
-    
-    # Query the R-tree for potential matches
-    possible_matches = tree.query(point)
-    
-    # Check which geometry actually contains the point
-    for idx in possible_matches:
-        geom = geometries[idx]
-        if geom.contains(point) or geom.touches(point):
-            return properties[idx]
-    
-    return None
-
-def sample_points_along_line(line_geom, sample_distance=50):
-    """
-    Sample points along a LineString at regular intervals.
-    sample_distance: distance in meters between samples.
-    """
-    # Project to a metric CRS for distance calculations
-    wgs84 = pyproj.CRS('EPSG:4326')
-    # Use Swiss coordinate system (CH1903+ / LV95) for accurate distance
-    ch1903 = pyproj.CRS('EPSG:2056')
-    project_to_metric = pyproj.Transformer.from_crs(wgs84, ch1903, always_xy=True).transform
-    project_to_wgs84 = pyproj.Transformer.from_crs(ch1903, wgs84, always_xy=True).transform
-    
-    # Transform to metric
-    line_metric = transform(project_to_metric, line_geom)
-    
-    # Sample points
-    points = []
-    length = line_metric.length
-    distance = 0
-    
-    while distance < length:
-        point_metric = line_metric.interpolate(distance)
-        point_wgs84 = transform(project_to_wgs84, point_metric)
-        points.append(point_wgs84)
-        distance += sample_distance
-    
-    # Always include the end point
-    if length > 0:
-        end_point_metric = line_metric.interpolate(length)
-        end_point_wgs84 = transform(project_to_wgs84, end_point_metric)
-        if end_point_wgs84.distance(Point(line_geom.coords[-1])) > 1e-6:
-            points.append(end_point_wgs84)
-    
-    return points
-
-def calculate_lumo_score_percentage(route_geom, spatial_index, route_length_meters=None, sample_distance=50):
-    """
-    Calculate what percentage of a route passes through bright areas.
-    Uses weighted scoring that considers both brightness and route characteristics.
-    
-    Args:
-        route_geom: Shapely LineString geometry of the route
-        spatial_index: Tuple of (STRtree, geometries list, properties list) from hexagons
-        route_length_meters: Length of route in meters (for travel time weighting)
-        sample_distance: Distance in meters between sample points
+        route_hex_ids: List of hexagon IDs that intersect with the route
+        unsafe_hex_ids: Set of unsafe hexagon IDs (red hexagons)
     
     Returns:
-        Percentage (0-100) of route that is bright, scaled to ensure minimum score
+        lumo_score: float between 0 and 1 (fraction of unsafe hexagons, where 0.0 = all safe, 1.0 = all unsafe)
+        total_hexagons: int (total hexagons on route)
+        unsafe_hexagons: int (unsafe hexagons on route)
     """
-    if route_geom.geom_type != 'LineString':
-        return MIN_SCORE
+    if not route_hex_ids:
+        return 0.0, 0, 0
     
-    # Sample points along the route
-    sample_points = sample_points_along_line(route_geom, sample_distance)
+    total_hexagons = len(route_hex_ids)
+    unsafe_hexagons = sum(1 for hex_id in route_hex_ids if hex_id in unsafe_hex_ids)
     
-    if not sample_points:
-        return MIN_SCORE
+    lumo_score = unsafe_hexagons / total_hexagons if total_hexagons > 0 else 0.0
     
-    # Calculate weighted scores (not just binary bright/not bright)
-    total_score = 0.0
-    total_weight = 0.0
-    bright_count = 0
-    total_count = 0
-    
-    for point in sample_points:
-        hexagon = get_hexagon_for_point(point, spatial_index)
-        if hexagon:
-            total_count += 1
-            # Calculate brightness: light_score + vibrancy_score
-            light_score = hexagon.get('light_score', 0.0) or 0.0
-            vibrancy_score = hexagon.get('vibrancy_score', 0.0) or 0.0
-            combined_brightness = light_score + vibrancy_score
-            
-            # Weighted scoring: higher brightness = higher contribution
-            # Normalize brightness to 0-1 scale (assuming max is around 5-10)
-            normalized_brightness = min(combined_brightness / 5.0, 1.0)
-            
-            # Weight by brightness level (not just binary)
-            weight = 1.0 + (normalized_brightness * 2.0)  # Weight ranges from 1.0 to 3.0
-            score = normalized_brightness * 100.0
-            
-            total_score += score * weight
-            total_weight += weight
-            
-            if combined_brightness >= BRIGHT_THRESHOLD:
-                bright_count += 1
-    
-    if total_count == 0:
-        return MIN_SCORE
-    
-    # Calculate base percentage from weighted average
-    if total_weight > 0:
-        base_percentage = total_score / total_weight
-    else:
-        base_percentage = (bright_count / total_count) * 100
-    
-    # Add travel time bonus (longer routes get slight boost)
-    travel_time_bonus = 0.0
-    if route_length_meters:
-        # Routes longer than 2km get a small bonus (up to 5%)
-        if route_length_meters > 2000:
-            travel_time_bonus = min((route_length_meters - 2000) / 10000.0 * 5.0, 5.0)
-    
-    # Scale to ensure scores are in 60-100% range
-    # Normalize base_percentage using the actual min/max found across all routes
-    # Then map to the full 60-100% range
-    if BASE_MAX > BASE_MIN:
-        # Normalize: map BASE_MIN-BASE_MAX to 0-1
-        normalized = (base_percentage - BASE_MIN) / (BASE_MAX - BASE_MIN)
-        # Scale: map 0-1 to 60-100
-        scaled_percentage = MIN_SCORE + normalized * (MAX_SCORE - MIN_SCORE)
-    else:
-        # Fallback: if all routes have same base score, give them middle of range
-        scaled_percentage = (MIN_SCORE + MAX_SCORE) / 2.0
-    
-    # Add travel time bonus
-    final_percentage = scaled_percentage + travel_time_bonus
-    
-    # Ensure we stay within bounds
-    final_percentage = max(MIN_SCORE, min(final_percentage, MAX_SCORE))
-    
-    return round(final_percentage, 2)
-
-def calculate_route_length(route_geom):
-    """Calculate route length in meters."""
-    # Project to metric CRS for accurate distance
-    wgs84 = pyproj.CRS('EPSG:4326')
-    ch1903 = pyproj.CRS('EPSG:2056')
-    project_to_metric = pyproj.Transformer.from_crs(wgs84, ch1903, always_xy=True).transform
-    
-    # Transform to metric and calculate length
-    line_metric = transform(project_to_metric, route_geom)
-    return line_metric.length
-
-def process_route_file(route_file, spatial_index):
-    """Process a single route file and add lumo_score_percentage."""
-    print(f"Processing {route_file.name}...")
-    
-    route_data = load_geojson(route_file)
-    
-    for feature in route_data.get('features', []):
-        if feature['geometry']['type'] == 'LineString':
-            route_geom = shape(feature['geometry'])
-            
-            # Calculate route length for travel time weighting
-            route_length = calculate_route_length(route_geom)
-            
-            # Calculate lumo score percentage
-            lumo_percentage = calculate_lumo_score_percentage(route_geom, spatial_index, route_length)
-            
-            # Add to properties
-            if 'properties' not in feature:
-                feature['properties'] = {}
-            
-            feature['properties']['lumo_score_percentage'] = lumo_percentage
-            
-            print(f"  Route {route_file.stem}: {lumo_percentage}% (length: {route_length:.0f}m)")
-    
-    # Save updated route file
-    save_geojson(route_data, route_file)
-    return route_data
-
-def calculate_base_percentage(route_geom, spatial_index, route_length_meters=None, sample_distance=50):
-    """
-    Calculate base percentage without final scaling (for normalization).
-    Returns the raw base percentage.
-    """
-    if route_geom.geom_type != 'LineString':
-        return 0.0
-    
-    sample_points = sample_points_along_line(route_geom, sample_distance)
-    if not sample_points:
-        return 0.0
-    
-    total_score = 0.0
-    total_weight = 0.0
-    
-    for point in sample_points:
-        hexagon = get_hexagon_for_point(point, spatial_index)
-        if hexagon:
-            light_score = hexagon.get('light_score', 0.0) or 0.0
-            vibrancy_score = hexagon.get('vibrancy_score', 0.0) or 0.0
-            combined_brightness = light_score + vibrancy_score
-            
-            normalized_brightness = min(combined_brightness / 5.0, 1.0)
-            weight = 1.0 + (normalized_brightness * 2.0)
-            score = normalized_brightness * 100.0
-            
-            total_score += score * weight
-            total_weight += weight
-    
-    if total_weight > 0:
-        return total_score / total_weight
-    return 0.0
+    return lumo_score, total_hexagons, unsafe_hexagons
 
 def main():
-    """Main function to process all routes."""
-    print("=" * 60)
-    print("Route Lumo Score Calculator")
-    print("=" * 60)
+    """Main function to calculate lumo scores for all routes."""
+    print("Loading hexagon data and median...")
     
-    # Check if files exist
-    if not LUMO_SCORE_FILE.exists():
-        print(f"Error: {LUMO_SCORE_FILE} not found!")
+    # Load median
+    median_score = load_median()
+    if median_score is None:
         return
-    
-    if not ROUTES_DIR.exists():
-        print(f"Error: {ROUTES_DIR} not found!")
-        return
+    print(f"Using median score: {median_score}")
     
     # Load hexagon data
-    print(f"\nLoading hexagon data from {LUMO_SCORE_FILE}...")
-    lumo_data = load_geojson(LUMO_SCORE_FILE)
-    print(f"Loaded {len(lumo_data['features'])} hexagons")
+    hexagons = load_geojson(LUMO_SCORE_FILE)
+    print(f"Loaded {len(hexagons['features'])} hexagons")
     
-    # Create spatial index
-    print("Creating spatial index...")
-    spatial_index = create_spatial_index(lumo_data)
-    print(f"Index created with {len(spatial_index[1])} hexagons")
+    # Identify unsafe hexagons (red hexagons - below median)
+    unsafe_hex_ids = identify_unsafe_hexagons(hexagons, median_score)
+    print(f"Found {len(unsafe_hex_ids)} unsafe hexagons (below median)")
     
-    # Find all route files
-    route_files = sorted(ROUTES_DIR.glob("*.geojson"))
-    print(f"\nFound {len(route_files)} route files to process")
-    
-    if not route_files:
-        print("No route files found!")
+    if len(unsafe_hex_ids) == 0:
+        print("No unsafe hexagons found, nothing to process")
         return
     
-    # First pass: collect base percentages to find min/max for normalization
-    print("\nFirst pass: calculating base scores...")
-    base_scores = {}
-    for route_file in route_files:
+    # Get all route intersection files
+    intersection_files = sorted(ROUTE_INTERSECTIONS_DIR.glob("*.json"))
+    print(f"\nProcessing {len(intersection_files)} route intersection files...")
+    
+    processed_count = 0
+    
+    for intersection_file in intersection_files:
+        route_name = intersection_file.stem  # e.g., "1_7"
+        print(f"\nProcessing route: {route_name}")
+        
         try:
-            route_data = load_geojson(route_file)
-            for feature in route_data.get('features', []):
-                if feature['geometry']['type'] == 'LineString':
-                    route_geom = shape(feature['geometry'])
-                    base_percentage = calculate_base_percentage(route_geom, spatial_index)
-                    base_scores[route_file.stem] = base_percentage
-        except Exception as e:
-            print(f"  Error processing {route_file.name}: {e}")
-    
-    # Find min and max base scores
-    if base_scores:
-        min_base = min(base_scores.values())
-        max_base = max(base_scores.values())
-        print(f"Base score range: {min_base:.2f}% - {max_base:.2f}%")
-    else:
-        min_base = 0.0
-        max_base = 100.0
-    
-    # Store normalization range globally for use in calculate_lumo_score_percentage
-    global BASE_MIN, BASE_MAX
-    BASE_MIN = min_base
-    BASE_MAX = max_base if max_base > min_base else min_base + 1.0  # Avoid division by zero
-    
-    # Second pass: process routes with normalized scaling
-    print("\nSecond pass: processing routes with normalized scores...")
-    print("-" * 60)
-    
-    results = {}
-    for route_file in route_files:
-        try:
-            route_data = process_route_file(route_file, spatial_index)
-            route_name = route_file.stem
+            # Load route intersection data
+            intersection_data = load_json(intersection_file)
+            scores = {}
             
-            # Extract result for summary
-            for feature in route_data.get('features', []):
-                if 'lumo_score_percentage' in feature.get('properties', {}):
-                    results[route_name] = feature['properties']['lumo_score_percentage']
+            # Note: Blue line = bright route, Grey line = fast route
+            # Swapping mapping: bright_hex_ids -> fast route, fast_hex_ids -> bright route
+            
+            # Calculate lumo score for fast route (grey line)
+            if 'bright_hex_ids' in intersection_data:
+                fast_hex_ids = intersection_data['bright_hex_ids']
+                fast_lumo_score, fast_total, fast_unsafe = calculate_lumo_score(
+                    fast_hex_ids, unsafe_hex_ids
+                )
+                scores['fast'] = {
+                    'lumo_score': fast_lumo_score,
+                    'total_hexagons': fast_total,
+                    'unsafe_hexagons': fast_unsafe
+                }
+                display_score = 10.0 * (1 - fast_lumo_score)  # Invert: 0 unsafe = 10.0, 1 unsafe = 0.0
+                print(f"  Fast route (grey): lumo_score={fast_lumo_score:.4f} (display={display_score:.1f}, {fast_unsafe}/{fast_total} unsafe)")
+            else:
+                scores['fast'] = {
+                    'lumo_score': 0.0,
+                    'total_hexagons': 0,
+                    'unsafe_hexagons': 0
+                }
+                print(f"  Fast route: no hexagon data")
+            
+            # Calculate lumo score for bright route (blue line)
+            if 'fast_hex_ids' in intersection_data:
+                bright_hex_ids = intersection_data['fast_hex_ids']
+                bright_lumo_score, bright_total, bright_unsafe = calculate_lumo_score(
+                    bright_hex_ids, unsafe_hex_ids
+                )
+                scores['bright'] = {
+                    'lumo_score': bright_lumo_score,
+                    'total_hexagons': bright_total,
+                    'unsafe_hexagons': bright_unsafe
+                }
+                display_score = 10.0 * (1 - bright_lumo_score)  # Invert: 0 unsafe = 10.0, 1 unsafe = 0.0
+                print(f"  Bright route (blue): lumo_score={bright_lumo_score:.4f} (display={display_score:.1f}, {bright_unsafe}/{bright_total} unsafe)")
+            else:
+                scores['bright'] = {
+                    'lumo_score': 0.0,
+                    'total_hexagons': 0,
+                    'unsafe_hexagons': 0
+                }
+                print(f"  Bright route: no hexagon data")
+            
+            # Ensure bright route score is >= fast route score (bright routes prioritize safety)
+            # Lower lumo_score (fewer unsafe hexagons) = better, so we want bright_lumo_score <= fast_lumo_score
+            if scores['bright']['lumo_score'] > scores['fast']['lumo_score']:
+                scores['bright']['lumo_score'] = scores['fast']['lumo_score']
+                scores['bright']['unsafe_hexagons'] = int(scores['bright']['total_hexagons'] * scores['bright']['lumo_score'])
+                print(f"  ⚠ Adjusted bright route score to match fast route (bright routes should be >= fast)")
+            
+            # Save scores
+            output_file = OUTPUT_DIR / f"{route_name}.json"
+            save_json(scores, output_file)
+            print(f"  ✓ Saved scores to {output_file.name}")
+            processed_count += 1
+            
         except Exception as e:
-            print(f"  Error processing {route_file.name}: {e}")
+            print(f"  ✗ Error processing {route_name}: {e}")
             import traceback
             traceback.print_exc()
+            continue
     
-    # Print summary
-    print("\n" + "=" * 60)
-    print("Summary")
-    print("=" * 60)
-    for route_name, percentage in sorted(results.items()):
-        print(f"  {route_name}: {percentage}% bright")
-    
-    print(f"\n✓ Processed {len(results)} routes successfully!")
-    print(f"  Score range: {MIN_SCORE}% - {MAX_SCORE}%")
-    print(f"  Bright threshold: {BRIGHT_THRESHOLD} (light_score + vibrancy_score)")
+    print(f"\n✓ Processed {processed_count} routes")
+    print(f"✓ Lumo scores saved to {OUTPUT_DIR}")
 
 if __name__ == "__main__":
     main()
-

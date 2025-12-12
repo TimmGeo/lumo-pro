@@ -1,0 +1,12 @@
+{
+  "fast": {
+    "lumo_score": 0.20202020202020202,
+    "total_hexagons": 99,
+    "unsafe_hexagons": 20
+  },
+  "bright": {
+    "lumo_score": 0.20202020202020202,
+    "total_hexagons": 98,
+    "unsafe_hexagons": 19
+  }
+}

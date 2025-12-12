@@ -1247,6 +1247,26 @@
     >
       <button
         class="map-control-btn-over-scale"
+        @click.stop="handleToggleFullscreen"
+        aria-label="Toggle fullscreen"
+      >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path
+            d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"
+          />
+        </svg>
+      </button>
+      <button
+        class="map-control-btn-over-scale"
         @click.stop="handleZoomIn"
         aria-label="Zoom in"
       >
@@ -1742,6 +1762,33 @@
                         Route segments passing through unsafe areas are
                         highlighted in red
                       </p>
+                      <div
+                        v-if="currentRouteStats && routeLumoScores"
+                        class="lumo-score-display"
+                        style="margin-top: 16px"
+                      >
+                        <div class="lumo-score-label">Lumo Score</div>
+                        <div class="lumo-score-values">
+                          <div
+                            v-if="routeLumoScores.fast"
+                            class="lumo-score-item"
+                          >
+                            <span class="lumo-score-route-type">Fast:</span>
+                            <span class="lumo-score-number">{{
+                              formatLumoScore(routeLumoScores.fast.lumo_score)
+                            }}</span>
+                          </div>
+                          <div
+                            v-if="routeLumoScores.bright"
+                            class="lumo-score-item"
+                          >
+                            <span class="lumo-score-route-type">Bright:</span>
+                            <span class="lumo-score-number">{{
+                              formatLumoScore(routeLumoScores.bright.lumo_score)
+                            }}</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
                     <!-- Link Route to Uber -->
@@ -2228,6 +2275,7 @@ const animationColoringMode = ref("route"); // "route" or "median"
 
 // Route security alerts state
 const routeSecurityAlertsActive = ref(false);
+const routeLumoScores = ref(null);
 
 // Handler functions for app buttons that clear previous state on manual interaction
 function toggleAnimation() {
@@ -2283,7 +2331,54 @@ watch([startHub, endHub], () => {
   if (routeSecurityAlertsActive.value) {
     routeSecurityAlertsActive.value = false;
   }
+  // Load lumo scores when route changes
+  loadRouteLumoScores();
 });
+
+// Load lumo scores for the current route
+async function loadRouteLumoScores() {
+  if (!startHub.value || !endHub.value) {
+    routeLumoScores.value = null;
+    return;
+  }
+
+  try {
+    const routeId1 = Math.min(parseInt(startHub.value), parseInt(endHub.value));
+    const routeId2 = Math.max(parseInt(startHub.value), parseInt(endHub.value));
+    const routeName = `${routeId1}_${routeId2}`;
+
+    const BASE = import.meta.env.BASE_URL || "/";
+    const url =
+      `${BASE}data/route_lumo_scores/${routeName}.json?v=${Date.now()}`.replace(
+        /\/{2,}/g,
+        "/"
+      );
+
+    const response = await fetch(url);
+    if (response.ok) {
+      const data = await response.json();
+      routeLumoScores.value = data;
+    } else {
+      routeLumoScores.value = null;
+    }
+  } catch (error) {
+    console.error("Failed to load lumo scores:", error);
+    routeLumoScores.value = null;
+  }
+}
+
+// Format lumo score for display
+// lumo_score is the fraction of unsafe hexagons (0-1)
+// We convert to 0-10 scale where 10.0 is perfect (no red hexagons), 0.0 is worst (all red)
+// Formula: display_score = 10.0 * (1 - lumo_score)
+function formatLumoScore(lumoScore) {
+  if (lumoScore === null || lumoScore === undefined) return "N/A";
+
+  // Convert from fraction of unsafe hexagons to 0-10 scale
+  // 0 unsafe = 10.0 (perfect), 1 unsafe = 0.0 (worst)
+  const displayScore = 10.0 * (1 - lumoScore);
+  return displayScore.toFixed(1);
+}
 
 // Watch for coloring mode changes and update animation if active
 watch(animationColoringMode, (newMode, oldMode) => {
@@ -3532,6 +3627,12 @@ function handleZoomOut() {
 function handleResetNorth() {
   if (mapboxViewerRef.value && mapboxViewerRef.value.resetNorth) {
     mapboxViewerRef.value.resetNorth();
+  }
+}
+
+function handleToggleFullscreen() {
+  if (mapboxViewerRef.value && mapboxViewerRef.value.toggleFullscreen) {
+    mapboxViewerRef.value.toggleFullscreen();
   }
 }
 
@@ -6529,8 +6630,9 @@ textarea:focus-visible {
 
 .app-basket--expanded {
   width: 336px; /* Match left sidebar width */
-  height: 900px; /* Tall enough for chat content */
-  max-height: calc(100vh - 60px); /* Don't exceed viewport */
+  height: calc(100vh - 60px); /* Extend from bottom to top with margins */
+  top: 30px;
+  bottom: 30px;
   padding: 16px; /* Increased padding when expanded */
 }
 
@@ -6906,6 +7008,71 @@ textarea:focus-visible {
     BlinkMacSystemFont,
     system-ui,
     sans-serif;
+}
+
+.lumo-score-display {
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.lumo-score-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+}
+
+.lumo-score-values {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lumo-score-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.lumo-score-route-type {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+}
+
+.lumo-score-number {
+  font-size: 20px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.95);
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  letter-spacing: -0.02em;
 }
 
 .uber-link-section {
