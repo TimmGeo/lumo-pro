@@ -41,20 +41,13 @@
         v-if="currentRouteStats && mapZoom >= 11.5"
         class="clear-route-top-button"
       >
-        <svg
+        <img
+          src="/routing_icon.svg"
+          alt="Route"
           class="clear-route-icon"
           width="16"
           height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-          <circle cx="12" cy="10" r="3" />
-        </svg>
+        />
         <span>Route</span>
         <button
           class="clear-route-close"
@@ -309,11 +302,7 @@
 
           <!-- Lumo logo when opened (at same position as collapsed toggle button) -->
           <div v-if="!sidebarCollapsed" class="sidebar-logo">
-            <img
-              src="/Lumo_icon_grey.svg"
-              alt="Lumo"
-              class="sidebar-logo-icon"
-            />
+            <img src="/sidebar_lumo.svg" alt="Lumo" class="sidebar-logo-icon" />
           </div>
 
           <button
@@ -322,19 +311,12 @@
             @click.stop="handleIconClick('routing')"
             aria-label="Routing"
           >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-              <circle cx="12" cy="10" r="3" />
-            </svg>
+            <img
+              src="/routing_icon.svg"
+              alt="Routing"
+              class="sidebar-icon-img"
+              aria-hidden="true"
+            />
             <span class="sidebar-icon-tooltip">Routing</span>
           </button>
           <button
@@ -4065,7 +4047,12 @@ body,
 .clear-route-icon {
   flex-shrink: 0;
   color: inherit;
-  opacity: 0.7;
+  opacity: 0.3;
+  transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.clear-route-top-button:hover .clear-route-icon {
+  opacity: 1;
 }
 
 /* Active Layer Indicator Button */
@@ -4652,6 +4639,11 @@ textarea:focus-visible {
   width: 20px;
   height: 20px;
   display: block;
+}
+
+/* Make dark SVG icons white/visible for sidebar */
+.sidebar-icon-btn img {
+  filter: brightness(0) invert(1);
 }
 
 /* Opened sidebar: make img icons more transparent (for routing, layers) */

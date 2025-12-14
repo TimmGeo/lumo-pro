@@ -79,12 +79,6 @@
                     :alt="hotspot.name"
                     class="location-button-image"
                   />
-                  <img
-                    v-else-if="getLocationImage(hotspot.name)"
-                    :src="getLocationImage(hotspot.name)"
-                    :alt="hotspot.name"
-                    class="location-button-image"
-                  />
                   <div
                     v-else
                     class="location-button-image-placeholder"
@@ -292,12 +286,6 @@
                     :alt="hotspot.name"
                     class="location-button-image"
                   />
-                  <img
-                    v-else-if="getLocationImage(hotspot.name)"
-                    :src="getLocationImage(hotspot.name)"
-                    :alt="hotspot.name"
-                    class="location-button-image"
-                  />
                   <div
                     v-else
                     class="location-button-image-placeholder"
@@ -443,12 +431,6 @@
                   <img
                     v-if="getLocationSVG(hotspot.name)"
                     :src="getLocationSVG(hotspot.name)"
-                    :alt="hotspot.name"
-                    class="location-button-image"
-                  />
-                  <img
-                    v-else-if="getLocationImage(hotspot.name)"
-                    :src="getLocationImage(hotspot.name)"
                     :alt="hotspot.name"
                     class="location-button-image"
                   />
@@ -808,11 +790,11 @@ onMounted(() => {
 .scale-gradient-lighting {
   background: linear-gradient(
     to right,
-    #1e293b 0%,
-    #334155 25%,
-    #475569 50%,
-    #64748b 75%,
-    #94a3b8 100%
+    #0a0e1a 0%,
+    #1a1f2e 25%,
+    #2d3441 50%,
+    #4a5568 75%,
+    #718096 100%
   );
 }
 
