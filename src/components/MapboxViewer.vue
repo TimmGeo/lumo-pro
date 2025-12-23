@@ -4671,7 +4671,7 @@ onBeforeUnmount(() => {
 .loading-screen {
   position: absolute;
   inset: 0;
-  background: #151517;
+  background: #2a2a2c;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -4687,17 +4687,11 @@ onBeforeUnmount(() => {
 }
 
 .loading-logo {
-  font-size: 96px;
-  font-weight: 400;
-  color: rgba(255, 255, 255, 0.6);
+  font-size: 128px;
+  font-weight: 600;
+  color: #222224;
   margin: 0;
-  font-family:
-    "SF Pro Display",
-    "SF Pro Text",
-    -apple-system,
-    BlinkMacSystemFont,
-    system-ui,
-    sans-serif;
+  font-family: "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   letter-spacing: -0.02em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -4713,7 +4707,7 @@ onBeforeUnmount(() => {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.4);
+  background: #1a1a1c;
   animation: loading-dot 1.4s infinite ease-in-out both;
 }
 

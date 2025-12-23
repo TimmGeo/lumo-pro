@@ -1906,7 +1906,7 @@
                       <!-- Coloring Mode Selector -->
                       <div class="animation-coloring-mode">
                         <label class="animation-coloring-label"
-                          >Coloring Mode:</label
+                          >Display Style</label
                         >
                         <div class="animation-coloring-options">
                           <button
@@ -1917,9 +1917,9 @@
                             @click="animationColoringMode = 'route'"
                             :disabled="!routeAnimationActive"
                           >
-                            <span>Route Colors</span>
+                            <span>Route Style</span>
                             <span class="animation-coloring-hint"
-                              >Blue / Grey</span
+                              >Blue and grey colors</span
                             >
                           </button>
                           <button
@@ -1930,9 +1930,9 @@
                             @click="animationColoringMode = 'median'"
                             :disabled="!routeAnimationActive"
                           >
-                            <span>Score vs Median</span>
+                            <span>Safety Comparison</span>
                             <span class="animation-coloring-hint"
-                              >Green / Red</span
+                              >Green (safer) / Red (less safe)</span
                             >
                           </button>
                         </div>
@@ -6860,9 +6860,9 @@ textarea:focus-visible {
   grid-template-columns: 1fr auto;
   gap: 16px;
   padding: 12px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: none;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 12px;
   color: rgba(255, 255, 255, 0.95);
   letter-spacing: -0.01em;
   font-family:
@@ -6879,7 +6879,7 @@ textarea:focus-visible {
   grid-template-columns: 1fr auto;
   gap: 16px;
   padding: 14px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: none;
   transition: background-color 0.2s ease;
 }
 
@@ -6906,10 +6906,23 @@ textarea:focus-visible {
 }
 
 .security-contact-number {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.9);
   text-align: right;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+}
+
+.security-contact-facility {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.5;
   font-family:
     "SF Pro Display",
     "SF Pro Text",
@@ -6943,7 +6956,7 @@ textarea:focus-visible {
   gap: 10px;
   padding: 12px 16px;
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: none;
   border-radius: 8px;
   color: rgba(255, 255, 255, 0.8);
   font-size: 14px;
@@ -6962,7 +6975,6 @@ textarea:focus-visible {
 
 .security-alert-button:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
   color: rgba(255, 255, 255, 0.95);
 }
 
@@ -6973,13 +6985,11 @@ textarea:focus-visible {
 
 .security-alert-button.active {
   background: rgba(255, 68, 68, 0.15);
-  border-color: rgba(255, 68, 68, 0.3);
   color: #ff4444;
 }
 
 .security-alert-button.active:hover {
   background: rgba(255, 68, 68, 0.2);
-  border-color: rgba(255, 68, 68, 0.4);
 }
 
 .security-alert-button svg {
@@ -7008,7 +7018,7 @@ textarea:focus-visible {
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: none;
 }
 
 .lumo-score-label {
@@ -7110,7 +7120,7 @@ textarea:focus-visible {
   gap: 10px;
   padding: 12px 16px;
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: none;
   border-radius: 8px;
   color: rgba(255, 255, 255, 0.9);
   font-size: 14px;
@@ -7130,7 +7140,6 @@ textarea:focus-visible {
 
 .uber-import-button:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
   color: rgba(255, 255, 255, 0.95);
 }
 
@@ -7520,10 +7529,6 @@ textarea:focus-visible {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
 }
 
-.animation-app-button--expanded svg {
-  opacity: 1;
-}
-
 .animation-app-button svg {
   width: 20px;
   height: 20px;
@@ -7544,6 +7549,12 @@ textarea:focus-visible {
   opacity: 1;
 }
 
+.animation-app-button--expanded svg {
+  opacity: 1 !important;
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
 .app-basket--expanded .animation-app-button svg {
   width: 16px;
   height: 16px;
@@ -7555,29 +7566,29 @@ textarea:focus-visible {
   align-items: center;
   gap: 8px;
   padding: 12px 20px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  border: none;
   border-radius: 8px;
   color: #ffffff;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
-  margin-top: 16px;
+  margin-top: 24px;
+  width: 100%;
+  justify-content: center;
 }
 
 .animation-button:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.3);
-  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .animation-button:active:not(:disabled) {
-  transform: translateY(0);
+  transform: scale(0.98);
 }
 
 .animation-button:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
@@ -7590,20 +7601,18 @@ textarea:focus-visible {
   align-items: center;
   gap: 6px;
   padding: 8px 16px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  border: none;
   border-radius: 6px;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.6);
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
-  margin-top: 12px;
+  margin-top: 8px;
 }
 
 .animation-reset-button:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
   color: rgba(255, 255, 255, 0.9);
 }
 
@@ -7612,17 +7621,17 @@ textarea:focus-visible {
 }
 
 .animation-coloring-mode {
-  margin-top: 20px;
-  padding-top: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: 24px;
+  padding-top: 0;
+  border-top: none;
 }
 
 .animation-coloring-label {
   display: block;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.6);
-  margin-bottom: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 12px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -7638,11 +7647,11 @@ textarea:focus-visible {
   flex-direction: column;
   align-items: flex-start;
   gap: 4px;
-  padding: 10px 14px;
+  padding: 12px 14px;
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: none;
   border-radius: 6px;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.8);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -7652,9 +7661,8 @@ textarea:focus-visible {
 }
 
 .animation-coloring-button:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
-  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.95);
 }
 
 .animation-coloring-button:disabled {
@@ -7664,13 +7672,11 @@ textarea:focus-visible {
 
 .animation-coloring-button.active {
   background: rgba(100, 180, 255, 0.15);
-  border-color: rgba(100, 180, 255, 0.3);
   color: #ffffff;
 }
 
 .animation-coloring-button.active:hover {
   background: rgba(100, 180, 255, 0.2);
-  border-color: rgba(100, 180, 255, 0.4);
 }
 
 .animation-coloring-hint {
@@ -7684,12 +7690,12 @@ textarea:focus-visible {
 }
 
 .animation-content {
-  padding: 20px 0;
+  padding: 0;
 }
 
 .animation-description {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
   line-height: 1.5;
   margin: 0;
   font-family:
@@ -7744,10 +7750,6 @@ textarea:focus-visible {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
 }
 
-.chat-app-button--active svg {
-  opacity: 1;
-}
-
 .chat-app-button svg {
   width: 20px;
   height: 20px;
@@ -7766,6 +7768,12 @@ textarea:focus-visible {
 
 .chat-app-button:hover svg {
   opacity: 1;
+}
+
+.chat-app-button--active svg {
+  opacity: 1 !important;
+  color: #ffffff !important;
+  stroke: #ffffff !important;
 }
 
 .app-basket--expanded .chat-app-button svg {
@@ -7816,10 +7824,6 @@ textarea:focus-visible {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
 }
 
-.legend-app-button--active svg {
-  opacity: 1;
-}
-
 .legend-app-button svg {
   width: 20px;
   height: 20px;
@@ -7838,6 +7842,12 @@ textarea:focus-visible {
 
 .legend-app-button:hover svg {
   opacity: 1;
+}
+
+.legend-app-button--active svg {
+  opacity: 1 !important;
+  color: #ffffff !important;
+  stroke: #ffffff !important;
 }
 
 .app-basket--expanded .legend-app-button svg {
@@ -7888,10 +7898,6 @@ textarea:focus-visible {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
 }
 
-.security-app-button--active svg {
-  opacity: 1;
-}
-
 .security-app-button svg {
   width: 20px;
   height: 20px;
@@ -7910,6 +7916,12 @@ textarea:focus-visible {
 
 .security-app-button:hover svg {
   opacity: 1;
+}
+
+.security-app-button--active svg {
+  opacity: 1 !important;
+  color: #ffffff !important;
+  stroke: #ffffff !important;
 }
 
 .app-basket--expanded .security-app-button svg {
@@ -8368,7 +8380,7 @@ textarea:focus-visible {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  align-items: flex-end; /* Align content to right for speech bubble */
+  align-items: flex-start; /* Align content to left for speech bubble */
   margin-bottom: 4px;
 }
 
@@ -8401,12 +8413,12 @@ textarea:focus-visible {
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-radius: 18px 18px 0 18px;
+  border-radius: 18px 18px 18px 0;
   position: relative;
   display: inline-block;
   max-width: calc(100% - 20px);
-  align-self: flex-end;
-  margin-left: auto;
+  align-self: flex-start;
+  margin: 0;
   word-wrap: break-word;
   box-shadow: none;
   animation: chatBubbleAppear 0.5s ease-out 0.4s forwards;
@@ -8424,7 +8436,7 @@ textarea:focus-visible {
 }
 
 .route-details-intro-text {
-  margin: 0 0 0 auto;
+  margin: 0;
   font-size: 13px;
   line-height: 1.4;
   color: #ffffff;
@@ -8439,11 +8451,11 @@ textarea:focus-visible {
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-radius: 18px 18px 0 18px;
+  border-radius: 18px 18px 18px 0;
   position: relative;
   display: inline-block;
   max-width: calc(100% - 20px);
-  align-self: flex-end;
+  align-self: flex-start;
   word-wrap: break-word;
   box-shadow: none;
   font-weight: 400;
@@ -8458,7 +8470,7 @@ textarea:focus-visible {
 }
 
 .route-details-tip {
-  margin: 0 0 0 auto;
+  margin: 0;
   font-size: 12px;
   line-height: 1.4;
   color: #ffffff;
@@ -8473,11 +8485,11 @@ textarea:focus-visible {
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-radius: 18px 18px 0 18px;
+  border-radius: 18px 18px 18px 0;
   position: relative;
   display: inline-block;
   max-width: calc(100% - 20px);
-  align-self: flex-end;
+  align-self: flex-start;
   word-wrap: break-word;
   box-shadow: none;
   font-weight: 400;
@@ -8532,13 +8544,13 @@ textarea:focus-visible {
 }
 
 .route-details-document {
-  margin: 0 0 0 auto;
+  margin: 0;
   max-width: calc(100% - 20px);
-  align-self: flex-end;
+  align-self: flex-start;
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-radius: 18px 18px 0 18px;
+  border-radius: 18px 18px 18px 0;
   border: 1px solid rgba(255, 255, 255, 0.1);
   overflow: hidden;
   margin-top: 10px;
@@ -8768,8 +8780,8 @@ textarea:focus-visible {
 }
 
 .route-details-footer-bubble {
-  margin: 0 0 0 auto;
-  font-size: 14px;
+  margin: 0;
+  font-size: 13px;
   line-height: 1.4;
   color: #ffffff;
   font-family:
@@ -8783,11 +8795,11 @@ textarea:focus-visible {
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-radius: 18px 18px 0 18px;
+  border-radius: 18px 18px 18px 0;
   position: relative;
   display: inline-block;
   max-width: calc(100% - 20px);
-  align-self: flex-end;
+  align-self: flex-start;
   word-wrap: break-word;
   box-shadow: none;
   font-weight: 400;
@@ -8804,13 +8816,13 @@ textarea:focus-visible {
 .route-details-response-section {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: flex-start;
   gap: 10px;
   margin-top: 10px;
 }
 
 .route-details-response-bubble {
-  margin: 0 0 0 auto;
+  margin: 0;
   font-size: 14px;
   line-height: 1.4;
   color: #ffffff;
@@ -8825,11 +8837,11 @@ textarea:focus-visible {
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-radius: 18px 18px 0 18px;
+  border-radius: 18px 18px 18px 0;
   position: relative;
   display: inline-block;
   max-width: calc(100% - 20px);
-  align-self: flex-end;
+  align-self: flex-start;
   word-wrap: break-word;
   box-shadow: none;
   font-weight: 400;
@@ -8845,7 +8857,7 @@ textarea:focus-visible {
 }
 
 .route-details-safety-bubble {
-  margin: 0 0 0 auto;
+  margin: 0;
   font-size: 13px;
   line-height: 1.4;
   color: #ffffff;
@@ -8860,11 +8872,11 @@ textarea:focus-visible {
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-radius: 18px 18px 0 18px;
+  border-radius: 18px 18px 18px 0;
   position: relative;
   display: inline-block;
   max-width: calc(100% - 20px);
-  align-self: flex-end;
+  align-self: flex-start;
   word-wrap: break-word;
   box-shadow: none;
   font-weight: 400;
@@ -8949,7 +8961,7 @@ textarea:focus-visible {
 }
 
 .route-details-user-message {
-  margin: 0 auto 0 0;
+  margin: 0 0 0 auto;
   font-size: 14px;
   line-height: 1.4;
   color: rgba(255, 255, 255, 0.9);
@@ -8964,11 +8976,11 @@ textarea:focus-visible {
   background: rgba(112, 240, 195, 0.15);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-radius: 18px 18px 18px 0; /* Sharp edge on left */
+  border-radius: 18px 18px 0 18px; /* Sharp edge on right */
   position: relative;
   display: inline-block;
   max-width: calc(100% - 20px);
-  align-self: flex-start;
+  align-self: flex-end;
   word-wrap: break-word;
   box-shadow: none;
   font-weight: 400;
