@@ -1082,13 +1082,68 @@ onMounted(async () => {
   try {
     mapboxgl.accessToken = token;
 
+    // Load hubs data first to calculate the center and reuse the data
+    let initialCenter = [8.55, 47.37]; // Default Zurich center
+    let initialZoom = 12;
+
+    try {
+      const hubsResponse = await fetch(hubsUrl);
+      hubsData = await hubsResponse.json(); // Store for later use
+
+      if (hubsData && hubsData.features && hubsData.features.length > 0) {
+        // Calculate bounds from all hub coordinates
+        const bounds = new mapboxgl.LngLatBounds();
+        hubsData.features.forEach((feature) => {
+          // Skip clusters
+          if (feature.properties && feature.properties.point_count) {
+            return;
+          }
+          if (feature.geometry && feature.geometry.type === "Point") {
+            const [lon, lat] = feature.geometry.coordinates;
+            bounds.extend([lon, lat]);
+          }
+        });
+
+        if (!bounds.isEmpty()) {
+          const ne = bounds.getNorthEast();
+          const sw = bounds.getSouthWest();
+
+          // Calculate center
+          initialCenter = [(ne.lng + sw.lng) / 2, (ne.lat + sw.lat) / 2];
+
+          // Calculate zoom level manually
+          const padding = 80;
+          const mapWidth = mapEl.value.clientWidth || 1920;
+          const mapHeight = mapEl.value.clientHeight || 1080;
+
+          const latDiff = ne.lat - sw.lat;
+          const lngDiff = ne.lng - sw.lng;
+
+          const latZoom = Math.log2(
+            360 / ((latDiff * (mapHeight - padding * 2)) / 256)
+          );
+          const lngZoom = Math.log2(
+            360 / ((lngDiff * (mapWidth - padding * 2)) / 256)
+          );
+
+          initialZoom = Math.min(Math.min(latZoom, lngZoom), 15);
+          initialZoom = Math.max(initialZoom, 12);
+        }
+      }
+    } catch (error) {
+      console.warn(
+        "Failed to load hubs for initial center calculation, using default:",
+        error
+      );
+    }
+
     map = new mapboxgl.Map({
       container: mapEl.value,
       style: "mapbox://styles/mapbox/dark-v11",
-      center: [0, 18],
-      zoom: 1.2,
-      pitch: 0,
-      bearing: 0,
+      center: initialCenter, // Center calculated from hubs
+      zoom: initialZoom, // Zoom calculated from hubs
+      pitch: 45,
+      bearing: -5,
       attributionControl: false,
     });
 
@@ -1165,8 +1220,11 @@ onMounted(async () => {
 
       try {
         // --- Load and add Routing Hubs (points) ---
-        const hubsResponse = await fetch(hubsUrl);
-        hubsData = await hubsResponse.json();
+        // Reuse hubsData if already loaded, otherwise fetch it
+        if (!hubsData) {
+          const hubsResponse = await fetch(hubsUrl);
+          hubsData = await hubsResponse.json();
+        }
 
         map.addSource("hubs", {
           type: "geojson",
@@ -1384,6 +1442,8 @@ onMounted(async () => {
 
         // Initialize hub colors
         updateHubColors();
+
+        // Map is already positioned correctly from initial load, no need to zoom again
 
         // Emit hubs ready event immediately (before locality names are fetched)
         emit("hubsUpdated");
@@ -3331,7 +3391,7 @@ function clearRoute(skipHubFilter = false) {
 }
 
 // Zoom to show all routing hubs
-function zoomToAllHubs() {
+function zoomToAllHubs(animate = true) {
   console.log("zoomToAllHubs called", {
     map: !!map,
     mapLoaded: map?.isStyleLoaded(),
@@ -3398,42 +3458,78 @@ function zoomToAllHubs() {
       const currentPitch = map.getPitch();
       const currentBearing = map.getBearing();
 
-      // Calculate target view using the same pattern as route zooming
-      // Store current state
-      const originalCenter = map.getCenter();
-      const originalZoom = map.getZoom();
+      let targetZoom, targetCenter;
 
-      // Temporarily fit bounds to calculate optimal zoom and center
-      map.fitBounds(bounds, {
-        padding: { top: 80, bottom: 80, left: 80, right: 80 },
-        duration: 0,
-        maxZoom: 15,
-      });
+      if (animate) {
+        // Calculate target view using fitBounds (for animated case)
+        // Store current state
+        const originalCenter = map.getCenter();
+        const originalZoom = map.getZoom();
 
-      const targetZoom = Math.max(Math.min(map.getZoom(), 15), 12);
-      const targetCenter = map.getCenter();
+        // Temporarily fit bounds to calculate optimal zoom and center
+        map.fitBounds(bounds, {
+          padding: { top: 80, bottom: 80, left: 80, right: 80 },
+          duration: 0,
+          maxZoom: 15,
+        });
 
-      // Restore original position immediately
-      map.jumpTo({
-        center: originalCenter,
-        zoom: originalZoom,
-        pitch: currentPitch,
-        bearing: currentBearing,
-      });
+        targetZoom = Math.max(Math.min(map.getZoom(), 15), 12);
+        targetCenter = map.getCenter();
 
-      // Now animate to the target position while preserving pitch and bearing
-      // Use easeTo with custom easing for smoother animation (same as route zooming)
-      map.easeTo({
-        center: targetCenter,
-        zoom: targetZoom,
-        pitch: currentPitch,
-        bearing: currentBearing,
-        duration: 1200, // Slightly longer for smoother feel
-        easing(t) {
-          // Ease-out easing for smooth deceleration
-          return t * (2 - t);
-        },
-      });
+        // Restore original position immediately
+        map.jumpTo({
+          center: originalCenter,
+          zoom: originalZoom,
+          pitch: currentPitch,
+          bearing: currentBearing,
+        });
+
+        // Use easeTo with custom easing for smoother animation
+        map.easeTo({
+          center: targetCenter,
+          zoom: targetZoom,
+          pitch: currentPitch,
+          bearing: currentBearing,
+          duration: 1200, // Slightly longer for smoother feel
+          easing(t) {
+            // Ease-out easing for smooth deceleration
+            return t * (2 - t);
+          },
+        });
+      } else {
+        // Calculate center and zoom manually without using fitBounds (no visual jump)
+        const ne = bounds.getNorthEast();
+        const sw = bounds.getSouthWest();
+
+        // Calculate center
+        targetCenter = [(ne.lng + sw.lng) / 2, (ne.lat + sw.lat) / 2];
+
+        // Calculate zoom level manually
+        const padding = 80;
+        const mapWidth = map.getContainer().clientWidth;
+        const mapHeight = map.getContainer().clientHeight;
+
+        const latDiff = ne.lat - sw.lat;
+        const lngDiff = ne.lng - sw.lng;
+
+        const latZoom = Math.log2(
+          360 / ((latDiff * (mapHeight - padding * 2)) / 256)
+        );
+        const lngZoom = Math.log2(
+          360 / ((lngDiff * (mapWidth - padding * 2)) / 256)
+        );
+
+        targetZoom = Math.min(Math.min(latZoom, lngZoom), 15);
+        targetZoom = Math.max(targetZoom, 12);
+
+        // Jump immediately without animation
+        map.jumpTo({
+          center: targetCenter,
+          zoom: targetZoom,
+          pitch: currentPitch,
+          bearing: currentBearing,
+        });
+      }
 
       console.log(
         "zoomToAllHubs: Called flyTo successfully with preserved pitch"
@@ -3446,17 +3542,26 @@ function zoomToAllHubs() {
         const currentBearing = map.getBearing();
         map.fitBounds(bounds, {
           padding: { top: 80, bottom: 80, left: 80, right: 80 },
-          duration: 1200,
+          duration: animate ? 1200 : 0,
           maxZoom: 15,
         });
-        // Restore pitch and bearing after a short delay
-        setTimeout(() => {
-          map.easeTo({
+        // Restore pitch and bearing
+        if (animate) {
+          // Restore pitch and bearing after a short delay
+          setTimeout(() => {
+            map.easeTo({
+              pitch: currentPitch,
+              bearing: currentBearing,
+              duration: 300,
+            });
+          }, 1250);
+        } else {
+          // Jump immediately to restore pitch and bearing
+          map.jumpTo({
             pitch: currentPitch,
             bearing: currentBearing,
-            duration: 300,
           });
-        }, 1250);
+        }
         console.log("zoomToAllHubs: Fallback to fitBounds");
       } catch (fallbackError) {
         console.error("zoomToAllHubs: Fallback also failed", fallbackError);
