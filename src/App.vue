@@ -2480,7 +2480,7 @@ const isHovering = ref(false);
 const showHistoryIndicator = ref(false);
 const showRouteSavedMessage = ref(false);
 const isFirstRouteCleared = ref(true);
-const showWalkthrough = ref(true);
+const showWalkthrough = ref(false);
 const routingHubsVisible = ref(true);
 const showGuidedTour = ref(false);
 const zurichFocusKey = ref(0);
@@ -7289,7 +7289,7 @@ textarea:focus-visible {
   position: relative;
   width: 92px; /* Larger app button in collapsed state */
   height: 92px; /* Make it quadratic (width = height) */
-  background: rgba(26, 27, 30, 0.5);
+  background: rgba(26, 27, 30, 0.3);
   border: none;
   border-radius: 12px;
   padding: 0;
@@ -7349,9 +7349,15 @@ textarea:focus-visible {
   height: 24px;
   display: block;
   flex-shrink: 0;
+  opacity: 0.4;
   transition:
     width 0.3s cubic-bezier(0.16, 0.84, 0.24, 1),
-    height 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
+    height 0.3s cubic-bezier(0.16, 0.84, 0.24, 1),
+    opacity 0.3s ease;
+}
+
+.zurich-app-button:hover .zurich-app-icon {
+  opacity: 1;
 }
 
 .app-basket--expanded .zurich-app-icon {
@@ -7386,7 +7392,10 @@ textarea:focus-visible {
   line-height: 1.2;
   white-space: nowrap;
   text-align: center;
-  transition: font-size 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
+  opacity: 0.4;
+  transition:
+    font-size 0.3s cubic-bezier(0.16, 0.84, 0.24, 1),
+    opacity 0.3s ease;
   font-family:
     "SF Pro Display",
     "SF Pro Text",
@@ -7394,6 +7403,10 @@ textarea:focus-visible {
     BlinkMacSystemFont,
     system-ui,
     sans-serif;
+}
+
+.zurich-app-button:hover .zurich-app-location-name {
+  opacity: 1;
 }
 
 .app-basket--expanded .zurich-app-location-name {
@@ -7407,7 +7420,10 @@ textarea:focus-visible {
   color: #b0b0b0;
   line-height: 1.2;
   white-space: nowrap;
-  transition: font-size 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
+  opacity: 0.4;
+  transition:
+    font-size 0.3s cubic-bezier(0.16, 0.84, 0.24, 1),
+    opacity 0.3s ease;
   font-family:
     "SF Pro Display",
     "SF Pro Text",
@@ -7415,6 +7431,10 @@ textarea:focus-visible {
     BlinkMacSystemFont,
     system-ui,
     sans-serif;
+}
+
+.zurich-app-button:hover .zurich-app-location-time {
+  opacity: 1;
 }
 
 .app-basket--expanded .zurich-app-location-time {
@@ -7464,7 +7484,7 @@ textarea:focus-visible {
 .animation-app-button {
   width: 100%;
   height: 100%;
-  background: rgba(26, 27, 30, 0.5);
+  background: rgba(26, 27, 30, 0.3);
   border: none;
   border-radius: 12px;
   padding: 0;
@@ -7500,6 +7520,10 @@ textarea:focus-visible {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
 }
 
+.animation-app-button--expanded svg {
+  opacity: 1;
+}
+
 .animation-app-button svg {
   width: 20px;
   height: 20px;
@@ -7509,9 +7533,15 @@ textarea:focus-visible {
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
+  opacity: 0.4;
   transition:
     width 0.3s cubic-bezier(0.16, 0.84, 0.24, 1),
-    height 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
+    height 0.3s cubic-bezier(0.16, 0.84, 0.24, 1),
+    opacity 0.3s ease;
+}
+
+.animation-app-button:hover svg {
+  opacity: 1;
 }
 
 .app-basket--expanded .animation-app-button svg {
@@ -7676,7 +7706,7 @@ textarea:focus-visible {
   position: relative;
   width: 46px;
   height: 42px;
-  background: rgba(26, 27, 30, 0.5);
+  background: rgba(26, 27, 30, 0.3);
   border: none;
   border-radius: 12px;
   padding: 0;
@@ -7714,6 +7744,10 @@ textarea:focus-visible {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
 }
 
+.chat-app-button--active svg {
+  opacity: 1;
+}
+
 .chat-app-button svg {
   width: 20px;
   height: 20px;
@@ -7723,9 +7757,15 @@ textarea:focus-visible {
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
+  opacity: 0.4;
   transition:
     width 0.3s cubic-bezier(0.16, 0.84, 0.24, 1),
-    height 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
+    height 0.3s cubic-bezier(0.16, 0.84, 0.24, 1),
+    opacity 0.3s ease;
+}
+
+.chat-app-button:hover svg {
+  opacity: 1;
 }
 
 .app-basket--expanded .chat-app-button svg {
@@ -7738,7 +7778,7 @@ textarea:focus-visible {
   position: relative;
   width: 46px;
   height: 42px;
-  background: rgba(26, 27, 30, 0.5);
+  background: rgba(26, 27, 30, 0.3);
   border: none;
   border-radius: 12px;
   padding: 0;
@@ -7776,6 +7816,10 @@ textarea:focus-visible {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
 }
 
+.legend-app-button--active svg {
+  opacity: 1;
+}
+
 .legend-app-button svg {
   width: 20px;
   height: 20px;
@@ -7785,9 +7829,15 @@ textarea:focus-visible {
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
+  opacity: 0.4;
   transition:
     width 0.3s cubic-bezier(0.16, 0.84, 0.24, 1),
-    height 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
+    height 0.3s cubic-bezier(0.16, 0.84, 0.24, 1),
+    opacity 0.3s ease;
+}
+
+.legend-app-button:hover svg {
+  opacity: 1;
 }
 
 .app-basket--expanded .legend-app-button svg {
@@ -7800,7 +7850,7 @@ textarea:focus-visible {
   position: relative;
   width: 46px;
   height: 42px;
-  background: rgba(26, 27, 30, 0.5);
+  background: rgba(26, 27, 30, 0.3);
   border: none;
   border-radius: 12px;
   padding: 0;
@@ -7838,6 +7888,10 @@ textarea:focus-visible {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
 }
 
+.security-app-button--active svg {
+  opacity: 1;
+}
+
 .security-app-button svg {
   width: 20px;
   height: 20px;
@@ -7847,9 +7901,15 @@ textarea:focus-visible {
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
+  opacity: 0.4;
   transition:
     width 0.3s cubic-bezier(0.16, 0.84, 0.24, 1),
-    height 0.3s cubic-bezier(0.16, 0.84, 0.24, 1);
+    height 0.3s cubic-bezier(0.16, 0.84, 0.24, 1),
+    opacity 0.3s ease;
+}
+
+.security-app-button:hover svg {
+  opacity: 1;
 }
 
 .app-basket--expanded .security-app-button svg {

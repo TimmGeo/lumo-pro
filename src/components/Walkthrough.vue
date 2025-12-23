@@ -1,6 +1,7 @@
 <template>
   <transition name="toast-fade">
     <div v-if="visible" class="toast" role="status" aria-live="polite">
+      <div class="toast-bg-pulse"></div>
       <div class="toast-content">
         <p class="toast-message">The City's awake. Let's find your way.</p>
       </div>
@@ -9,7 +10,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, defineEmits, defineProps } from "vue";
+import { ref, onMounted, defineEmits, defineProps } from "vue";
 
 const props = defineProps({
   mapReady: {
@@ -44,10 +45,33 @@ onMounted(() => {
   pointer-events: none;
 }
 
+.toast-bg-pulse {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(150, 150, 150, 0.6);
+  z-index: 1999;
+  animation: pulse-bg 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes pulse-bg {
+  0% {
+    background-color: rgba(150, 150, 150, 0.4);
+  }
+  50% {
+    background-color: rgba(150, 150, 150, 0.8);
+  }
+  100% {
+    background-color: rgba(150, 150, 150, 0.4);
+  }
+}
+
 .toast-content {
-  background: rgba(28, 28, 30, 0.95);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  position: relative;
+  background-color: #1c1c1e !important;
   border-radius: 14px;
   padding: 14px 20px;
   box-shadow:
@@ -55,9 +79,14 @@ onMounted(() => {
     0 0 0 0.5px rgba(255, 255, 255, 0.1);
   min-width: 280px;
   max-width: 90vw;
+  z-index: 2001;
+  transition: none !important;
+  animation: none !important;
 }
 
 .toast-message {
+  position: relative;
+  z-index: 1;
   margin: 0;
   color: #fff;
   font-size: 15px;
@@ -78,11 +107,23 @@ onMounted(() => {
 
 /* Fade animations */
 .toast-fade-enter-active {
-  transition: all 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    opacity 400ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 400ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.toast-fade-enter-active .toast-content {
+  transition: none !important;
 }
 
 .toast-fade-leave-active {
-  transition: all 300ms cubic-bezier(0.4, 0, 1, 1);
+  transition:
+    opacity 300ms cubic-bezier(0.4, 0, 1, 1),
+    transform 300ms cubic-bezier(0.4, 0, 1, 1);
+}
+
+.toast-fade-leave-active .toast-content {
+  transition: none !important;
 }
 
 .toast-fade-enter-from {

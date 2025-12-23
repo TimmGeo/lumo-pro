@@ -4,6 +4,19 @@
     class="scene"
     :class="{ 'controls-collapsed': controlsCollapsed }"
   >
+    <!-- Loading Screen -->
+    <transition name="loading-fade">
+      <div v-if="!isMapReady" class="loading-screen">
+        <div class="loading-content">
+          <h1 class="loading-logo">Lumo</h1>
+          <div class="loading-dots">
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+          </div>
+        </div>
+      </div>
+    </transition>
     <div ref="mapEl" class="map"></div>
     <!-- Map Controls Bar (hidden - moved to top bar in App.vue) -->
     <div
@@ -242,6 +255,7 @@ const isFullscreen = ref(false);
 const isTilted = ref(false);
 const controlsCollapsed = ref(false);
 const isHoveringControls = ref(false);
+const isMapReady = ref(false);
 let map = null;
 
 // Hover timer for opening collapsed controls bar
@@ -1061,6 +1075,8 @@ function handleFullscreenChange() {
 
 onMounted(async () => {
   await nextTick();
+  // Add loading class to body for global styles
+  document.body.classList.add("map-loading");
 
   // Listen to fullscreen events
   document.addEventListener("fullscreenchange", handleFullscreenChange);
@@ -1209,6 +1225,9 @@ onMounted(async () => {
 
       // Wait for map to be idle (tiles loaded) before emitting ready
       map.once("idle", () => {
+        isMapReady.value = true;
+        // Remove loading class from body
+        document.body.classList.remove("map-loading");
         emit("mapReady");
       });
 
@@ -4130,6 +4149,8 @@ function performZurichFocus() {
 }
 
 onBeforeUnmount(() => {
+  // Remove loading class from body
+  document.body.classList.remove("map-loading");
   // Remove fullscreen event listeners
   document.removeEventListener("fullscreenchange", handleFullscreenChange);
   document.removeEventListener(
@@ -4644,5 +4665,91 @@ onBeforeUnmount(() => {
   padding: 0 !important;
   display: inline !important;
   white-space: nowrap !important;
+}
+
+/* Loading Screen */
+.loading-screen {
+  position: absolute;
+  inset: 0;
+  background: #151517;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  pointer-events: none;
+}
+
+.loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.loading-logo {
+  font-size: 96px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  letter-spacing: -0.02em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.loading-dots {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.loading-dots .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  animation: loading-dot 1.4s infinite ease-in-out both;
+}
+
+.loading-dots .dot:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.loading-dots .dot:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+.loading-dots .dot:nth-child(3) {
+  animation-delay: 0;
+}
+
+@keyframes loading-dot {
+  0%,
+  80%,
+  100% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Loading fade transition */
+.loading-fade-enter-active,
+.loading-fade-leave-active {
+  transition: opacity 300ms ease;
+}
+
+.loading-fade-enter-from,
+.loading-fade-leave-to {
+  opacity: 0;
 }
 </style>
