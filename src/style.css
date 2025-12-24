@@ -47,16 +47,7 @@ body {
   text-align: left;
 }
 
-/* Show sidebar and app basket as grey boxes during map loading */
-body.map-loading .sidebar,
-body.map-loading .sidebar.sidebar {
-  background-color: rgba(255, 255, 255, 0.12) !important;
-  border: none !important;
-  box-shadow: none !important;
-  animation: loading-wave 1.2s ease-in-out infinite !important;
-}
-
-/* Hide all content inside sidebar (icons, text, etc.) but keep containers visible */
+/* Hide content inside components during map loading, but keep containers visible */
 body.map-loading .sidebar-icon-bar *,
 body.map-loading .sidebar-main *,
 body.map-loading .sidebar-header *,
@@ -69,15 +60,6 @@ body.map-loading .profile-avatar-fixed * {
   visibility: hidden !important;
 }
 
-body.map-loading .app-basket,
-body.map-loading .app-basket.app-basket {
-  background-color: rgba(255, 255, 255, 0.12) !important;
-  border: none !important;
-  box-shadow: none !important;
-  animation: loading-wave 1.2s ease-in-out infinite 0.3s !important;
-}
-
-/* Hide all content inside app basket (icons, buttons, etc.) but keep container visible */
 body.map-loading .app-basket-apps-container *,
 body.map-loading .app-basket-content *,
 body.map-loading .zurich-app-button *,
@@ -89,44 +71,9 @@ body.map-loading .security-app-button * {
   visibility: hidden !important;
 }
 
-/* Show bottom right map controls as grey boxes during loading */
-body.map-loading .map-controls-over-scale {
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-}
-
-body.map-loading .map-control-btn-over-scale {
-  background-color: rgba(255, 255, 255, 0.12) !important;
-  border: none !important;
-  box-shadow: none !important;
-  min-width: 40px !important;
-  min-height: 40px !important;
-  animation: loading-wave 1.2s ease-in-out infinite 0.6s !important;
-}
-
-body.map-loading .map-control-btn-over-scale:nth-child(2) {
-  animation-delay: 0.7s !important;
-}
-
-body.map-loading .map-control-btn-over-scale:nth-child(3) {
-  animation-delay: 0.8s !important;
-}
-
-body.map-loading .map-control-btn-over-scale:nth-child(4) {
-  animation-delay: 0.9s !important;
-}
-
 body.map-loading .map-control-btn-over-scale * {
   opacity: 0 !important;
   visibility: hidden !important;
-}
-
-body.map-loading .map-scale {
-  background-color: rgba(255, 255, 255, 0.12) !important;
-  border: none !important;
-  box-shadow: none !important;
-  animation: loading-wave 1.2s ease-in-out infinite 1s !important;
 }
 
 body.map-loading .map-scale * {
@@ -134,17 +81,58 @@ body.map-loading .map-scale * {
   visibility: hidden !important;
 }
 
-/* Wave animation for loading boxes - pulses between dark grey and fully transparent */
-@keyframes loading-wave {
-  0% {
-    opacity: 1 !important;
-  }
-  50% {
-    opacity: 0 !important;
-  }
-  100% {
-    opacity: 1 !important;
-  }
+/* Apply clean grey tone to all boxes during loading */
+body.map-loading .sidebar,
+body.map-loading .sidebar.sidebar {
+  background: #2f2f31 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+  transition: box-shadow 0s !important;
+}
+
+body.map-loading .app-basket,
+body.map-loading .app-basket.app-basket {
+  background: #2f2f31 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+  transition: box-shadow 0s !important;
+}
+
+body.map-loading .map-control-btn-over-scale {
+  background: #2f2f31 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+  transition: box-shadow 0s !important;
+}
+
+body.map-loading .map-scale {
+  background: #2f2f31 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+  transition: box-shadow 0s !important;
+}
+
+/* Make buttons brighter than loading screen background during loading */
+body.map-loading .zurich-app-button,
+body.map-loading .animation-app-button,
+body.map-loading .chat-app-button,
+body.map-loading .legend-app-button,
+body.map-loading .security-app-button {
+  background: #3a3a3c !important;
+  box-shadow: none !important;
+}
+
+body.map-loading .sidebar-icon-btn {
+  background: #3a3a3c !important;
+  box-shadow: none !important;
+}
+
+body.map-loading button {
+  background-color: #3a3a3c !important;
 }
 
 /* (optional) keep your button styles etc. */

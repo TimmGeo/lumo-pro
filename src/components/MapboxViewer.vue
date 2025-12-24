@@ -206,6 +206,11 @@ import {
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
+// Add loading class immediately to prevent flash of normal styles
+if (typeof document !== "undefined") {
+  document.body.classList.add("map-loading");
+}
+
 const props = defineProps({
   lightingVisible: {
     type: Boolean,
@@ -1075,8 +1080,7 @@ function handleFullscreenChange() {
 
 onMounted(async () => {
   await nextTick();
-  // Add loading class to body for global styles
-  document.body.classList.add("map-loading");
+  // Loading class already added at component creation
 
   // Listen to fullscreen events
   document.addEventListener("fullscreenchange", handleFullscreenChange);
@@ -1229,6 +1233,38 @@ onMounted(async () => {
         // Remove loading class from body
         document.body.classList.remove("map-loading");
         emit("mapReady");
+        
+        // Animate hubs in with delay (after chat bubbles start appearing)
+        // Chat bubbles start at 0.3s, so hubs appear shortly after
+        setTimeout(() => {
+          if (map.getLayer("hubs-circles")) {
+            // Use transition for smooth animation
+            map.setPaintProperty("hubs-circles", "circle-opacity", 1, {
+              duration: 400,
+            });
+          }
+          if (map.getLayer("hubs-clusters")) {
+            // Animate clusters in at the same time
+            map.setPaintProperty("hubs-clusters", "circle-opacity", 1, {
+              duration: 400,
+            });
+          }
+          if (map.getLayer("hubs-cluster-count")) {
+            // Animate cluster count labels in at the same time
+            map.setPaintProperty("hubs-cluster-count", "text-opacity", 1, {
+              duration: 400,
+            });
+          }
+        }, 600);
+        
+        // Animate labels in with more delay
+        setTimeout(() => {
+          if (map.getLayer("hubs-labels")) {
+            map.setPaintProperty("hubs-labels", "text-opacity", 1, {
+              duration: 400,
+            });
+          }
+        }, 1100);
       });
 
       // Note: We removed the styledata and idle event listeners to improve performance
@@ -1259,7 +1295,7 @@ onMounted(async () => {
         // Fetch locality names for each hub using reverse geocoding (async, in background)
         fetchLocalityNamesForHubs();
 
-        // Add cluster circles (white circles for clusters)
+        // Add cluster circles (white circles for clusters) - initially hidden
         map.addLayer({
           id: "hubs-clusters",
           type: "circle",
@@ -1279,11 +1315,11 @@ onMounted(async () => {
               35, // Largest for 100+ points
             ],
             "circle-stroke-width": 0, // No contour
-            "circle-opacity": 1, // Fully opaque white
+            "circle-opacity": 0, // Start hidden, will animate in
           },
         });
 
-        // Add cluster count labels (numbers on clusters)
+        // Add cluster count labels (numbers on clusters) - initially hidden
         map.addLayer({
           id: "hubs-cluster-count",
           type: "symbol",
@@ -1306,21 +1342,22 @@ onMounted(async () => {
           },
           paint: {
             "text-color": "#0b0b0c", // Black text, no halo
+            "text-opacity": 0, // Start hidden, will animate in
           },
         });
 
-        // Add circles for unclustered hubs
+        // Add circles for unclustered hubs (initially hidden, will animate in)
         map.addLayer({
           id: "hubs-circles",
           type: "circle",
           source: "hubs",
           filter: ["!", ["has", "point_count"]],
           paint: {
-            "circle-radius": 8,
+            "circle-radius": 12,
             "circle-color": "#888888", // Medium gray for unselected hubs (more contrast)
             "circle-stroke-color": "#0b0b0c",
             "circle-stroke-width": 0,
-            "circle-opacity": 1,
+            "circle-opacity": 0, // Start hidden, will animate in
           },
         });
 
@@ -1415,6 +1452,7 @@ onMounted(async () => {
           },
           paint: {
             "text-color": "#ffffff", // Pure white text
+            "text-opacity": 0, // Start hidden, will animate in
           },
         });
 
@@ -4671,11 +4709,11 @@ onBeforeUnmount(() => {
 .loading-screen {
   position: absolute;
   inset: 0;
-  background: #2a2a2c;
+  background: #1f1f21;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10000;
+  z-index: 1;
   pointer-events: none;
 }
 
@@ -4687,14 +4725,15 @@ onBeforeUnmount(() => {
 }
 
 .loading-logo {
-  font-size: 128px;
+  font-size: 160px;
   font-weight: 600;
-  color: #222224;
+  color: #2f2f31;
   margin: 0;
-  font-family: "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  letter-spacing: -0.02em;
+  font-family: "Google Sans", "Product Sans", "Nunito", "Quicksand", "Comfortaa", "Varela Round", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  animation: loading-pulse 2s ease-in-out infinite;
 }
 
 .loading-dots {
@@ -4707,32 +4746,41 @@ onBeforeUnmount(() => {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #1a1a1c;
-  animation: loading-dot 1.4s infinite ease-in-out both;
+  background: #2f2f31;
+  animation: loading-dot-pulse 1.5s ease-in-out infinite;
 }
 
 .loading-dots .dot:nth-child(1) {
-  animation-delay: -0.32s;
+  animation-delay: 0s;
 }
 
 .loading-dots .dot:nth-child(2) {
-  animation-delay: -0.16s;
+  animation-delay: 0.2s;
 }
 
 .loading-dots .dot:nth-child(3) {
-  animation-delay: 0;
+  animation-delay: 0.4s;
 }
 
-@keyframes loading-dot {
+@keyframes loading-pulse {
   0%,
-  80%,
   100% {
-    transform: scale(0.8);
-    opacity: 0.5;
+    opacity: 0.4;
   }
-  40% {
-    transform: scale(1);
+  50% {
     opacity: 1;
+  }
+}
+
+@keyframes loading-dot-pulse {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
@@ -4746,4 +4794,5 @@ onBeforeUnmount(() => {
 .loading-fade-leave-to {
   opacity: 0;
 }
+
 </style>

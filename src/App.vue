@@ -1655,17 +1655,89 @@
                   <!-- Empty state footer message -->
                   <div v-else class="route-details-footer">
                     <div
-                      class="route-details-footer-bubble route-details-footer-bubble--quick"
-                      style="animation-delay: 0.2s"
+                      class="route-details-footer-bubble route-details-footer-bubble--greeting route-details-footer-bubble--welcome"
                     >
-                      Hey! 👋 Pick a route on the map first, and I'll share some
-                      cool insights about it.
+                      Hey there!
                     </div>
                     <div
-                      class="route-details-footer-bubble route-details-footer-bubble--quick"
-                      style="margin-top: 8px; animation-delay: 0.6s"
+                      class="route-details-footer-bubble route-details-footer-bubble--welcome"
+                      style="margin-top: 8px"
                     >
-                      Looking forward to helping you explore the city!
+                      I find the best routes through Zurich with data on
+                      lighting, vibrancy, and safety.
+                    </div>
+                    <div
+                      class="route-details-footer-bubble route-details-footer-bubble--welcome"
+                      style="margin-top: 8px"
+                    >
+                      Click the colored dots on the map, or use the routing tool
+                      in the sidebar
+                      <button
+                        class="route-details-footer-button"
+                        @click.stop="handleOpenRoutingTool"
+                      >
+                        here
+                      </button>
+                      .
+                    </div>
+                    <!-- Learn More Document Attachment -->
+                    <div
+                      class="route-details-document route-details-footer-bubble--welcome"
+                      style="margin-top: 12px"
+                    >
+                      <div
+                        class="route-details-document-header"
+                        @click.stop="isAboutLumoExpanded = !isAboutLumoExpanded"
+                        style="cursor: pointer"
+                      >
+                        <svg
+                          class="route-details-document-icon"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <line x1="12" y1="16" x2="12" y2="12"></line>
+                          <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                        </svg>
+                        <span class="route-details-document-title"
+                          >Find out more about me</span
+                        >
+                        <svg
+                          class="route-details-document-chevron"
+                          :class="{
+                            'route-details-document-chevron--expanded':
+                              isAboutLumoExpanded,
+                          }"
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                      </div>
+                      <transition name="document-expand">
+                        <div
+                          v-if="isAboutLumoExpanded"
+                          class="route-details-document-content"
+                        >
+                          <div class="route-details-document-text">
+                            I analyze routes using real data on lighting,
+                            vibrancy, and safety. Every route shows these
+                            insights so you can choose what fits you.
+                          </div>
+                        </div>
+                      </transition>
                     </div>
                   </div>
                 </div>
@@ -2197,6 +2269,8 @@ const routeDetailsPopupVisible = ref(false);
 const routesShownInChat = ref([]);
 // Track which routes have shown response bubbles (to skip animations on subsequent messages)
 const routesWithResponseShown = ref([]);
+// Track if About Lumo document is expanded
+const isAboutLumoExpanded = ref(false);
 // Track timeout for marking route as shown (to allow animations to complete)
 let markRouteShownTimeout = null;
 const legendPopupVisible = ref(false);
@@ -3715,6 +3789,11 @@ function handleMapReady() {
     // If API is already set, try loading hubs again
     loadHubs();
   }
+  // Automatically open chat basket right after routing hub labels appear
+  // Hub labels appear at 1.1s and finish at ~1.5s, so open chat basket after that
+  setTimeout(() => {
+    activeBasketApp.value = "chat";
+  }, 1600);
 }
 
 function handleZurichZoomComplete() {
@@ -3887,6 +3966,16 @@ function openHistorySection() {
   }
   // Switch to history tab
   handleIconClick("route-history");
+}
+
+function handleOpenRoutingTool() {
+  // Clear any hover timers that might interfere
+  if (hoverTimer) {
+    clearTimeout(hoverTimer);
+    hoverTimer = null;
+  }
+  // handleIconClick already handles opening sidebar if collapsed and switching tabs
+  handleIconClick("routing");
 }
 
 // Handle sidebar click - open if collapsed (unless clicking on button or resize handle)
@@ -8570,6 +8659,11 @@ textarea:focus-visible {
   padding: 10px 12px;
   background: rgba(255, 255, 255, 0.05);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  transition: background 0.2s ease;
+}
+
+.route-details-document-header:hover {
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .route-details-document-icon {
@@ -8766,7 +8860,7 @@ textarea:focus-visible {
 @keyframes quickFadeIn {
   from {
     opacity: 0;
-    transform: translateY(5px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -8775,8 +8869,30 @@ textarea:focus-visible {
 }
 
 .route-details-footer-bubble--quick {
-  animation: quickFadeIn 0.3s ease forwards !important;
+  animation: quickFadeIn 0.5s ease forwards !important;
   opacity: 0;
+}
+
+/* Welcome bubbles - same animation as route-generated bubbles */
+.route-details-footer-bubble--welcome {
+  animation: chatBubbleAppear 0.5s ease-out forwards;
+  opacity: 0;
+}
+
+.route-details-footer-bubble--welcome.route-details-footer-bubble--greeting {
+  animation: chatBubbleAppear 0.5s ease-out 0.3s forwards;
+}
+
+.route-details-footer-bubble--welcome:nth-of-type(2) {
+  animation: chatBubbleAppear 0.5s ease-out 0.6s forwards;
+}
+
+.route-details-footer-bubble--welcome:nth-of-type(3) {
+  animation: chatBubbleAppear 0.5s ease-out 0.9s forwards;
+}
+
+.route-details-document.route-details-footer-bubble--welcome {
+  animation: chatBubbleAppear 0.5s ease-out 1.2s forwards;
 }
 
 .route-details-footer-bubble {
@@ -8806,6 +8922,92 @@ textarea:focus-visible {
   letter-spacing: 0.01em;
   animation: chatBubbleAppear 0.5s ease-out 1.3s forwards;
   opacity: 0;
+}
+
+.route-details-footer-button {
+  display: inline;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  color: #ffffff;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  font-size: inherit;
+  font-family: inherit;
+  line-height: inherit;
+  transition: opacity 0.2s ease;
+}
+
+.route-details-footer-button:hover {
+  opacity: 0.7;
+}
+
+.route-details-footer-button:active {
+  opacity: 0.5;
+}
+
+/* Greeting bubble - bigger font to match route greeting */
+.route-details-footer-bubble--greeting {
+  font-size: 16px !important;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+/* Document chevron */
+.route-details-document-chevron {
+  margin-left: auto;
+  transition: transform 0.2s ease;
+  opacity: 0.6;
+}
+
+.route-details-document-chevron--expanded {
+  transform: rotate(180deg);
+}
+
+/* Document text content */
+.route-details-document-text {
+  font-size: 12px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.85);
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  letter-spacing: 0.01em;
+  padding: 0 16px 16px 16px;
+}
+
+/* Document expand transition */
+.document-expand-enter-active,
+.document-expand-leave-active {
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.document-expand-enter-from {
+  opacity: 0;
+  max-height: 0;
+}
+
+.document-expand-enter-to {
+  opacity: 1;
+  max-height: 200px;
+}
+
+.document-expand-leave-from {
+  opacity: 1;
+  max-height: 200px;
+}
+
+.document-expand-leave-to {
+  opacity: 0;
+  max-height: 0;
 }
 
 .route-already-shown .route-details-footer-bubble {
