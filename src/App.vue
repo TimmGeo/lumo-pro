@@ -873,22 +873,52 @@
                   <div class="settings-content">
                     <div class="settings-section">
                       <h4 class="settings-section-title">
-                        Company Information
+                        Responsible Institution
                       </h4>
-                      <p class="settings-text">Your Company Name</p>
-                      <p class="settings-text">Address Line 1</p>
-                      <p class="settings-text">Address Line 2</p>
-                      <p class="settings-text">City, Postal Code</p>
-                      <p class="settings-text">Country</p>
+                      <p class="settings-text">ETH Zurich</p>
+                      <p class="settings-text">
+                        Institute of Cartography and Geoinformation (IKG)
+                      </p>
+                      <p class="settings-text">
+                        Stefano-Franscini-Platz 5, 8093 Zurich, Switzerland
+                      </p>
+                    </div>
+                    <div class="settings-section">
+                      <h4 class="settings-section-title">
+                        Author / Responsible Person
+                      </h4>
+                      <p class="settings-text">
+                        <strong>Timm Rogenmoser</strong><br />
+                        Student in Spatial Development and Infrastructure
+                        Systems at ETH Zürich<br />
+                        Email:
+                        <a
+                          href="mailto:trogenmoser@student.ethz.ch"
+                          style="color: inherit; text-decoration: underline"
+                          >trogenmoser@student.ethz.ch</a
+                        >
+                      </p>
                     </div>
                     <div class="settings-section">
                       <h4 class="settings-section-title">Contact</h4>
-                      <p class="settings-text">Email: contact@example.com</p>
-                      <p class="settings-text">Phone: +41 XX XXX XX XX</p>
+                      <p class="settings-text">Email: ikg@ethz.ch</p>
+                      <p class="settings-text">
+                        Website:
+                        <a
+                          href="https://ikg.ethz.ch"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style="color: inherit; text-decoration: underline"
+                          >ikg.ethz.ch</a
+                        >
+                      </p>
                     </div>
                     <div class="settings-section">
                       <h4 class="settings-section-title">Legal Information</h4>
-                      <p class="settings-text">VAT ID: XX-XXX-XXX</p>
+                      <p class="settings-text">
+                        ETH Zurich is a public institution under Swiss law.
+                        CHE-105.806.930 MWST
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -916,35 +946,45 @@
                 >
                   <div class="settings-content">
                     <p class="settings-text settings-meta">
-                      Last updated: [Date]
+                      Last updated: January 2026
                     </p>
                     <div class="settings-section">
                       <p class="settings-text">
-                        We respect your privacy and are committed to protecting
-                        your personal data. This privacy policy explains how we
-                        collect, use, and safeguard your information when you
-                        use our application.
+                        ETH Zurich and the Institute of Cartography and
+                        Geoinformation (IKG) respect your privacy and are
+                        committed to protecting your personal data in accordance
+                        with Swiss data protection laws (FADP) and GDPR.
                       </p>
                     </div>
                     <div class="settings-section">
-                      <h4 class="settings-section-title">Data Collection</h4>
+                      <h4 class="settings-section-title">
+                        Data Collection and Processing
+                      </h4>
                       <p class="settings-text">
-                        We collect information that you provide directly to us,
-                        including route planning data and preferences.
+                        This application processes data locally in your browser.
+                        Route planning data and preferences are stored locally
+                        on your device. No personal information is transmitted
+                        to our servers.
                       </p>
                     </div>
                     <div class="settings-section">
-                      <h4 class="settings-section-title">Data Usage</h4>
+                      <h4 class="settings-section-title">
+                        Third-Party Services
+                      </h4>
                       <p class="settings-text">
-                        Your data is used to provide and improve our services,
-                        including route planning and map visualization features.
+                        This application uses Mapbox for map visualization. Map
+                        tiles are loaded from external services, but no personal
+                        identifying information is shared. Please refer to
+                        Mapbox's privacy policy for their data handling
+                        practices.
                       </p>
                     </div>
                     <div class="settings-section">
-                      <h4 class="settings-section-title">Data Protection</h4>
+                      <h4 class="settings-section-title">Your Rights</h4>
                       <p class="settings-text">
-                        We implement appropriate technical and organizational
-                        measures to protect your personal data.
+                        You can clear your browser's local storage to remove
+                        stored preferences. For questions about data protection,
+                        please contact ikg@ethz.ch.
                       </p>
                     </div>
                   </div>
@@ -973,20 +1013,22 @@
                 >
                   <div class="settings-content">
                     <p class="settings-text settings-meta">
-                      Last updated: [Date]
+                      Last updated: January 2026
                     </p>
                     <div class="settings-section">
                       <p class="settings-text">
                         By using this application, you agree to be bound by
-                        these Terms of Service.
+                        these Terms of Service. This application is provided by
+                        ETH Zurich, Institute of Cartography and Geoinformation
+                        (IKG) for research and educational purposes.
                       </p>
                     </div>
                     <div class="settings-section">
-                      <h4 class="settings-section-title">Use of Service</h4>
+                      <h4 class="settings-section-title">Acceptable Use</h4>
                       <p class="settings-text">
-                        You may use this service for lawful purposes only. You
-                        agree not to misuse the service or attempt to gain
-                        unauthorized access.
+                        You may use this service for lawful, educational, and
+                        research purposes only. You agree not to misuse the
+                        service or attempt to gain unauthorized access.
                       </p>
                     </div>
                     <div class="settings-section">
@@ -994,19 +1036,21 @@
                         Intellectual Property
                       </h4>
                       <p class="settings-text">
-                        All content, features, and functionality of this
-                        application are owned by us and are protected by
-                        copyright and other intellectual property laws.
+                        The application is provided by ETH Zurich. Map data is
+                        provided by OpenStreetMap contributors and Mapbox. All
+                        content is protected by copyright and intellectual
+                        property laws.
                       </p>
                     </div>
                     <div class="settings-section">
                       <h4 class="settings-section-title">
-                        Limitation of Liability
+                        Disclaimer and Limitation of Liability
                       </h4>
                       <p class="settings-text">
-                        We are not liable for any indirect, incidental, or
-                        consequential damages arising from your use of this
-                        service.
+                        This application is provided "as is" without warranties.
+                        ETH Zurich is not liable for indirect, incidental, or
+                        consequential damages. Route suggestions and data
+                        visualizations are for informational purposes only.
                       </p>
                     </div>
                   </div>
@@ -1035,23 +1079,47 @@
                 >
                   <div class="settings-content">
                     <div class="settings-section">
-                      <h4 class="settings-section-title">About Lumo Pro</h4>
+                      <h4 class="settings-section-title">About Lumo</h4>
                       <p class="settings-text">
-                        Lumo Pro is an advanced mapping and routing application
-                        designed to help you explore and navigate urban
-                        environments.
+                        Lumo is an interactive mapping and routing application
+                        developed at the Institute of Cartography and
+                        Geoinformation (IKG) at ETH Zurich. It provides tools
+                        for exploring urban environments through various data
+                        layers and route planning capabilities.
+                      </p>
+                    </div>
+                    <div class="settings-section">
+                      <h4 class="settings-section-title">Author</h4>
+                      <p class="settings-text">
+                        <strong>Timm Rogenmoser</strong><br />
+                        Student in Spatial Development and Infrastructure
+                        Systems at ETH Zürich
+                      </p>
+                      <p class="settings-text">
+                        This project was built from September 2025 to January
+                        2026.
                       </p>
                     </div>
                     <div class="settings-section">
                       <h4 class="settings-section-title">Features</h4>
                       <ul class="settings-list-items">
-                        <li>Interactive map visualization</li>
-                        <li>Route planning between hubs</li>
                         <li>
-                          Multiple data layers (Lighting, Vibrancy, Combined)
+                          Interactive map visualization with multiple data
+                          layers
                         </li>
-                        <li>Real-time statistics and analytics</li>
+                        <li>Route planning between designated hubs</li>
+                        <li>Lighting, Vibrancy, and Combined data layers</li>
+                        <li>Route statistics and analytics</li>
+                        <li>Security alerts and safety information</li>
+                        <li>Route history and comparison tools</li>
                       </ul>
+                    </div>
+                    <div class="settings-section">
+                      <h4 class="settings-section-title">Data Sources</h4>
+                      <p class="settings-text">
+                        This application uses data from OpenStreetMap, Mapbox,
+                        and research data collected at ETH Zurich.
+                      </p>
                     </div>
                     <div class="settings-section">
                       <h4 class="settings-section-title">Version</h4>
@@ -1084,32 +1152,47 @@
                   <div class="settings-content">
                     <div class="settings-section">
                       <p class="settings-text">
-                        We'd love to hear from you! Get in touch with us through
-                        any of the following channels:
+                        For questions or feedback regarding this application,
+                        please contact the Institute of Cartography and
+                        Geoinformation at ETH Zurich.
+                      </p>
+                    </div>
+                    <div class="settings-section">
+                      <h4 class="settings-section-title">
+                        Contact Information
+                      </h4>
+                      <p class="settings-text">
+                        <strong
+                          >Institute of Cartography and Geoinformation</strong
+                        ><br />
+                        ETH Zurich<br />
+                        Stefano-Franscini-Platz 5<br />
+                        8093 Zurich, Switzerland
                       </p>
                     </div>
                     <div class="settings-section">
                       <h4 class="settings-section-title">Email</h4>
-                      <p class="settings-text">contact@example.com</p>
-                      <p class="settings-text">support@example.com</p>
-                    </div>
-                    <div class="settings-section">
-                      <h4 class="settings-section-title">Phone</h4>
-                      <p class="settings-text">+41 XX XXX XX XX</p>
-                    </div>
-                    <div class="settings-section">
-                      <h4 class="settings-section-title">Address</h4>
-                      <p class="settings-text">Your Company Name</p>
-                      <p class="settings-text">Address Line 1</p>
-                      <p class="settings-text">City, Postal Code</p>
-                      <p class="settings-text">Country</p>
-                    </div>
-                    <div class="settings-section">
-                      <h4 class="settings-section-title">Business Hours</h4>
                       <p class="settings-text">
-                        Monday - Friday: 9:00 AM - 6:00 PM
+                        Author:
+                        <a
+                          href="mailto:trogenmoser@student.ethz.ch"
+                          style="color: inherit; text-decoration: underline"
+                          >trogenmoser@student.ethz.ch</a
+                        >
                       </p>
-                      <p class="settings-text">Saturday - Sunday: Closed</p>
+                      <p class="settings-text">Institute: ikg@ethz.ch</p>
+                    </div>
+                    <div class="settings-section">
+                      <h4 class="settings-section-title">Website</h4>
+                      <p class="settings-text">
+                        <a
+                          href="https://ikg.ethz.ch"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style="color: inherit; text-decoration: underline"
+                          >ikg.ethz.ch</a
+                        >
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -1534,6 +1617,17 @@
                       </div>
                       <div class="route-details-intro-text">
                         Here are some insights about your route:
+                        <span v-if="fastRouteStats || brightRouteStats" class="route-indicators-inline">
+                          <span v-if="fastRouteStats" class="route-indicator-inline route-indicator-inline--fast">
+                            <span class="route-indicator-inline-dot"></span>
+                            fast
+                          </span>
+                          <template v-if="fastRouteStats && brightRouteStats"> and </template>
+                          <span v-if="brightRouteStats" class="route-indicator-inline route-indicator-inline--bright">
+                            <span class="route-indicator-inline-dot"></span>
+                            bright
+                          </span>
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -1584,23 +1678,30 @@
                         </div>
                         <div class="route-details-document-item-info">
                           <div
-                            v-if="
-                              highlight.fastFreq || highlight.brightFreq
-                            "
+                            v-if="highlight.fastFreq || highlight.brightFreq"
                             class="route-details-poi-frequency"
                           >
-                            <template v-if="highlight.fastFreq && highlight.brightFreq">
-                              {{ formatPoiFrequency(highlight.poiType, highlight.fastFreq) }}
+                            <template
+                              v-if="highlight.fastFreq && highlight.brightFreq"
+                            >
+                              {{ getPoiFrequencyText(highlight.poiType) }}
+                              <span class="route-details-poi-frequency-fast">
+                                {{ extractTimeFromFrequency(highlight.fastFreq) }}
+                              </span>
                               <span class="route-details-poi-frequency-bright">
                                 ({{ extractTimeFromFrequency(highlight.brightFreq) }})
                               </span>
                             </template>
                             <template v-else-if="highlight.fastFreq">
-                              {{ formatPoiFrequency(highlight.poiType, highlight.fastFreq) }}
+                              {{ getPoiFrequencyText(highlight.poiType) }}
+                              <span class="route-details-poi-frequency-fast">
+                                {{ extractTimeFromFrequency(highlight.fastFreq) }}
+                              </span>
                             </template>
                             <template v-else-if="highlight.brightFreq">
+                              {{ getPoiFrequencyText(highlight.poiType) }}
                               <span class="route-details-poi-frequency-bright">
-                                {{ formatPoiFrequency(highlight.poiType, highlight.brightFreq) }}
+                                {{ extractTimeFromFrequency(highlight.brightFreq) }}
                               </span>
                             </template>
                           </div>
@@ -1615,8 +1716,7 @@
                   <!-- Empty state when no route highlights available -->
                   <div
                     v-else-if="
-                      currentRouteStats &&
-                      mergedRouteHighlights.length === 0
+                      currentRouteStats && mergedRouteHighlights.length === 0
                     "
                     class="route-details-empty"
                   >
@@ -1743,6 +1843,17 @@
                             I analyze routes using real data on lighting,
                             vibrancy, and safety. Every route shows these
                             insights so you can choose what fits you.
+                          </div>
+                          <div
+                            class="route-details-document-text"
+                            style="margin-top: 12px"
+                          >
+                            <button
+                              class="route-details-about-button"
+                              @click.stop.prevent="openAboutSection($event)"
+                            >
+                              Find out more about the project and author
+                            </button>
                           </div>
                         </div>
                       </transition>
@@ -1999,7 +2110,7 @@
                           >
                             <span>Route Style</span>
                             <span class="animation-coloring-hint"
-                              >Blue and grey colors</span
+                              >Blue and orange colors</span
                             >
                           </button>
                           <button
@@ -2318,22 +2429,26 @@ const isCurrentRouteAlreadyShown = computed(() => {
 const mergedRouteHighlights = computed(() => {
   const merged = [];
   const allPoiTypes = new Set();
-  
+
   // Collect all POI types from both routes
   if (fastRouteStats.value?.poiCounts) {
-    Object.keys(fastRouteStats.value.poiCounts).forEach(type => allPoiTypes.add(type));
+    Object.keys(fastRouteStats.value.poiCounts).forEach((type) =>
+      allPoiTypes.add(type)
+    );
   }
   if (brightRouteStats.value?.poiCounts) {
-    Object.keys(brightRouteStats.value.poiCounts).forEach(type => allPoiTypes.add(type));
+    Object.keys(brightRouteStats.value.poiCounts).forEach((type) =>
+      allPoiTypes.add(type)
+    );
   }
-  
+
   // Create merged entries for each POI type
-  allPoiTypes.forEach(poiType => {
+  allPoiTypes.forEach((poiType) => {
     const fastFreq = fastRouteStats.value?.poiFrequencies?.[poiType];
     const brightFreq = brightRouteStats.value?.poiFrequencies?.[poiType];
     const fastCount = fastRouteStats.value?.poiCounts?.[poiType] || 0;
     const brightCount = brightRouteStats.value?.poiCounts?.[poiType] || 0;
-    
+
     // Only include if at least one route has this POI type
     if (fastCount > 0 || brightCount > 0) {
       merged.push({
@@ -2345,7 +2460,7 @@ const mergedRouteHighlights = computed(() => {
       });
     }
   });
-  
+
   return merged;
 });
 
@@ -3008,10 +3123,7 @@ function handleHubsSelected({ hubId1, hubId2 }) {
       currentRouteStats.value = stats.current;
       fastRouteStats.value = stats.fast;
       brightRouteStats.value = stats.bright;
-      console.log(
-        "Updated route stats from hub clicks:",
-        stats
-      );
+      console.log("Updated route stats from hub clicks:", stats);
       // Automatically open chat app when route is created via hub clicks
       if (currentRouteStats.value) {
         previousBasketApp.value = null; // Clear previous state on programmatic open
@@ -3603,8 +3715,11 @@ function formatPoiFrequency(poiType, frequency) {
 
   const singularType = singularMap[poiType] || "point of interest";
 
+  // Remove "every" from frequency if it already contains it
+  const cleanFrequency = frequency.replace(/^every\s+/i, "").trim();
+  
   // Format as "A restaurant every 30 seconds"
-  return `A ${singularType} every ${frequency}`;
+  return `A ${singularType} every ${cleanFrequency}`;
 }
 
 // Extract time part from frequency string (e.g., "every 3 min" -> "3 min")
@@ -3612,6 +3727,19 @@ function extractTimeFromFrequency(freq) {
   if (!freq) return "";
   // Remove "every " prefix if present
   return freq.replace(/^every\s+/i, "").trim();
+}
+
+// Get the text portion without the time (e.g., "A restaurant every")
+function getPoiFrequencyText(poiType) {
+  const singularMap = {
+    BarOrPub: "bar",
+    CafeOrCoffeeShop: "café",
+    Restaurant: "restaurant",
+    NightClub: "night club",
+    MusicVenue: "music venue",
+  };
+  const singularType = singularMap[poiType] || "point of interest";
+  return `A ${singularType} every`;
 }
 
 // Get formatted route introduction text
@@ -3695,10 +3823,7 @@ function loadHistoryRoute(entry) {
         currentRouteStats.value = stats.current;
         fastRouteStats.value = stats.fast;
         brightRouteStats.value = stats.bright;
-        console.log(
-          "Updated route stats from history:",
-          stats
-        );
+        console.log("Updated route stats from history:", stats);
         // Automatically open chat app when route is loaded from history
         if (currentRouteStats.value) {
           previousBasketApp.value = null; // Clear previous state on programmatic open
@@ -4033,6 +4158,37 @@ function openHistorySection() {
   }
   // Switch to history tab
   handleIconClick("route-history");
+}
+
+function openAboutSection(event) {
+  // Prevent any default behavior and stop propagation
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  const wasCollapsed = sidebarCollapsed.value;
+
+  // Always ensure sidebar is open
+  sidebarCollapsed.value = false;
+
+  // Always ensure settings tab is active
+  activeSidebarTab.value = "settings";
+
+  // Always expand the about section
+  aboutExpanded.value = true;
+
+  // Scroll to about section after appropriate delay
+  const delay = wasCollapsed ? 500 : 200;
+
+  nextTick(() => {
+    setTimeout(() => {
+      const element = document.getElementById("settings-about");
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }, delay);
+  });
 }
 
 function handleOpenRoutingTool() {
@@ -8625,6 +8781,38 @@ textarea:focus-visible {
   opacity: 1 !important;
 }
 
+.route-indicators-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 6px;
+}
+
+.route-indicator-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: inherit;
+  color: inherit;
+  font-weight: bold;
+}
+
+.route-indicator-inline-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.route-indicator-inline--fast .route-indicator-inline-dot {
+  background-color: #ff9500;
+}
+
+.route-indicator-inline--bright .route-indicator-inline-dot {
+  background-color: #64b4ff;
+}
+
 .route-details-tip {
   margin: 0;
   font-size: 12px;
@@ -8764,25 +8952,31 @@ textarea:focus-visible {
 .route-details-document-item {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.route-details-document-item:last-child {
+  border-bottom: none;
 }
 
 .route-details-document-item-icon {
   flex-shrink: 0;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
 }
 
 .route-details-document-item-info {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .route-details-poi-section {
@@ -8888,9 +9082,9 @@ textarea:focus-visible {
 }
 
 .route-details-poi-frequency {
-  font-size: 14px;
-  color: #ffffff;
-  font-weight: 600;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
   font-family:
     "SF Pro Display",
     "SF Pro Text",
@@ -8898,18 +9092,27 @@ textarea:focus-visible {
     BlinkMacSystemFont,
     system-ui,
     sans-serif;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+}
+
+.route-details-poi-frequency-fast {
+  color: #ff9500; /* Orange for fast route */
+  font-weight: bold;
+  line-height: 1.4;
 }
 
 .route-details-poi-frequency-bright {
-  color: #64b4ff;
-  margin-bottom: 3px;
-  line-height: 1.3;
+  color: #64b4ff; /* Blue for bright route */
+  font-weight: bold;
+  line-height: 1.4;
 }
 
 .route-details-poi-mantra {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.75);
-  line-height: 1.4;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.65);
+  line-height: 1.5;
+  font-weight: 400;
   font-family:
     "SF Pro Display",
     "SF Pro Text",
@@ -8917,6 +9120,7 @@ textarea:focus-visible {
     BlinkMacSystemFont,
     system-ui,
     sans-serif;
+  letter-spacing: 0.01em;
 }
 
 .route-details-footer {
@@ -9052,6 +9256,28 @@ textarea:focus-visible {
     sans-serif;
   letter-spacing: 0.01em;
   padding: 0 16px 16px 16px;
+}
+
+.route-details-about-button {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 6px;
+  color: inherit;
+  cursor: pointer;
+  padding: 8px 12px;
+  font-size: inherit;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  margin-top: 8px;
+  display: inline-block;
+}
+
+.route-details-about-button:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.route-details-about-button:active {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 /* Document expand transition */
