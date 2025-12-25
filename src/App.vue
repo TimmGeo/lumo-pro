@@ -1541,13 +1541,9 @@
                   <!-- Empty state when no route is selected -->
                   <div v-else class="route-details-popup-info"></div>
 
-                  <!-- POI Statistics as Document Attachment -->
+                  <!-- Combined POI Statistics for Both Routes -->
                   <div
-                    v-if="
-                      currentRouteStats &&
-                      currentRouteStats.poiCounts &&
-                      Object.keys(currentRouteStats.poiCounts).length > 0
-                    "
+                    v-if="mergedRouteHighlights.length > 0"
                     class="route-details-document"
                   >
                     <div class="route-details-document-header">
@@ -1576,40 +1572,52 @@
                     </div>
                     <div class="route-details-document-content">
                       <div
-                        v-for="(count, poiType) in currentRouteStats.poiCounts"
-                        :key="poiType"
+                        v-for="highlight in mergedRouteHighlights"
+                        :key="highlight.poiType"
                         class="route-details-document-item"
                       >
                         <div class="route-details-document-item-icon">
                           <div
                             class="route-details-poi-icon"
-                            v-html="getPoiIcon(poiType)"
+                            v-html="getPoiIcon(highlight.poiType)"
                           ></div>
                         </div>
                         <div class="route-details-document-item-info">
                           <div
                             v-if="
-                              currentRouteStats.poiFrequencies &&
-                              currentRouteStats.poiFrequencies[poiType]
+                              highlight.fastFreq || highlight.brightFreq
                             "
                             class="route-details-poi-frequency"
                           >
-                            {{
-                              formatPoiFrequency(
-                                poiType,
-                                currentRouteStats.poiFrequencies[poiType]
-                              )
-                            }}
+                            <template v-if="highlight.fastFreq && highlight.brightFreq">
+                              {{ formatPoiFrequency(highlight.poiType, highlight.fastFreq) }}
+                              <span class="route-details-poi-frequency-bright">
+                                ({{ extractTimeFromFrequency(highlight.brightFreq) }})
+                              </span>
+                            </template>
+                            <template v-else-if="highlight.fastFreq">
+                              {{ formatPoiFrequency(highlight.poiType, highlight.fastFreq) }}
+                            </template>
+                            <template v-else-if="highlight.brightFreq">
+                              <span class="route-details-poi-frequency-bright">
+                                {{ formatPoiFrequency(highlight.poiType, highlight.brightFreq) }}
+                              </span>
+                            </template>
                           </div>
                           <div class="route-details-poi-mantra">
-                            {{ getPoiMantra(poiType) }}
+                            {{ getPoiMantra(highlight.poiType) }}
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
+
+                  <!-- Empty state when no route highlights available -->
                   <div
-                    v-else-if="currentRouteStats"
+                    v-else-if="
+                      currentRouteStats &&
+                      mergedRouteHighlights.length === 0
+                    "
                     class="route-details-empty"
                   >
                     <p class="route-details-empty-text">
@@ -2262,6 +2270,8 @@ const displayedHubs = computed(() => {
   ];
 });
 const currentRouteStats = ref(null);
+const fastRouteStats = ref(null);
+const brightRouteStats = ref(null);
 const isLoadingFromHistory = ref(false); // Flag to prevent adding history routes to history
 const isHandlingHubClicks = ref(false); // Flag to prevent watcher from triggering when handling hub clicks
 const routeDetailsPopupVisible = ref(false);
@@ -2302,6 +2312,41 @@ const isCurrentRouteAlreadyShown = computed(() => {
     return false;
   const routeKey = `${startHub.value}-${endHub.value}`;
   return routesShownInChat.value.includes(routeKey);
+});
+
+// Computed to merge POI types from both routes for comparison
+const mergedRouteHighlights = computed(() => {
+  const merged = [];
+  const allPoiTypes = new Set();
+  
+  // Collect all POI types from both routes
+  if (fastRouteStats.value?.poiCounts) {
+    Object.keys(fastRouteStats.value.poiCounts).forEach(type => allPoiTypes.add(type));
+  }
+  if (brightRouteStats.value?.poiCounts) {
+    Object.keys(brightRouteStats.value.poiCounts).forEach(type => allPoiTypes.add(type));
+  }
+  
+  // Create merged entries for each POI type
+  allPoiTypes.forEach(poiType => {
+    const fastFreq = fastRouteStats.value?.poiFrequencies?.[poiType];
+    const brightFreq = brightRouteStats.value?.poiFrequencies?.[poiType];
+    const fastCount = fastRouteStats.value?.poiCounts?.[poiType] || 0;
+    const brightCount = brightRouteStats.value?.poiCounts?.[poiType] || 0;
+    
+    // Only include if at least one route has this POI type
+    if (fastCount > 0 || brightCount > 0) {
+      merged.push({
+        poiType,
+        fastFreq,
+        brightFreq,
+        fastCount,
+        brightCount,
+      });
+    }
+  });
+  
+  return merged;
 });
 
 // Computed to check if current messages belong to the current route
@@ -2959,10 +3004,13 @@ function handleHubsSelected({ hubId1, hubId2 }) {
   setTimeout(() => {
     const routeApi = api || mapboxViewerRef.value;
     if (routeApi && routeApi.getCurrentRouteStats) {
-      currentRouteStats.value = routeApi.getCurrentRouteStats();
+      const stats = routeApi.getCurrentRouteStats();
+      currentRouteStats.value = stats.current;
+      fastRouteStats.value = stats.fast;
+      brightRouteStats.value = stats.bright;
       console.log(
         "Updated route stats from hub clicks:",
-        currentRouteStats.value
+        stats
       );
       // Automatically open chat app when route is created via hub clicks
       if (currentRouteStats.value) {
@@ -3040,6 +3088,8 @@ function handleClearRoute() {
 
   // Clear route stats
   currentRouteStats.value = null;
+  fastRouteStats.value = null;
+  brightRouteStats.value = null;
 
   // Zoom to show all hubs after clearing route
   // Use setTimeout to ensure route clearing is complete
@@ -3249,8 +3299,11 @@ function route(event) {
       // Update current route stats after a short delay to allow route to load
       setTimeout(() => {
         if (routeApi.getCurrentRouteStats) {
-          currentRouteStats.value = routeApi.getCurrentRouteStats();
-          console.log("Updated route stats:", currentRouteStats.value);
+          const stats = routeApi.getCurrentRouteStats();
+          currentRouteStats.value = stats.current;
+          fastRouteStats.value = stats.fast;
+          brightRouteStats.value = stats.bright;
+          console.log("Updated route stats:", stats);
           // Automatically open chat app when route is created
           if (currentRouteStats.value) {
             previousBasketApp.value = null; // Clear previous state on programmatic open
@@ -3323,11 +3376,15 @@ watch(
     else if (!newStart) {
       routeApi.selectHubs(null, null);
       currentRouteStats.value = null; // Clear stats when route is cleared
+      fastRouteStats.value = null;
+      brightRouteStats.value = null;
     }
 
     // If both hubs are cleared, clear stats
     if (!newStart && !newEnd) {
       currentRouteStats.value = null;
+      fastRouteStats.value = null;
+      brightRouteStats.value = null;
     }
 
     // Update api reference for future use
@@ -3550,6 +3607,13 @@ function formatPoiFrequency(poiType, frequency) {
   return `A ${singularType} every ${frequency}`;
 }
 
+// Extract time part from frequency string (e.g., "every 3 min" -> "3 min")
+function extractTimeFromFrequency(freq) {
+  if (!freq) return "";
+  // Remove "every " prefix if present
+  return freq.replace(/^every\s+/i, "").trim();
+}
+
 // Get formatted route introduction text
 function getRouteIntroText() {
   if (!currentRouteStats.value || !startHub.value || !endHub.value) {
@@ -3627,10 +3691,13 @@ function loadHistoryRoute(entry) {
     // Update current route stats after a short delay
     setTimeout(() => {
       if (routeApi.getCurrentRouteStats) {
-        currentRouteStats.value = routeApi.getCurrentRouteStats();
+        const stats = routeApi.getCurrentRouteStats();
+        currentRouteStats.value = stats.current;
+        fastRouteStats.value = stats.fast;
+        brightRouteStats.value = stats.bright;
         console.log(
           "Updated route stats from history:",
-          currentRouteStats.value
+          stats
         );
         // Automatically open chat app when route is loaded from history
         if (currentRouteStats.value) {
@@ -8831,6 +8898,10 @@ textarea:focus-visible {
     BlinkMacSystemFont,
     system-ui,
     sans-serif;
+}
+
+.route-details-poi-frequency-bright {
+  color: #64b4ff;
   margin-bottom: 3px;
   line-height: 1.3;
 }

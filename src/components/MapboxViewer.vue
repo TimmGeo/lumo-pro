@@ -3829,7 +3829,11 @@ defineExpose({
     return currentRouteLumoScore;
   },
   getCurrentRouteStats: () => {
-    return currentRouteStats;
+    return {
+      fast: fastRouteStats,
+      bright: brightRouteStats,
+      current: currentRouteStats, // For backward compatibility
+    };
   },
   zoomIn,
   zoomOut,
@@ -4721,11 +4725,11 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px;
+  gap: 40px;
 }
 
 .loading-logo {
-  font-size: 160px;
+  font-size: 96px;
   font-weight: 600;
   color: #2f2f31;
   margin: 0;
@@ -4733,21 +4737,23 @@ onBeforeUnmount(() => {
   letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  animation: loading-pulse 2s ease-in-out infinite;
+  animation: loading-logo-fade 2.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
 .loading-dots {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   align-items: center;
+  height: 16px;
 }
 
 .loading-dots .dot {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background: #2f2f31;
-  animation: loading-dot-pulse 1.5s ease-in-out infinite;
+  animation: loading-dot-wave 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  opacity: 0.4;
 }
 
 .loading-dots .dot:nth-child(1) {
@@ -4762,25 +4768,25 @@ onBeforeUnmount(() => {
   animation-delay: 0.4s;
 }
 
-@keyframes loading-pulse {
+@keyframes loading-logo-fade {
   0%,
   100% {
-    opacity: 0.4;
+    opacity: 0.5;
   }
   50% {
     opacity: 1;
   }
 }
 
-@keyframes loading-dot-pulse {
+@keyframes loading-dot-wave {
   0%,
   100% {
     opacity: 0.3;
-    transform: scale(0.9);
+    transform: translateY(0) scale(0.95);
   }
   50% {
     opacity: 1;
-    transform: scale(1);
+    transform: translateY(-4px) scale(1);
   }
 }
 
