@@ -2917,23 +2917,20 @@ async function loadAndDisplayRoute(fromId, toId) {
 
     console.log("Route layers visibility set to visible");
 
-    // Move route layers to be above hex layers but below hubs
-    if (map.getLayer("hubs-circles")) {
-      try {
-        // Move in reverse order to maintain correct stacking
-        allRouteLayers.reverse().forEach((layerId) => {
-          if (map.getLayer(layerId)) {
-            map.moveLayer(layerId, "hubs-circles");
-          }
-        });
-        console.log("Route layers moved before hubs-circles");
-      } catch (e) {
-        console.warn("Could not move route layers:", e);
-      }
+    // Move route layers to the absolute top (above all other layers)
+    try {
+      // Move in reverse order to maintain correct stacking within route layers
+      // Then move each to the top so they render above everything
+      allRouteLayers.reverse().forEach((layerId) => {
+        if (map.getLayer(layerId)) {
+          // Move to top by calling moveLayer without beforeId
+          map.moveLayer(layerId);
+        }
+      });
+      console.log("Route layers moved to top of layer stack");
+    } catch (e) {
+      console.warn("Could not move route layers:", e);
     }
-
-    // Ensure hubs are always on top after routes are added
-    ensureHubsOnTop();
 
     currentRouteSource = fastRouteUrl; // Store fast route URL as primary
     console.log(

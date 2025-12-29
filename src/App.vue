@@ -204,23 +204,19 @@
     </transition>
 
     <!-- Route Saved to History Message -->
-    <div v-if="showRouteSavedMessage" class="route-saved-message">
-      <span class="route-saved-text">Route saved to history</span>
-      <div class="route-saved-actions">
-        <button
-          class="route-saved-button route-saved-button--close"
-          @click.stop="showRouteSavedMessage = false"
-        >
-          Ok
-        </button>
-        <button
-          class="route-saved-button route-saved-button--open"
-          @click.stop="openHistorySection"
-        >
-          Open History
-        </button>
+    <transition name="route-saved-fade">
+      <div v-if="showRouteSavedMessage" class="route-saved-message">
+        <span class="route-saved-text">Route saved to history</span>
+        <div class="route-saved-actions">
+          <button
+            class="route-saved-button route-saved-button--open"
+            @click.stop="openHistorySection"
+          >
+            Open History
+          </button>
+        </div>
       </div>
-    </div>
+    </transition>
 
     <!-- Go Back to Zurich Message -->
     <transition name="zurich-return-fade">
@@ -2713,6 +2709,7 @@ const isResizing = ref(false);
 const isHovering = ref(false);
 const showHistoryIndicator = ref(false);
 const showRouteSavedMessage = ref(false);
+let routeSavedMessageTimeout = null;
 const isFirstRouteCleared = ref(true);
 const showWalkthrough = ref(false);
 const routingHubsVisible = ref(true);
@@ -3177,8 +3174,17 @@ function handleClearRoute() {
 
       // Show message at top center only for the first route cleared
       if (isFirstRouteCleared.value) {
+        // Clear any existing timeout
+        if (routeSavedMessageTimeout) {
+          clearTimeout(routeSavedMessageTimeout);
+        }
         showRouteSavedMessage.value = true;
         isFirstRouteCleared.value = false;
+        // Auto-dismiss after 3 seconds (similar to Apple notifications)
+        routeSavedMessageTimeout = setTimeout(() => {
+          showRouteSavedMessage.value = false;
+          routeSavedMessageTimeout = null;
+        }, 3000);
       }
     }
   }
@@ -4149,9 +4155,18 @@ function closeSidebarInstantly() {
   }
 }
 
+function dismissRouteSavedMessage() {
+  // Clear timeout if message is manually dismissed
+  if (routeSavedMessageTimeout) {
+    clearTimeout(routeSavedMessageTimeout);
+    routeSavedMessageTimeout = null;
+  }
+  showRouteSavedMessage.value = false;
+}
+
 function openHistorySection() {
   // Close the message
-  showRouteSavedMessage.value = false;
+  dismissRouteSavedMessage();
   // Open sidebar if collapsed
   if (sidebarCollapsed.value) {
     sidebarCollapsed.value = false;
@@ -4747,18 +4762,24 @@ textarea:focus-visible {
     system-ui,
     sans-serif;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-  animation: routeSavedMessageAppear 0.3s ease-out;
 }
 
-@keyframes routeSavedMessageAppear {
-  0% {
-    opacity: 0;
-    transform: translateX(-50%) translateY(-10px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
+.route-saved-fade-enter-active {
+  transition: all 0.3s ease-out;
+}
+
+.route-saved-fade-leave-active {
+  transition: all 0.25s ease-in;
+}
+
+.route-saved-fade-enter-from {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-10px);
+}
+
+.route-saved-fade-leave-to {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-10px);
 }
 
 .route-saved-text {
