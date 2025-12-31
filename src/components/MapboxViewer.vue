@@ -709,7 +709,7 @@ function updateLayerColoring(layerId, coloringMode) {
         "bright",
         "#64b4ff", // Blue for bright route
         "fast",
-        "#ff9500", // Orange for fast route
+        "#888888", // Grey for fast route
         "both",
         "#8b5cf6", // Purple for both routes
         "#6c5ce7", // Default purple-blue
@@ -2496,11 +2496,11 @@ function addRouteLayers(sourceId, beforeLayer, routeType = "bright") {
   const isFast = routeType === "fast";
 
   // Define colors based on route type
-  const glowColor = isFast ? "#ff9500" : "#00a8ff"; // Orange for fast, blue for bright
+  const glowColor = isFast ? "#888888" : "#00a8ff"; // Grey for fast, blue for bright
   const mainColor = isFast
-    ? ["#ff8800", "#ff9500", "#ffa500"] // Orange shades for fast
+    ? ["#777777", "#888888", "#999999"] // Grey shades for fast
     : ["#0099ff", "#00a8ff", "#00b8ff"]; // Blue shades for bright
-  const highlightColor = isFast ? "#ffcc66" : "#ffffff"; // Light orange for fast, white for bright
+  const highlightColor = isFast ? "#aaaaaa" : "#ffffff"; // Light grey for fast, white for bright
 
   // Glow/shadow layer (underneath main line)
   const glowLayerId = `${sourceId}-glow`;

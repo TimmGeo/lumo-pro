@@ -1612,18 +1612,7 @@
                         }}</span>
                       </div>
                       <div class="route-details-intro-text">
-                        Here are some insights about your route:
-                        <span v-if="fastRouteStats || brightRouteStats" class="route-indicators-inline">
-                          <span v-if="fastRouteStats" class="route-indicator-inline route-indicator-inline--fast">
-                            <span class="route-indicator-inline-dot"></span>
-                            fast
-                          </span>
-                          <template v-if="fastRouteStats && brightRouteStats"> and </template>
-                          <span v-if="brightRouteStats" class="route-indicator-inline route-indicator-inline--bright">
-                            <span class="route-indicator-inline-dot"></span>
-                            bright
-                          </span>
-                        </span>
+                        Here are some insights about your route.
                       </div>
                     </div>
                   </div>
@@ -1684,21 +1673,25 @@
                               <span class="route-details-poi-frequency-fast">
                                 {{ extractTimeFromFrequency(highlight.fastFreq) }}
                               </span>
+                              <span> (fast), </span>
                               <span class="route-details-poi-frequency-bright">
-                                ({{ extractTimeFromFrequency(highlight.brightFreq) }})
+                                {{ extractTimeFromFrequency(highlight.brightFreq) }}
                               </span>
+                              <span> (bright)</span>
                             </template>
                             <template v-else-if="highlight.fastFreq">
                               {{ getPoiFrequencyText(highlight.poiType) }}
                               <span class="route-details-poi-frequency-fast">
                                 {{ extractTimeFromFrequency(highlight.fastFreq) }}
                               </span>
+                              <span> (fast)</span>
                             </template>
                             <template v-else-if="highlight.brightFreq">
                               {{ getPoiFrequencyText(highlight.poiType) }}
                               <span class="route-details-poi-frequency-bright">
                                 {{ extractTimeFromFrequency(highlight.brightFreq) }}
                               </span>
+                              <span> (bright)</span>
                             </template>
                           </div>
                           <div class="route-details-poi-mantra">
@@ -3738,14 +3731,14 @@ function extractTimeFromFrequency(freq) {
 // Get the text portion without the time (e.g., "A restaurant every")
 function getPoiFrequencyText(poiType) {
   const singularMap = {
-    BarOrPub: "bar",
-    CafeOrCoffeeShop: "café",
-    Restaurant: "restaurant",
-    NightClub: "night club",
-    MusicVenue: "music venue",
+    BarOrPub: "Bar",
+    CafeOrCoffeeShop: "Café",
+    Restaurant: "Restaurant",
+    NightClub: "Night club",
+    MusicVenue: "Music venue",
   };
-  const singularType = singularMap[poiType] || "point of interest";
-  return `A ${singularType} every`;
+  const singularType = singularMap[poiType] || "Point of interest";
+  return `${singularType} every`;
 }
 
 // Get formatted route introduction text
@@ -8827,7 +8820,7 @@ textarea:focus-visible {
 }
 
 .route-indicator-inline--fast .route-indicator-inline-dot {
-  background-color: #ff9500;
+  background-color: #888888;
 }
 
 .route-indicator-inline--bright .route-indicator-inline-dot {
@@ -9118,7 +9111,7 @@ textarea:focus-visible {
 }
 
 .route-details-poi-frequency-fast {
-  color: #ff9500; /* Orange for fast route */
+  color: #888888; /* Grey for fast route */
   font-weight: bold;
   line-height: 1.4;
 }
