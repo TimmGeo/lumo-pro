@@ -1945,7 +1945,8 @@
                           />
                         </div>
                         <p class="uber-description">
-                          Transfer your route details directly to the Uber app
+                          If even the bright route doesn't feel safe enough, you
+                          can transfer your route details directly to the Uber app
                           for convenient ride booking. Your selected route will
                           be imported with start and destination points ready
                           for booking.
