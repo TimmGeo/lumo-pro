@@ -2079,8 +2079,8 @@
                   <div class="app-basket-animation-content">
                     <div class="animation-content">
                       <p class="animation-description">
-                        Animate the display of hexagons that intersect with the
-                        current routes.
+                        Hexagons appear sequentially along your route path. The higher
+                        the hexagons, the higher the combined score of the route segment.
                       </p>
 
                       <!-- Coloring Mode Selector -->

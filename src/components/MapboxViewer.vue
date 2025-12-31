@@ -3168,7 +3168,7 @@ function showRouteStatsPopup(routeGeom, stats, routeType = "fast") {
   html += '<div class="route-stats-popup-top-line">';
   html += `
     <span class="route-stats-popup-icon">
-      <img src="${walkingIconUrl}" alt="Walking" width="14" height="14" />
+      <img src="${walkingIconUrl}" alt="Walking" width="20" height="20" style="vertical-align: middle;" />
     </span>
   `;
   if (duration !== null) {
