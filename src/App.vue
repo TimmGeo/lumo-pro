@@ -414,8 +414,23 @@
 
         <!-- Section Title Display -->
         <div v-if="!sidebarCollapsed" class="sidebar-section-title">
-          <h3 class="sidebar-section-title-text">{{ sectionTitle }}</h3>
-          <p class="sidebar-section-title-hint">{{ sectionHint }}</p>
+          <p class="sidebar-section-title-hint">
+            <svg
+              class="sidebar-section-arrow"
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <line x1="7" y1="7" x2="17" y2="17"></line>
+              <polyline points="17 7 17 17 7 17"></polyline>
+            </svg>
+            {{ sectionHint }}
+          </p>
         </div>
 
         <!-- Scrollable content area -->
@@ -5529,6 +5544,15 @@ textarea:focus-visible {
   font-weight: 400;
   line-height: 1.4;
   letter-spacing: 0.01em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sidebar-section-arrow {
+  flex-shrink: 0;
+  color: rgba(255, 255, 255, 0.6);
+  vertical-align: middle;
 }
 
 /* square toggle: same size in expanded & collapsed sidebar */

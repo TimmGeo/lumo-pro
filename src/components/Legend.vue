@@ -661,22 +661,31 @@ function getLocationImage(locationName) {
 function getLocationSVG(locationName) {
   if (!locationName) return null;
 
-  // Map location names to SVG paths in SVG folder
+  // Map location names to JPG paths in SVG folder
   const BASE = import.meta.env.BASE_URL || "/";
-  const svgMap = {
-    Altstetten: `${BASE}SVG/altstetten.svg`,
-    Oerlikon: `${BASE}SVG/oerlikon.svg`,
-    "Zürich Niederdörfli": `${BASE}SVG/niederdorf.svg`,
-    "Zürich Hauptbahnhof": `${BASE}SVG/bahnhof.svg`,
-    "Zürich Langstrasse": `${BASE}SVG/langstrasse.svg`,
-    "Zürich Bellevue": `${BASE}SVG/bellevue.svg`,
-    "Zürich Enge": `${BASE}SVG/enge.svg`,
-    "Zürich Central": `${BASE}SVG/central.svg`,
-    "Zürich Hardbrücke": `${BASE}SVG/hardbrücke.svg`,
+  const imageMap = {
+    Altstetten: `${BASE}SVG/altstetten.jpg`,
+    Oerlikon: `${BASE}SVG/oerlikon.jpg`,
+    "Zürich Niederdörfli": `${BASE}SVG/niederdorf.jpg`,
+    "Zürich Hauptbahnhof": `${BASE}SVG/bahnhof.jpg`,
+    "Zürich Langstrasse": `${BASE}SVG/langstrasse.jpg`,
+    "Zürich Bellevue": `${BASE}SVG/bellevue.jpg`,
+    "Zürich Enge": `${BASE}SVG/enge.jpg`,
+    "Zürich Central": `${BASE}SVG/central.jpg`,
+    "Zürich Hardbrücke": `${BASE}SVG/hardbrücke.jpg`,
+    Hardbrücke: `${BASE}SVG/hardbrücke.jpg`,
   };
 
-  // Return SVG path if exists, otherwise null
-  return svgMap[locationName] || null;
+  // Return JPG path if exists, otherwise null
+  const path = imageMap[locationName];
+  if (!path) return null;
+  
+  // Encode only the filename part to handle special characters (ü, ö)
+  // Split at the last slash to get the filename
+  const lastSlashIndex = path.lastIndexOf("/");
+  const basePath = path.substring(0, lastSlashIndex + 1);
+  const fileName = path.substring(lastSlashIndex + 1);
+  return basePath + encodeURIComponent(fileName);
 }
 
 function adjustColorBrightness(hex, percent) {
@@ -972,7 +981,7 @@ onMounted(() => {
   overflow: hidden;
   cursor: pointer;
   position: relative;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 4 / 3;
   width: 100%;
 }
 
@@ -995,6 +1004,7 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: top;
 }
 
 .location-button-image-placeholder {
