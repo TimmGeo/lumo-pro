@@ -2138,51 +2138,40 @@ function ensureHubsOnTop() {
     layerIndices[layer.id] = index;
   });
 
-  // Check if hubs are already on top
-  // Find the last non-hub layer index
-  let lastNonHubIndex = -1;
-  for (let i = allLayers.length - 1; i >= 0; i--) {
-    if (!hubLayers.includes(allLayers[i].id)) {
-      lastNonHubIndex = i;
-      break;
-    }
-  }
-
-  // Check if all hub layers are after the last non-hub layer
-  let needsReordering = false;
-  for (const hubLayerId of existingHubLayers) {
-    const hubIndex = layerIndices[hubLayerId];
-    if (hubIndex === undefined || hubIndex <= lastNonHubIndex) {
-      needsReordering = true;
-      break;
-    }
-  }
-
-  // Only move layers if they're not already on top
-  if (needsReordering) {
-    // Move animation layers to be just before hubs (if they exist)
-    animationLayers.forEach((layerId) => {
-      if (map.getLayer(layerId)) {
-        try {
-          // Move animation layer to be just before the first hub layer
-          if (existingHubLayers.length > 0) {
-            map.moveLayer(layerId, existingHubLayers[0]);
-          } else {
-            map.moveLayer(layerId);
-          }
-        } catch (e) {
-          // Layer might not exist yet, that's okay
+  // Always move hubs to the top (don't check if they're already on top,
+  // as routes might be above them)
+  // Move animation layers to be just before hubs (if they exist)
+  animationLayers.forEach((layerId) => {
+    if (map.getLayer(layerId)) {
+      try {
+        // Move animation layer to be just before the first hub layer
+        if (existingHubLayers.length > 0) {
+          map.moveLayer(layerId, existingHubLayers[0]);
+        } else {
+          map.moveLayer(layerId);
         }
+      } catch (e) {
+        // Layer might not exist yet, that's okay
       }
-    });
+    }
+  });
 
-    // Move each hub layer to the absolute top
-    hubLayers.forEach((layerId) => {
-      if (map.getLayer(layerId)) {
+  // Move each hub layer to the absolute top
+  // Move in forward order so that the last layer (hubs-labels) ends up on top
+  // Each moveLayer() call moves the layer to the absolute top, so we want labels on top
+  hubLayers.forEach((layerId) => {
+    if (map.getLayer(layerId)) {
+      try {
         map.moveLayer(layerId);
+      } catch (e) {
+        // Layer might not exist, ignore
+        console.warn(`Could not move layer ${layerId}:`, e);
       }
-    });
-  }
+    }
+  });
+  
+  // Force a repaint to ensure changes are visible
+  map.triggerRepaint();
 }
 
 function setHubsVisibility(visible) {
@@ -2840,9 +2829,8 @@ async function loadAndDisplayRoute(fromId, toId) {
     // Set currentRouteStats to bright route stats for backward compatibility
     currentRouteStats = brightRouteStats || fastRouteStats;
 
-    const beforeLayer = map.getLayer("hubs-circles")
-      ? "hubs-circles"
-      : undefined;
+    // Don't use beforeLayer - add routes at the end, then we'll move them appropriately
+    const beforeLayer = undefined;
 
     // Add fast route if available
     if (
@@ -2932,6 +2920,17 @@ async function loadAndDisplayRoute(fromId, toId) {
       console.warn("Could not move route layers:", e);
     }
 
+    // Ensure hubs are always on top of route layers
+    // Use nextTick and a small delay to ensure route layers are fully processed
+    await nextTick();
+    setTimeout(() => {
+      ensureHubsOnTop();
+      // Also ensure after repaint
+      setTimeout(() => {
+        ensureHubsOnTop();
+      }, 50);
+    }, 100);
+
     currentRouteSource = fastRouteUrl; // Store fast route URL as primary
     console.log(
       `✅ Routes successfully loaded: ${fastRouteFileName} and ${brightRouteFileName}`
@@ -3005,12 +3004,27 @@ async function loadAndDisplayRoute(fromId, toId) {
       });
 
       console.log("✅ Map zoomed and centered on routes");
+      
+      // Ensure hubs are on top after zoom animation completes
+      setTimeout(() => {
+        ensureHubsOnTop();
+      }, 1600); // Slightly longer than animation duration
+    } else {
+      // Even if no zoom happens, ensure hubs are on top after a delay
+      setTimeout(() => {
+        ensureHubsOnTop();
+      }, 200);
     }
 
     // Filter hubs to show only the two selected hubs immediately
     // Use the global selectedHubId variables to ensure consistency
     // Apply filter immediately - retry logic in filterHubsByRoute will handle if map isn't ready
     filterHubsByRoute(selectedHubId1, selectedHubId2);
+
+    // Ensure hubs are on top after filtering (with a delay to ensure filter is applied)
+    setTimeout(() => {
+      ensureHubsOnTop();
+    }, 150);
 
     // Show route statistics popups after a short delay
     setTimeout(() => {
@@ -3023,6 +3037,9 @@ async function loadAndDisplayRoute(fromId, toId) {
       if (brightRouteGeom && brightRouteStats) {
         showRouteStatsPopup(brightRouteGeom, brightRouteStats, "bright");
       }
+      
+      // Final check to ensure hubs are on top after popups are shown
+      ensureHubsOnTop();
     }, 300);
   } catch (error) {
     console.error(`Error loading routes:`, error);
