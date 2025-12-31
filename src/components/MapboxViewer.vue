@@ -274,6 +274,7 @@ let hexData = null;
 let hexVibrancyData = null;
 let hubsLoaded = false;
 let pendingZurichFocusKey = 0;
+let initialMapZoom = 12; // Store initial zoom level for reuse
 
 // Debounce ensureHubsOnTop to avoid excessive calls
 let ensureHubsOnTopTimeout = null;
@@ -1105,6 +1106,7 @@ onMounted(async () => {
     // Load hubs data first to calculate the center and reuse the data
     let initialCenter = [8.55, 47.37]; // Default Zurich center
     let initialZoom = 12;
+    initialMapZoom = 12; // Initialize stored zoom value
 
     try {
       const hubsResponse = await fetch(hubsUrl);
@@ -1148,6 +1150,7 @@ onMounted(async () => {
 
           initialZoom = Math.min(Math.min(latZoom, lngZoom), 15);
           initialZoom = Math.max(initialZoom, 12);
+          initialMapZoom = initialZoom; // Store the calculated zoom level
         }
       }
     } catch (error) {
@@ -4089,7 +4092,7 @@ function performZurichFocus() {
 
   const zurichCenter = [8.55, 47.37];
   const startZoom = 11.5; // Higher zoom level - more zoomed in
-  const endZoom = 14; // City level zoom
+  const endZoom = initialMapZoom; // Use the same zoom level as initial app load
 
   // If triggered from button click, always zoom from current location
   if (props.fromButton) {

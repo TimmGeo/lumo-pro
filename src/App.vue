@@ -221,34 +221,12 @@
     <!-- Go Back to Zurich Message -->
     <transition name="zurich-return-fade">
       <div v-if="showZurichReturnMessage" class="zurich-return-message">
-        <span class="zurich-return-text">Go back to Zurich?</span>
-        <div class="zurich-return-actions">
-          <button
-            class="zurich-return-button zurich-return-button--yes"
-            @click.stop="handleGoBackToZurich"
-          >
-            Yes
-          </button>
-          <button
-            class="zurich-return-button zurich-return-button--close"
-            @click.stop="showZurichReturnMessage = false"
-            aria-label="Close"
-          >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </button>
-        </div>
+        <button
+          class="zurich-return-button"
+          @click.stop="handleGoBackToZurich"
+        >
+          Go back to Zurich?
+        </button>
       </div>
     </transition>
 
@@ -4738,14 +4716,14 @@ textarea:focus-visible {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 12px 20px;
-  background: rgba(26, 27, 30, 0.85);
+  padding: 8px 14px;
+  background: rgba(26, 27, 30, 0.15);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border: none;
-  border-radius: 12px;
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 14px;
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
   font-weight: 500;
   font-family:
     "SF Pro Display",
@@ -4754,7 +4732,16 @@ textarea:focus-visible {
     BlinkMacSystemFont,
     system-ui,
     sans-serif;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing: -0.01em;
+}
+
+.route-saved-message:hover {
+  background: rgba(26, 27, 30, 0.6);
+  color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transform: translateX(-50%) translateY(-1px);
 }
 
 .route-saved-fade-enter-active {
@@ -4777,6 +4764,7 @@ textarea:focus-visible {
 
 .route-saved-text {
   white-space: nowrap;
+  color: inherit;
 }
 
 .route-saved-actions {
@@ -4786,7 +4774,7 @@ textarea:focus-visible {
 }
 
 .route-saved-button {
-  padding: 6px 14px;
+  padding: 6px 12px;
   border: none;
   border-radius: 6px;
   font-size: 13px;
@@ -4799,110 +4787,74 @@ textarea:focus-visible {
     system-ui,
     sans-serif;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
+  letter-spacing: -0.01em;
 }
 
-.route-saved-button--close {
+.route-saved-button--open {
   background: rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.8);
 }
 
-.route-saved-button--close:hover {
-  background: rgba(255, 255, 255, 0.15);
-  color: rgba(255, 255, 255, 0.95);
-}
-
-.route-saved-button--open {
-  background: #ffffff;
-  color: #000000;
-}
-
 .route-saved-button--open:hover {
-  background: rgba(255, 255, 255, 0.9);
-  color: #000000;
+  background: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.95);
 }
 
 /* Go Back to Zurich Message */
 .zurich-return-message {
   position: absolute;
-  top: 30px; /* Same position as top-center-buttons-container */
+  top: 30px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 101; /* Above route-saved-message and top-center-buttons */
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 12px 20px;
-  background: rgba(26, 27, 30, 0.4);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: none;
-  border-radius: 12px;
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 14px;
-  font-weight: 500;
-  font-family:
-    "SF Pro Display",
-    "SF Pro Text",
-    -apple-system,
-    BlinkMacSystemFont,
-    system-ui,
-    sans-serif;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-}
-
-.zurich-return-text {
-  white-space: nowrap;
-}
-
-.zurich-return-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.zurich-return-button {
-  padding: 6px 14px;
-  border: none;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 500;
-  font-family:
-    "SF Pro Display",
-    "SF Pro Text",
-    -apple-system,
-    BlinkMacSystemFont,
-    system-ui,
-    sans-serif;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.zurich-return-button--yes {
-  background: #ffffff;
-  color: #000000;
-}
-
-.zurich-return-button--yes:hover {
-  background: rgba(255, 255, 255, 0.9);
-  color: #000000;
-}
-
-.zurich-return-button--close {
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.8);
-  padding: 6px;
+  z-index: 101;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  padding: 0;
+  background: rgba(26, 27, 30, 0.15);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.zurich-return-button--close:hover {
-  background: rgba(255, 255, 255, 0.15);
-  color: rgba(255, 255, 255, 0.95);
+.zurich-return-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  font-family:
+    "SF Pro Display",
+    "SF Pro Text",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.01em;
+  width: 100%;
+  height: 100%;
+  white-space: nowrap;
+}
+
+.zurich-return-message:hover {
+  background: rgba(26, 27, 30, 0.6);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transform: translateX(-50%) translateY(-1px);
+}
+
+.zurich-return-message:hover .zurich-return-button {
+  color: rgba(255, 255, 255, 0.9);
 }
 
 /* Zurich Return Message Animation */
