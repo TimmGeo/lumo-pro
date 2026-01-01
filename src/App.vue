@@ -221,11 +221,8 @@
     <!-- Go Back to Zurich Message -->
     <transition name="zurich-return-fade">
       <div v-if="showZurichReturnMessage" class="zurich-return-message">
-        <button
-          class="zurich-return-button"
-          @click.stop="handleGoBackToZurich"
-        >
-          Go back to Zurich?
+        <button class="zurich-return-button" @click.stop="handleGoBackToZurich">
+          Fly back to Zurich?
         </button>
       </div>
     </transition>
@@ -1605,7 +1602,15 @@
                         }}</span>
                       </div>
                       <div class="route-details-intro-text">
-                        Here are some insights about your route.
+                        Here's what you need to know about your
+                        <span class="route-details-poi-frequency-fast"
+                          >fast</span
+                        >
+                        and
+                        <span class="route-details-poi-frequency-bright"
+                          >bright</span
+                        >
+                        routes, optimized for safety and vibrancy.
                       </div>
                     </div>
                   </div>
@@ -1664,25 +1669,33 @@
                             >
                               {{ getPoiFrequencyText(highlight.poiType) }}
                               <span class="route-details-poi-frequency-fast">
-                                {{ extractTimeFromFrequency(highlight.fastFreq) }}
+                                {{
+                                  extractTimeFromFrequency(highlight.fastFreq)
+                                }}
                               </span>
                               <span> (fast), </span>
                               <span class="route-details-poi-frequency-bright">
-                                {{ extractTimeFromFrequency(highlight.brightFreq) }}
+                                {{
+                                  extractTimeFromFrequency(highlight.brightFreq)
+                                }}
                               </span>
                               <span> (bright)</span>
                             </template>
                             <template v-else-if="highlight.fastFreq">
                               {{ getPoiFrequencyText(highlight.poiType) }}
                               <span class="route-details-poi-frequency-fast">
-                                {{ extractTimeFromFrequency(highlight.fastFreq) }}
+                                {{
+                                  extractTimeFromFrequency(highlight.fastFreq)
+                                }}
                               </span>
                               <span> (fast)</span>
                             </template>
                             <template v-else-if="highlight.brightFreq">
                               {{ getPoiFrequencyText(highlight.poiType) }}
                               <span class="route-details-poi-frequency-bright">
-                                {{ extractTimeFromFrequency(highlight.brightFreq) }}
+                                {{
+                                  extractTimeFromFrequency(highlight.brightFreq)
+                                }}
                               </span>
                               <span> (bright)</span>
                             </template>
@@ -1961,10 +1974,10 @@
                         </div>
                         <p class="uber-description">
                           If even the bright route doesn't feel safe enough, you
-                          can transfer your route details directly to the Uber app
-                          for convenient ride booking. Your selected route will
-                          be imported with start and destination points ready
-                          for booking.
+                          can transfer your route details directly to the Uber
+                          app for convenient ride booking. Your selected route
+                          will be imported with start and destination points
+                          ready for booking.
                         </p>
                         <button
                           class="uber-import-button"
@@ -2073,8 +2086,9 @@
                   <div class="app-basket-animation-content">
                     <div class="animation-content">
                       <p class="animation-description">
-                        Hexagons appear sequentially along your route path. The higher
-                        the hexagons, the higher the combined score of the route segment.
+                        Hexagons appear sequentially along your route path. The
+                        higher the hexagons, the higher the combined score of
+                        the route segment.
                       </p>
 
                       <!-- Coloring Mode Selector -->
@@ -3710,7 +3724,7 @@ function formatPoiFrequency(poiType, frequency) {
 
   // Remove "every" from frequency if it already contains it
   const cleanFrequency = frequency.replace(/^every\s+/i, "").trim();
-  
+
   // Format as "A restaurant every 30 seconds"
   return `A ${singularType} every ${cleanFrequency}`;
 }
@@ -4840,10 +4854,10 @@ textarea:focus-visible {
 }
 
 .zurich-return-button {
-  padding: 8px 16px;
+  padding: 12px 24px;
   border: none;
   border-radius: 10px;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 500;
   background: transparent;
   color: rgba(255, 255, 255, 0.5);
