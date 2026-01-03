@@ -2088,7 +2088,8 @@
                       <p class="animation-description">
                         Hexagons appear sequentially along your route path. The
                         higher the hexagons, the higher the combined score of
-                        the route segment.
+                        the route segment. Explore the combined score layer in
+                        the sidebar to discover what makes each segment unique.
                       </p>
 
                       <!-- Coloring Mode Selector -->
@@ -7126,7 +7127,8 @@ textarea:focus-visible {
 }
 
 .security-introduction {
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: bold;
   color: rgba(255, 255, 255, 0.7);
   margin: 0 0 24px 0;
   line-height: 1.6;
@@ -8011,7 +8013,8 @@ textarea:focus-visible {
 }
 
 .animation-description {
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: bold;
   color: rgba(255, 255, 255, 0.6);
   line-height: 1.5;
   margin: 0;

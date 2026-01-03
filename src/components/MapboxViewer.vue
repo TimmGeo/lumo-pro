@@ -3272,8 +3272,8 @@ function showRouteStatsPopup(routeGeom, stats, routeType = "fast") {
     if (popupContentEl) {
       // Use more translucent glassmorphic effect - blue tint for bright route, neutral for fast route
       if (routeType === "bright") {
-        popupContentEl.style.background = "rgba(100, 180, 255, 0.15)";
-        popupContentEl.style.backgroundColor = "rgba(100, 180, 255, 0.15)";
+        popupContentEl.style.background = "rgba(100, 180, 255, 0.22)";
+        popupContentEl.style.backgroundColor = "rgba(100, 180, 255, 0.22)";
       } else {
         popupContentEl.style.background = "rgba(255, 255, 255, 0.1)";
         popupContentEl.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
@@ -4548,17 +4548,17 @@ onBeforeUnmount(() => {
 
 /* Bright route popup - slight bright blue tint */
 .route-stats-map-popup--bright .mapboxgl-popup-content {
-  background: rgba(100, 180, 255, 0.15) !important;
-  background-color: rgba(100, 180, 255, 0.15) !important;
+  background: rgba(100, 180, 255, 0.22) !important;
+  background-color: rgba(100, 180, 255, 0.22) !important;
 }
 
 .route-stats-map-popup--bright .mapboxgl-popup-content:hover {
-  background-color: rgba(100, 180, 255, 0.22) !important;
-  background: rgba(100, 180, 255, 0.22) !important;
+  background-color: rgba(100, 180, 255, 0.30) !important;
+  background: rgba(100, 180, 255, 0.30) !important;
 }
 
 .route-stats-map-popup--bright .mapboxgl-popup-content.route-popup-clicked {
-  background-color: rgba(100, 180, 255, 0.2) !important;
+  background-color: rgba(100, 180, 255, 0.27) !important;
 }
 
 .route-stats-map-popup .mapboxgl-popup-tip {
@@ -4583,7 +4583,7 @@ onBeforeUnmount(() => {
 
 /* Bright route popup tip - slight bright blue tint */
 .route-stats-map-popup--bright .mapboxgl-popup-tip {
-  border-top-color: rgba(100, 180, 255, 0.15) !important;
+  border-top-color: rgba(100, 180, 255, 0.22) !important;
 }
 
 /* Fade transitions for route popup - matching zurich time display */

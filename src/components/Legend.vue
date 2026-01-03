@@ -867,7 +867,7 @@ onMounted(() => {
 }
 
 .legend-item-description {
-  font-size: 13px;
+  font-size: 14px;
   color: rgba(255, 255, 255, 0.75);
   font-family:
     "SF Pro Display",
