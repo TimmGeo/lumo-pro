@@ -411,21 +411,24 @@
 
         <!-- Section Title Display -->
         <div v-if="!sidebarCollapsed" class="sidebar-section-title">
-          <p class="sidebar-section-title-hint">
+          <p class="sidebar-section-title-text">
             <svg
               class="sidebar-section-arrow"
-              width="12"
-              height="12"
+              width="16"
+              height="16"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              stroke-width="2"
+              stroke-width="2.5"
               stroke-linecap="round"
               stroke-linejoin="round"
             >
               <line x1="7" y1="7" x2="17" y2="17"></line>
               <polyline points="17 7 17 17 7 17"></polyline>
             </svg>
+            {{ sectionTitle }}
+          </p>
+          <p class="sidebar-section-title-hint">
             {{ sectionHint }}
           </p>
         </div>
@@ -1881,7 +1884,6 @@
                   class="app-basket-app-section"
                 >
                   <div class="app-basket-security-content">
-                    <h3 class="security-content-title">Security & Safety</h3>
                     <p class="security-introduction">
                       Your safety is our priority. Access emergency contacts and
                       route safety information to help you navigate Zurich with
@@ -2749,10 +2751,14 @@ const sectionTitle = computed(() => {
 // Computed section hint/instruction text based on active tab
 const sectionHint = computed(() => {
   const hints = {
-    routing: "Select hubs to plan your route",
-    layers: "Choose a layer to visualize on the map",
-    "route-history": "View and reload your previous routes",
-    settings: "Legal information, contact details, and help resources",
+    routing:
+      "Select origin and destination hubs to calculate and display your route",
+    layers:
+      "Toggle map layers to explore lighting, vibrancy, and combined data visualizations",
+    "route-history":
+      "Browse your saved routes and reload them to view details and statistics",
+    settings:
+      "Access legal information, contact details, help resources, and app preferences",
   };
   return hints[activeSidebarTab.value] || "";
 });
@@ -5228,7 +5234,7 @@ textarea:focus-visible {
   overflow-x: hidden;
   margin-right: -16px;
   padding-right: 16px;
-  margin-top: 24px; /* Coherent space below section header across all sections */
+  margin-top: 0; /* Space is now handled by sidebar-section-title margin-bottom */
   opacity: 1;
   transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.15s; /* Smooth fade-in with slight delay */
 }
@@ -5633,16 +5639,19 @@ textarea:focus-visible {
 
 /* Section Title Display (below header) */
 .sidebar-section-title {
-  padding: 16px 0 12px 0;
-  margin-bottom: 16px;
+  padding: 40px 0 12px 0;
+  margin-bottom: 8px;
 }
 
 .sidebar-section-title-text {
   margin: 0 0 6px 0;
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.9);
   letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .sidebar-section-title-hint {
@@ -5652,9 +5661,6 @@ textarea:focus-visible {
   font-weight: 400;
   line-height: 1.4;
   letter-spacing: 0.01em;
-  display: flex;
-  align-items: center;
-  gap: 6px;
 }
 
 .sidebar-section-arrow {
