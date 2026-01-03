@@ -42,7 +42,7 @@
         class="clear-route-top-button"
       >
         <img
-          src="/routing_icon.svg"
+          src="/SVG/routing_icon.svg"
           alt="Route"
           class="clear-route-icon"
           width="16"
@@ -261,7 +261,7 @@
             aria-label="Toggle sidebar"
           >
             <img
-              src="/sidebar.svg"
+              src="/SVG/sidebar.svg"
               alt="Toggle sidebar"
               class="sidebar-toggle-icon"
               aria-hidden="true"
@@ -273,7 +273,11 @@
 
           <!-- Lumo logo when opened (at same position as collapsed toggle button) -->
           <div v-if="!sidebarCollapsed" class="sidebar-logo">
-            <img src="/sidebar_lumo.svg" alt="Lumo" class="sidebar-logo-icon" />
+            <img
+              src="/SVG/sidebar_lumo.svg"
+              alt="Lumo"
+              class="sidebar-logo-icon"
+            />
           </div>
 
           <button
@@ -283,7 +287,7 @@
             aria-label="Routing"
           >
             <img
-              src="/routing_icon.svg"
+              src="/SVG/routing_icon.svg"
               alt="Routing"
               class="sidebar-icon-img"
               aria-hidden="true"
@@ -398,7 +402,7 @@
             :aria-label="sidebarCollapsed ? 'Open sidebar' : 'Close sidebar'"
           >
             <img
-              src="/sidebar.svg"
+              src="/SVG/sidebar.svg"
               alt="Toggle sidebar"
               class="sidebar-toggle-icon"
               aria-hidden="true"

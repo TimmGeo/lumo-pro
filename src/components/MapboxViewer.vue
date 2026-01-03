@@ -3163,7 +3163,7 @@ function showRouteStatsPopup(routeGeom, stats, routeType = "fast") {
   popupContent.className = "route-stats-popup";
 
   // Get walking icon path
-  const walkingIconUrl = `${BASE}walking.svg`.replace(/\/{2,}/g, "/");
+  const walkingIconUrl = `${BASE}SVG/walking.svg`.replace(/\/{2,}/g, "/");
 
   let html = "";
 
