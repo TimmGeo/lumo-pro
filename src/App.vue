@@ -1574,10 +1574,13 @@
                   ? `legend-${mode}`
                   : activeBasketApp
               "
+              ref="basketScrollableWrapperRef"
               class="app-basket-content-scrollable-wrapper"
               :class="{
                 'route-already-shown':
                   activeBasketApp === 'chat' && isCurrentRouteAlreadyShown,
+                'app-basket-content-scrollable-wrapper--scrolling':
+                  isBasketScrolling,
               }"
             >
               <div
@@ -2964,8 +2967,11 @@ function handleMapMove(event) {
 // Scrollbar visibility
 const scrollableRef = ref(null);
 const chatScrollableRef = ref(null);
+const basketScrollableWrapperRef = ref(null);
 const isScrolling = ref(false);
 let scrollTimeout = null;
+const isBasketScrolling = ref(false);
+let basketScrollTimeout = null;
 
 function handleScroll() {
   // Show scrollbar immediately when scrolling
@@ -2980,6 +2986,22 @@ function handleScroll() {
   scrollTimeout = setTimeout(() => {
     isScrolling.value = false;
     scrollTimeout = null;
+  }, 1000);
+}
+
+function handleBasketScroll() {
+  // Show scrollbar immediately when scrolling
+  isBasketScrolling.value = true;
+
+  // Clear existing timeout
+  if (basketScrollTimeout) {
+    clearTimeout(basketScrollTimeout);
+  }
+
+  // Hide scrollbar after scrolling stops (1s delay to match fade-out)
+  basketScrollTimeout = setTimeout(() => {
+    isBasketScrolling.value = false;
+    basketScrollTimeout = null;
   }, 1000);
 }
 
@@ -2998,11 +3020,68 @@ onMounted(async () => {
       passive: true,
     });
   }
+  setupBasketScrollListeners();
+});
+
+// Setup basket scroll listeners when ref becomes available
+function setupBasketScrollListeners() {
+  if (basketScrollableWrapperRef.value) {
+    // Remove existing listeners first to avoid duplicates
+    basketScrollableWrapperRef.value.removeEventListener(
+      "scroll",
+      handleBasketScroll
+    );
+    basketScrollableWrapperRef.value.removeEventListener(
+      "wheel",
+      handleBasketScroll
+    );
+    basketScrollableWrapperRef.value.removeEventListener(
+      "touchmove",
+      handleBasketScroll
+    );
+
+    // Add listeners
+    basketScrollableWrapperRef.value.addEventListener(
+      "scroll",
+      handleBasketScroll,
+      {
+        passive: true,
+      }
+    );
+    // Also listen for wheel events to catch mouse wheel scrolling
+    basketScrollableWrapperRef.value.addEventListener(
+      "wheel",
+      handleBasketScroll,
+      {
+        passive: true,
+      }
+    );
+    // Listen for touch events on mobile
+    basketScrollableWrapperRef.value.addEventListener(
+      "touchmove",
+      handleBasketScroll,
+      {
+        passive: true,
+      }
+    );
+  }
+}
+
+// Watch for when the basket scrollable wrapper ref becomes available
+watch(basketScrollableWrapperRef, (newVal) => {
+  if (newVal) {
+    nextTick(() => {
+      setupBasketScrollListeners();
+    });
+  }
 });
 
 onBeforeUnmount(() => {
   if (scrollTimeout) {
     clearTimeout(scrollTimeout);
+  }
+  if (basketScrollTimeout) {
+    clearTimeout(basketScrollTimeout);
   }
   if (hoverTimer) {
     clearTimeout(hoverTimer);
@@ -3014,6 +3093,20 @@ onBeforeUnmount(() => {
     scrollableRef.value.removeEventListener("scroll", handleScroll);
     scrollableRef.value.removeEventListener("wheel", handleScroll);
     scrollableRef.value.removeEventListener("touchmove", handleScroll);
+  }
+  if (basketScrollableWrapperRef.value) {
+    basketScrollableWrapperRef.value.removeEventListener(
+      "scroll",
+      handleBasketScroll
+    );
+    basketScrollableWrapperRef.value.removeEventListener(
+      "wheel",
+      handleBasketScroll
+    );
+    basketScrollableWrapperRef.value.removeEventListener(
+      "touchmove",
+      handleBasketScroll
+    );
   }
 });
 
@@ -7085,7 +7178,7 @@ textarea:focus-visible {
 }
 
 .app-basket-content-scrollable-wrapper::-webkit-scrollbar {
-  width: 6px;
+  width: 14px;
 }
 
 .app-basket-content-scrollable-wrapper::-webkit-scrollbar-track {
@@ -7093,12 +7186,29 @@ textarea:focus-visible {
 }
 
 .app-basket-content-scrollable-wrapper::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 7px;
+  opacity: 0;
+  transition: opacity 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-.app-basket-content-scrollable-wrapper::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+.app-basket-content-scrollable-wrapper--scrolling::-webkit-scrollbar-thumb {
+  opacity: 1;
+  transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.app-basket-content-scrollable-wrapper--scrolling::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Firefox */
+.app-basket-content-scrollable-wrapper {
+  scrollbar-width: none;
+}
+
+.app-basket-content-scrollable-wrapper--scrolling {
+  scrollbar-width: auto;
+  scrollbar-color: rgba(255, 255, 255, 0.4) transparent;
 }
 
 .app-basket-app-section {

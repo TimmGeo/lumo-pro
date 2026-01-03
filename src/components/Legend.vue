@@ -981,7 +981,7 @@ onMounted(() => {
   overflow: hidden;
   cursor: pointer;
   position: relative;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 16 / 9;
   width: 100%;
 }
 
