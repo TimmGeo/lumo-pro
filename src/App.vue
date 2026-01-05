@@ -1974,13 +1974,6 @@
                         Link Route to Uber
                       </h4>
                       <div class="uber-link-section">
-                        <div class="uber-icon-container">
-                          <img
-                            class="uber-icon"
-                            :src="`${BASE}assets/uber.jpg`"
-                            alt="Uber"
-                          />
-                        </div>
                         <p class="uber-description">
                           If even the bright route doesn't feel safe enough, you
                           can transfer your route details directly to the Uber
