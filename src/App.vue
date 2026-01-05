@@ -1732,7 +1732,7 @@
 
                   <div v-if="currentRouteStats" class="route-details-footer">
                     <div class="route-details-footer-bubble">
-                      You're all set! Enjoy your walk through the city.
+                      You're all set! Enjoy your walk through the city. Feel free to explore the route more by opening a map layer in the left sidebar or by creating a route animation.
                     </div>
 
                     <!-- User message bubble (shown after user sends) -->
@@ -1770,28 +1770,26 @@
                     <div
                       class="route-details-footer-bubble route-details-footer-bubble--greeting route-details-footer-bubble--welcome"
                     >
-                      Hey there!
+                      Welcome aboard! 🎯
                     </div>
                     <div
                       class="route-details-footer-bubble route-details-footer-bubble--welcome"
                       style="margin-top: 8px"
                     >
-                      I find the best routes through Zurich with data on
-                      lighting, vibrancy, and safety.
+                      I analyze street lighting, neighborhood vibrancy, and safety data to calculate multiple route options—including the fastest and brightest paths through Zurich. Choose what matters most to you.
                     </div>
                     <div
                       class="route-details-footer-bubble route-details-footer-bubble--welcome"
                       style="margin-top: 8px"
                     >
-                      Click the colored dots on the map, or use the routing tool
-                      in the sidebar
+                      Quick start: tap any colored hub on the map, or open the routing tool
                       <button
                         class="route-details-footer-button"
                         @click.stop="handleOpenRoutingTool"
                       >
                         here
                       </button>
-                      .
+                      to plan your route.
                     </div>
                     <!-- Learn More Document Attachment -->
                     <div
@@ -1854,8 +1852,10 @@
                             style="margin-top: 12px"
                           >
                             <button
+                              type="button"
                               class="route-details-about-button"
                               @click.stop.prevent="openAboutSection($event)"
+                              @mousedown.stop.prevent="openAboutSection($event)"
                             >
                               Find out more about the project and author
                             </button>
@@ -2505,6 +2505,26 @@ function toggleAnimation() {
   previousBasketApp.value = null; // Clear previous state on manual interaction
   activeBasketApp.value =
     activeBasketApp.value === "animation" ? null : "animation";
+}
+
+// Handle opening layers section from route details message
+function handleOpenLayers(event) {
+  console.log("handleOpenLayers called", event);
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  handleIconClick("layers");
+}
+
+// Handle opening animation from route details message
+function handleOpenAnimation(event) {
+  console.log("handleOpenAnimation called", event);
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  toggleAnimation();
 }
 
 // Handle route animation
@@ -4281,6 +4301,7 @@ function openHistorySection() {
 }
 
 function openAboutSection(event) {
+  console.log("openAboutSection called", event);
   // Prevent any default behavior and stop propagation
   if (event) {
     event.preventDefault();
@@ -4298,14 +4319,33 @@ function openAboutSection(event) {
   // Always expand the about section
   aboutExpanded.value = true;
 
-  // Scroll to about section after appropriate delay
-  const delay = wasCollapsed ? 500 : 200;
+  // Wait for sidebar animation and content to be visible
+  // Sidebar transition is 0.4s, so wait longer to ensure content is rendered
+  const delay = wasCollapsed ? 600 : 300;
 
   nextTick(() => {
     setTimeout(() => {
       const element = document.getElementById("settings-about");
+      console.log("Looking for settings-about element:", element);
       if (element) {
-        element.scrollIntoView({ behavior: "smooth", block: "start" });
+        // Scroll the sidebar scrollable container, not the window
+        const scrollableContainer = document.querySelector(".sidebar-scrollable");
+        if (scrollableContainer) {
+          const containerRect = scrollableContainer.getBoundingClientRect();
+          const elementRect = element.getBoundingClientRect();
+          const scrollTop = scrollableContainer.scrollTop;
+          const elementTop = elementRect.top - containerRect.top + scrollTop;
+          
+          scrollableContainer.scrollTo({
+            top: elementTop - 20, // Add some padding from top
+            behavior: "smooth"
+          });
+        } else {
+          // Fallback to regular scrollIntoView
+          element.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      } else {
+        console.warn("settings-about element not found");
       }
     }, delay);
   });
@@ -9325,6 +9365,7 @@ textarea:focus-visible {
   letter-spacing: 0.01em;
   animation: chatBubbleAppear 0.5s ease-out 1.3s forwards;
   opacity: 0;
+  pointer-events: auto;
 }
 
 .route-details-footer-button {
@@ -9350,6 +9391,51 @@ textarea:focus-visible {
 
 .route-details-footer-button:active {
   opacity: 0.5;
+}
+
+.route-details-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 4px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: inherit;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 10;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  vertical-align: baseline;
+}
+
+.route-details-link:hover {
+  opacity: 0.7;
+}
+
+.route-details-link:active {
+  opacity: 0.5;
+}
+
+.route-details-link-arrow {
+  flex-shrink: 0;
+  color: currentColor;
+  vertical-align: middle;
+}
+
+.route-details-link-text {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
 }
 
 /* Greeting bubble - bigger font to match route greeting */
@@ -9398,6 +9484,9 @@ textarea:focus-visible {
   transition: all 0.2s ease;
   margin-top: 8px;
   display: inline-block;
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 10;
 }
 
 .route-details-about-button:hover {
