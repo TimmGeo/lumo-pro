@@ -85,10 +85,6 @@ Start the development server:
 npm run dev
 ```
 
-## AI-Assisted Development
-
-Cursor AI was used as a coding assistant during development to generate and refine code suggestions. All AI-generated suggestions were reviewed, adapted, and integrated by the author. The overall application architecture, data processing workflow, and core functionality were designed and implemented by the author.
-
 ## Attributions
 
 **Data:** Open geodata from the City of Zürich (public street lighting, nightlife and gastronomy points of interest, communal boundary) and swisstopo (pedestrian street network).
