@@ -5,8 +5,6 @@
 ![Vue 3](https://img.shields.io/badge/Vue.js-3-4FC08D?logo=vuedotjs&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white)
 ![Mapbox GL JS](https://img.shields.io/badge/Mapbox%20GL%20JS-000000?logo=mapbox&logoColor=white)
-![Python](https://img.shields.io/badge/Python-preprocessing-3776AB?logo=python&logoColor=white)
-![QGIS](https://img.shields.io/badge/QGIS-data%20prep-589632?logo=qgis&logoColor=white)
 
 > [!NOTE]
 > Lumo is live at https://ikgcartoapps.ethz.ch/project/trogenmoser/
@@ -45,33 +43,14 @@ The project lies at the intersection of cartography, urban perception, and user 
 
 The thematic layers and walking routes are computed offline so the web client stays light and responsive. All datasets are open data from the City of Zürich and swisstopo, harmonised to a common coordinate reference system before processing.
 
-1. **Grid** – a uniform 100 m × 100 m hexagonal grid covering the municipal area, generated in QGIS.
-2. **Aggregation** – lighting points and points of interest aggregated to cells via point-in-polygon counts, producing brightness and activity values per cell.
-3. **Scoring** – values normalised and combined into a single perceived-comfort score.
-4. **Routing** – weighted shortest paths between predefined routing hubs precomputed in Python (distance + lighting + vibrancy), together with route–grid intersections, walking distances to hotspots, and global statistics.
+1. **Grid** - a uniform 100 m × 100 m hexagonal grid covering the municipal area, generated in QGIS.
+2. **Aggregation** - lighting points and points of interest aggregated to cells via point-in-polygon counts, producing brightness and activity values per cell.
+3. **Scoring** - values normalised and combined into a single perceived-comfort score.
+4. **Routing** - weighted shortest paths between predefined routing hubs precomputed in Python (distance + lighting + vibrancy), together with route-grid intersections, walking distances to hotspots, and global statistics.
 
 The pipeline outputs preprocessed GeoJSON and JSON, which the application loads at runtime.
 
-## Web Application
-
-The application is a modular single-page app built with **Vue 3 and Vite** (Composition API), with clearly separated concerns for application state, map logic, and the user interface. **Mapbox GL JS** provides the interactive 3D map, including data-driven styling, click and hover interaction, and animated camera movements.
-
-### Setup
-
-```bash
-# Install dependencies
-npm install
-
-# Create a .env file in the project root and add your Mapbox token:
-# VITE_MAPBOX_TOKEN=your_mapbox_token_here
-
-# Start the development server
-npm run dev
-```
-
-> Assumes a Vue 3 + Vite setup. A [Mapbox access token](https://account.mapbox.com/access-tokens/) is required.
-
-## Data sources
+### Data Sources
 
 | Description | Source |
 |---|---|
@@ -81,6 +60,30 @@ npm run dev
 | Bars and lounges (points) | https://data.stadt-zuerich.ch/dataset/zt_bars |
 | Gastronomy (points) | https://data.stadt-zuerich.ch/dataset/zt_gastronomie |
 | Street network for routing | https://www.swisstopo.admin.ch/de/landeskarte-swiss-map-vector10 |
+
+## Web Application
+
+This application is built with Vue 3 and Vite. Mapbox GL JS provides the interactive 3D map visualization, while the codebase keeps application state, map logic, and user interface cleanly separated.
+
+### Setup
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Create a `.env` file in the project root and add your Mapbox access token:
+
+```
+VITE_MAPBOX_TOKEN=your_mapbox_token_here
+```
+
+Start the development server:
+
+```bash
+npm run dev
+```
 
 ## AI-Assisted Development
 
