@@ -5,8 +5,13 @@ import vue from "@vitejs/plugin-vue";
 const cesiumSource = "node_modules/cesium/Build/Cesium";
 const cesiumBaseUrl = "cesium";
 
+// The GitHub Actions workflow sets GITHUB_PAGES=true, so the build uses the
+// GitHub Pages path. Locally and for the ETH GitLab deployment it falls back
+// to the ETH path, so that deployment keeps working unchanged.
+const base = process.env.GITHUB_PAGES ? "/lumo-pro/" : "/project/trogenmoser/";
+
 export default defineConfig({
-  base: "/project/trogenmoser/", // IMPORTANT: Replace with your student ID
+  base,
   plugins: [
     vue(),
     viteStaticCopy({
