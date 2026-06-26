@@ -8,7 +8,7 @@
 ![Cesium](https://img.shields.io/badge/Cesium-1.133-48B?logo=cesium&logoColor=white)
 
 > [!NOTE]
-> Lumo is live at https://ikgcartoapps.ethz.ch/project/trogenmoser/
+> Lumo is live at https://timmgeo.github.io/lumo-pro/
 
 **Code repository:** https://gitlab.ethz.ch/ikgcartoapps-hs24/trogenmoser
 
