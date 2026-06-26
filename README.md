@@ -197,6 +197,3 @@ UI icons (routing, sidebar, layer toggles, the Lumo logo) and nine neighbourhood
 
 Created by **Timm Rogenmoser** for the course **Application Development in Cartography (103-0227-00L)** at ETH Zürich, Autumn Semester 2025. Course lead: Dr. Andreas Neumann.
 
-## AI-Assisted Development
-
-Cursor AI was used as a coding assistant during development to generate and refine code suggestions. All AI-generated suggestions were reviewed, adapted, and integrated by the author. The overall application architecture, data processing workflow, and core functionality were designed and implemented by the author.
